@@ -32,9 +32,24 @@ class Transaksi extends CI_Controller {
 		$this->load->view('transaksi/v_input_transaksi_order',$data);
 	}
 	
+	public function buat_invoice(){
+		$data['id'] 			= $this->input->get('inv');
+		$data['mode'] 			= $this->input->get('mode');
+		$data['data_invoice']	= $this->transaksi_model->dataInvoice($data['id']);
+		//echo "<pre>"; print_r($data['data_invoice']);exit;
+		$this->load->view('transaksi/v_create_invoice',$data);
+	}
+	
 	function invoice(){
 		$id = $this->input->get('inv');
-		$data['data_invoice']			= $this->transaksi_model->dataInvoice($id);
+		$mode = $this->input->get('mode');
+		if(isset($mode) || $mode != ''){
+			$this->transaksi_model->createInvoice($id);
+			$data['data_invoice']			= $this->transaksi_model->dataInvoice($id);
+		}else{
+			$data['data_invoice']			= $this->transaksi_model->dataInvoice($id);
+		}
+		
 		$html							= $this->load->view('transaksi/v_invoice',$data,true);
 		$pdfFilePath					= "laba rugi.pdf";
 		$this->load->library('m_pdf');
@@ -117,6 +132,26 @@ class Transaksi extends CI_Controller {
 	public function save(){
 		$post = $this->input->post();
 		$datax = $this->transaksi_model->save($post);
+		if($datax){
+			$return = array(
+				'data' => $datax,
+				'code' => 0,
+				'guid' => md5($datax)
+			);
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function save_invoice(){
+		$post = $this->input->post();
+		$datax = $this->transaksi_model->save_invoice($post);
 		if($datax){
 			$return = array(
 				'data' => $datax,
@@ -467,6 +502,40 @@ class Transaksi extends CI_Controller {
 		if($datax){
 			$return = array(
 				'data' => $post['id'],
+				'code' => 0
+			);
+			
+		}else{
+			$return = array(
+				'data' => $post['id'],
+				'code' => 1
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function detail_transaksi_header(){
+		$post = $this->input->post();
+		$datax = $this->transaksi_model->detail_transaksi_header($post);
+		if($datax){
+			$datax->detail = array();
+			$datax->jumlah_bayar = number_format($datax->jumlah_bayar,2);
+			if($datax->status == 0){
+				$datax->status = "Paid";
+			}else if($datax->status == 1){
+				$datax->status = "Waiting Payment";
+			}else if($datax->status == 2){
+				$datax->status = "Waiting To Invoice";
+			}else if($datax->status == 3){
+				$datax->status = "Waiting To Approve";
+			}else if($datax->status == 4){
+				$datax->status = "Reject";
+			}
+			if($detail = $this->transaksi_model->detail_transaksi_pembayaran($datax->id)){
+				$datax->detail = $detail;
+			}
+			$return = array(
+				'data' => $datax,
 				'code' => 0
 			);
 			

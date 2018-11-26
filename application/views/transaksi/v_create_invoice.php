@@ -60,10 +60,30 @@
 			cursor:pointer;
 		}
 	</style>
+	
+	<?php if($data_invoice > 0){
+		foreach($data_invoice as $row){
+			$id_transaksi = $row->id_transaksi;
+			$id_pelanggan = $row->id_pelanggan;
+			$nama_pelanggan = $row->nama_pelanggan;
+			$email = $row->email_pelanggan;
+			$alamat_tagih = $row->alamat_tagih;
+			$tanggal_transaksi = $row->tanggal_transaksi;
+			$jumlah_bayar = $row->jumlah_bayar;
+			$id_ref = $row->no_ref;
+			$discount = $row->discount;
+			$nomor_transaksi = $row->nomor_transaksi;
+			$lampiran = $row->lampiran;
+			$subtotal = $row->sub_total;
+			$foto = $row->lampiran;
+			$pesan = $row->pesan;
+		}
+	?>
+	
 	<div id="page-wrapper">
 		<div class="row">
 			<div class="col-lg-12">
-				<h1 class="page-header">Buat Order Penjualan</h1>
+				<h1 class="page-header">Buat Invoice</h1>
 			</div>
 		</div>
         <div class="row">
@@ -73,27 +93,28 @@
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Nama Pelanggan</label>
-								<input type="text" id="nama_pelanggan"  onkeyup="return cari_pelanggan()" class="form-control" placeholder="[Auto]">
-								<input type="hidden" id="id_pelanggan">
-								<input type="hidden" id="tipe_transaksi" value="2">
+								<input type="text" id="nama_pelanggan" readonly onkeyup="return cari_pelanggan()" value="<?php echo $id_pelanggan." - ".$nama_pelanggan;?>" class="form-control" placeholder="[Auto]">
+								<input type="hidden" id="id_pelanggan" value="<?php echo $id_pelanggan;?>">
+								<input type="hidden" id="tipe_transaksi" value="1">
+								<input type="hidden" id="id_transaksi" value="<?php echo $id_transaksi?>">
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Email</label>
-								<input type="text" id="email_pelanggan" class="form-control">
+								<input type="text" id="email_pelanggan" value="<?php echo $email;?>" class="form-control">
 							</div>
 						</div>
 						<div class="col-sm-12 col-md-3">
 							<div class="form-group" >
 								<label>No Referensi</label>
-								<input type="text" id="no_referensi" class="form-control moneydec">
+								<input type="text" id="no_referensi" value="<?php echo $id_ref?>" class="form-control moneydec">
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Alamat Penagihan</label>
-								<textarea id="alamat_penagihan" class="form-control" ></textarea>
+								<textarea id="alamat_penagihan" class="form-control" ><?php echo $alamat_tagih?></textarea>
 							</div>
 						</div>
 						<hr>
@@ -107,17 +128,17 @@
 									<div class="input-group-addon">
 										<i class="fa fa-calendar"></i>
 									</div>
-									<input type="text" id="tanggal_transaksi" class="form-control date" value="<?php echo date('d/m/Y')?>">
+									<input type="text" id="tanggal_transaksi" class="form-control" readonly value="<?php echo date("d/m/Y",strtotime($tanggal_transaksi))?>">
 								</div>
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Nomor Transaksi</label>
-								<input type="text" id="nomor_transaksi" class="form-control" placeholder="[Auto]">
+								<input type="text" id="nomor_transaksi" class="form-control" readonly value="[Auto]">
 							</div>
 						</div>
-						<div class="col-sm-6 col-md-3" style="display:none">
+						<div class="col-sm-6 col-md-3">
 							<div class="form-group" >
 								<label>Tanggal Invoice</label>
 								<div class="input-group">
@@ -128,7 +149,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-sm-6 col-md-3" style="display:none">
+						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Term Of Payment (Hari)</label>
 								<select id="top" class="form-control chosen-select">
@@ -169,7 +190,7 @@
 								</select>
 							</div>
 						</div>
-						<div class="col-sm-6 col-md-3" style="display:none">
+						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Nomor Faktur Pajak</label>
 								<input type="text" id="nomor_faktur" class="form-control" placeholder="[Auto]">
@@ -190,84 +211,73 @@
 								</tr>
 							</thead>
 							<tbody id="produk">
-								<tr id="produk_1">
+								<input type="hidden" id="counter" class="form-control" value="<?php echo count($data_invoice)?>">
+								<?php 
+									$i=0;
+									foreach($data_invoice as $rows){
+									$i++;
+								?>
+								<tr id="produk_<?php echo $i?>">
 									<td>
 										<div class="input-group">
-											<div class="input-group-addon" onclick="return delete_produk(1)">
+											<div class="input-group-addon" onclick="return delete_produk(<?php echo $i?>)">
 												<i class="fa fa-trash"></i>
 											</div>
-											<input type="text" id="nama_produk_1" onkeyup="return cari_produk(1)" onchange="return check_produk(1)" class="form-control">
-											<input type="hidden" id="id_produk_1" class="form-control">
-											<input type="hidden" id="counter" class="form-control" value="2">
+											<input type="text" value="<?php echo $rows->id_produk." - ".$rows->nama_produk?>" id="nama_produk_<?php echo $i?>" onkeyup="return cari_produk(<?php echo $i?>)" onchange="return check_produk(<?php echo $i?>)" class="form-control">
+											<input type="hidden" id="id_produk_<?php echo $i?>" value="<?php echo $rows->id_produk?>" class="form-control">
+											
 										</div>
 									</td>
-									<td><textarea style="height: 33px;" id="deskripsi_1" class="form-control"></textarea></td>
+									<td><textarea style="height: 33px;" id="deskripsi_<?php echo $i?>" value="<?php echo $rows->deskripsi?>" class="form-control"></textarea></td>
 									<td>
 										<div class="input-group">
 											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return min_item(1)">-</button>
+												<button type="button" onclick="return min_item(<?php echo $i?>)">-</button>
 											</div>
-											<input type="text" id="kuantitas_1" onkeyup="return hitung_item(1)" class="form-control">
+											<input type="text" value="<?php echo $rows->kuantitas?>" id="kuantitas_<?php echo $i?>" onkeyup="return hitung_item(<?php echo $i?>)" class="form-control">
 											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return add_item(1)">+</button>
+												<button type="button" onclick="return add_item(<?php echo $i?>)">+</button>
 											</div>
 										</div>
 									</td>
-									<td><input type="text" id="satuan_1" class="form-control" readonly></td>
+									<td><input type="text" value="<?php echo $rows->satuan?>" id="satuan_<?php echo $i?>" class="form-control" readonly></td>
 									<td>
-										<input type="text" id="harga_satuan_1" class="form-control" readonly>
-										<input type="hidden" id="harga_satuan_dec_1" class="form-control" readonly>
+										<input type="text" value="<?php echo number_format($rows->harga_satuan)?>" id="harga_satuan_<?php echo $i?>" class="form-control" readonly>
+										<input type="hidden" value="<?php echo $rows->harga_satuan?>" id="harga_satuan_dec_<?php echo $i?>" class="form-control" readonly>
 									</td>
 									<td>
-										<select id="pajak_1" class="form-control chosen-select" onchange="return ppn(1)">
+										<select id="pajak_<?php echo $i?>" class="form-control chosen-select" onchange="return ppn(<?php echo $i?>)">
+											<?php if($rows->pajak == 0){
+												?>
+													<option value="0" selected>Non PPN </option>
+													<option value="10">PPN </option>
+													<option value="15">PPN & Service</option>
+												<?php
+											}else if($rows->pajak == 10){
+												?>
+													<option value="0">Non PPN </option>
+													<option value="10" selected>PPN </option>
+													<option value="15">PPN & Service</option>
+												<?php
+											}else if($rows->pajak == 15){
+												?>
+													<option value="0">Non PPN </option>
+													<option value="10">PPN </option>
+													<option value="15" selected>PPN & Service</option>
+												<?php
+											}
+											
+											?>
 											<option value="0">Non PPN </option>
 											<option value="10">PPN </option>
 											<option value="15">PPN & Service</option>
 										</select>
 									<td>
-										<input type="text" id="jumlah_1" class="form-control" readonly>
-										<input type="hidden" id="jumlah_dec_1" value="0" class="form-control" readonly>
+										<input type="text" id="jumlah_<?php echo $i?>" value="<?php echo number_format($rows->jumlah)?>" class="form-control" readonly>
+										<input type="hidden" id="jumlah_dec_<?php echo $i?>" value="<?php echo $rows->jumlah?>" class="form-control" readonly>
 									</td>
 								</tr>
-								<tr id="produk_2">
-									<td>
-										<div class="input-group">
-											<div class="input-group-addon" onclick="return delete_produk(2)">
-												<i class="fa fa-trash"></i>
-											</div>
-											<input type="text" id="nama_produk_2" onkeyup="return cari_produk(2)" onchange="return check_produk(2)" class="form-control">
-											<input type="hidden" id="id_produk_2" class="form-control">
-										</div>
-									</td>
-									<td><textarea style="height: 33px;" id="deskripsi_2" class="form-control"></textarea></td>
-									<td>
-										<div class="input-group">
-											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return min_item(2)">-</button>
-											</div>
-											<input type="text" id="kuantitas_2" onkeyup="return hitung_item(2)" class="form-control">
-											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return add_item(2)">+</button>
-											</div>
-										</div>
-									</td>
-									<td><input type="text" id="satuan_2" class="form-control" readonly></td>
-									<td>
-										<input type="text" id="harga_satuan_2" class="form-control" readonly>
-										<input type="hidden" id="harga_satuan_dec_2" class="form-control" readonly>
-									</td>
-									<td>
-										<select id="pajak_2" class="form-control chosen-select" onchange="return ppn(2)">
-											<option value="0">Non PPN </option>
-											<option value="10">PPN </option>
-											<option value="15">PPN & Service</option>
-										</select>
-									</td>
-									<td>
-										<input type="text" id="jumlah_2" onchange="return hitung_all()" class="form-control" readonly>
-										<input type="hidden" id="jumlah_dec_2" value="0" class="form-control" readonly>
-									</td>
-								</tr>
+								<?php }?>
 							</tbody>
 							<tfoot>
 								<tr>
@@ -283,12 +293,13 @@
 							<div class="form-group">
 								<span>Pesan</span>
 								<div class="input-group">
-									<textarea id="pesan" class="form-control"></textarea>
+									<textarea id="pesan" class="form-control"><?php echo $pesan?></textarea>
 								</div>
 							</div>
-							<div class="form-group">
+							<div class="form-group" style="display:none">
 								<span>Lampiran</span>
 								<div class="input-group">
+									<img src="<?php echo base_url()?>gambar_barang/<?php echo $foto?>" width="120px">
 									<input type="file" name="file"  id="image_file" class="form-control">
 								</div>
 							</div>
@@ -300,19 +311,19 @@
 							<div class="form-group  pull-right">
 								<span>Subtotal</span>
 								<div class="input-group">
-									<input type="text" id="subtotal" readonly class="form-control">
+									<input type="text" id="subtotal" readonly value="<?php echo $subtotal?>" class="form-control">
 								</div>
 							</div>
 							<div class="form-group pull-right">
 								<span>Potongan</span>
 								<div class="input-group">
-									<input type="text" id="discount" onkeyup="return hitung_all()" class="form-control money" >
+									<input type="text" id="discount" onkeyup="return hitung_all()" value="<?php echo $discount?>" readonly class="form-control money" >
 								</div>
 							</div>
 							<div class="form-group pull-right">
 								<span>Total</span>
 								<div class="input-group">
-									<input type="text" id="total" readonly class="form-control">
+									<input type="text" id="total" readonly value="<?php echo $jumlah_bayar?>" class="form-control">
 								</div>
 							</div>
 						</div>
@@ -1300,7 +1311,9 @@
 		</div>
 	  </div>
 	</div>
+	<?php }?>
 </div>
+	
 <?php $this->load->view('footer');?>
 <script>
 	function curency(x=''){
@@ -1436,13 +1449,19 @@
 		if($('#metode_pembayaran').val() != "cash" && $('#tujuan_transfer').val() == ""){
 			alert("Silahkan pilih tujuan pembayaran !");
 			return false;
+		}else if($('#id_pelanggan').val() == ''){
+			alert("Silahkan Masukan Pelanggan !");
+			return false;
+		}else if($('#top').val() == ''){
+			alert("Silahkan Masukan Term Of Payment !");
+			return false;
+		}else if($('#tanggal_invoice').val() == ''){
+			alert("Silahkan Masukan Tanggal Invoice !");
+			return false;
 		}
 		
 		if($('#invoice_status').val() == 1){
 			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan & Cetak Invoice</span>';
-		}else if($('#id_pelanggan').val() == ''){
-			alert("Silahkan Masukan Pelanggan !");
-			return false;
 		}
 		
 		for(i=1;i<=counter;i++){
@@ -1462,9 +1481,10 @@
 		}
 		if(transaksi.length > 0){
 			$.ajax({
-				url: '<?php echo base_url()?>index.php/transaksi/save',
+				url: '<?php echo base_url()?>index.php/transaksi/save_invoice',
 				type: "POST",
 				data: {
+					id_transaksi		: $('#id_transaksi').val(),
 					tipe_transaksi		: $('#tipe_transaksi').val(),
 					discount			: $('#discount').val(),
 					id_pelanggan		: $('#id_pelanggan').val(),
@@ -1500,7 +1520,7 @@
 								alert('Transaksi berhasil');
 								$('#invoice_status').val(0);
 								window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
-								location.replace('<?php echo base_url()?>index.php/transaksi/create_order');
+								location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
 							  
 							}
 						});
@@ -1509,7 +1529,7 @@
 					}else{
 						alert('Transaksi berhasil !');
 						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
-						location.replace('<?php echo base_url()?>index.php/transaksi/create_order');
+						location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
 					}
 					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';
 				}

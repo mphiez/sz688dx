@@ -1436,6 +1436,15 @@
 		if($('#metode_pembayaran').val() != "cash" && $('#tujuan_transfer').val() == ""){
 			alert("Silahkan pilih tujuan pembayaran !");
 			return false;
+		}else if($('#id_pelanggan').val() == ''){
+			alert("Silahkan Masukan Pelanggan !");
+			return false;
+		}else if($('#top').val() == ''){
+			alert("Silahkan Masukan Term Of Payment !");
+			return false;
+		}else if($('#tanggal_invoice').val() == ''){
+			alert("Silahkan Masukan Tanggal Invoice !");
+			return false;
 		}
 		
 		if($('#invoice_status').val() == 1){

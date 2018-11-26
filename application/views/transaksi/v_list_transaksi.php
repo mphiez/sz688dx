@@ -206,8 +206,69 @@
 		  <div class="modal-body" style="max-height:400px">
 			<div class="row">
 				<div class="col-md-12">
-					<div class="form-group">
-						<>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Nama Customer :</label>
+							<div>
+								<span id="cust_name"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>ID Customer :</label>
+							<div>
+								<span id="cust_id"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Tanggal Transaksi :</label>
+							<div>
+								<span id="tanggal_transaksi"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Jumlah Transaksi :</label>
+							<div>
+								<span ><h3 id="jumlah_transaksi"></h3></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Status Transaksi :</label>
+							<div>
+								<span id="status_transaksi"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Nomor Invoice :</label>
+							<div>
+								<span id="nomor_invoice"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Lampiran :</label>
+							<div>
+								<span id="lampiran"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Pesan :</label>
+							<div>
+								<span id="pesan"></span>
+							</div>
+						</div>
 					</div>
 				</div>
 				<div class="col-md-12">
@@ -413,13 +474,13 @@ function load(){
 									'</li>'+
 									'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#">'+
+										'<a href="#" onclick="return create_invoice(&#39;'+row.id_inv+'&#39;,1)">'+
 											'Buat Invoice'+
 										'</a>'+
 									'</li>'+
 									'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#">'+
+										'<a href="#"  onclick="return create_invoice(&#39;'+row.id_inv+'&#39;,2)">'+
 											'Buat Invoice & kirim Email'+
 										'</a>'+
 									'</li>';
@@ -468,6 +529,35 @@ function load(){
 }
 
 function detail(x){
+	$('#cust_name').text('');
+	$('#cust_name').text('');
+	$('#tanggal_transaksi').text('');
+	$('#jumlah_transaksi').text('');
+	$('#status_transaksi').text('');
+	$('#nomor_invoice').text('');
+	$('#lampiran').text('');
+	$('#pesan').text('');
+	$.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/detail_transaksi_header',
+		type: "POST",
+		data: {
+			id 				: x,
+		},
+		success: function(datax) {
+			var datax = JSON.parse(datax);
+			if(datax.code == 0){
+				$('#cust_name').text(datax.data.nama_pelanggan);
+				$('#cust_name').text(datax.data.id_pelanggan);
+				$('#tanggal_transaksi').text(datax.data.tanggal_transaksi);
+				$('#jumlah_transaksi').text("Rp. "+datax.data.jumlah_bayar);
+				$('#status_transaksi').text(datax.data.status);
+				$('#nomor_invoice').text(datax.data.nomor_invoice);
+				$('#lampiran').text(datax.data.lampiran);
+				$('#pesan').text(datax.data.pesan);
+			}
+		}
+	});
+	
 	$("#detail_table").dataTable({
 		"processing": true,
 		"scrollX":true,
@@ -507,6 +597,16 @@ function change_status(id, cus, ref, stat){
 	$('#modal-ubah-status').modal();
 }
 
+function create_invoice(id, mode){
+	
+	//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+id+'&mode='+mode);
+	/* setTimeout(function() {
+		load();
+	}, 2000); */
+	
+	location.replace('<?php echo base_url()?>index.php/transaksi/buat_invoice?inv='+id+'&mode='+mode);
+}
+
 function do_change(){
 	$.ajax({
 		url: '<?php echo base_url()?>index.php/transaksi/change_status',
@@ -529,6 +629,7 @@ function do_change(){
 }
 
 function detail_customer(x){
+	
 	$("#detail_table").dataTable({
 		"processing": true,
 		"scrollX":true,
