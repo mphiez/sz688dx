@@ -1,4 +1,16 @@
 <?php $this->load->view('header');?>
+	<style>
+		.huge{
+			font-size:18px;
+		}
+		
+		
+		.dropdown-menu
+		{
+			position:absolute;
+			z-index:4000 !important
+		}
+	</style>
    <div id="page-wrapper">
 		<div class="row">
 			<div class="col-lg-12">
@@ -30,7 +42,7 @@
 							</li>
 							<li class="divider"></li>
 							<li>
-								<a href="#">
+								<a href="<?php echo base_url()?>index.php/transaksi/buat_pembayaran">
 									Pembayaran
 								</a>
 							</li>
@@ -42,20 +54,20 @@
 			<!-- /.col-lg-12 -->
 		</div>
 		<div class="row">
-			<div class="col-lg-3 col-md-6">
+			<div class="col-lg-2 col-md-6">
 				<div class="panel panel-primary">
 					<div class="panel-heading">
 						<div class="row">
 							<div class="col-xs-3">
-								<i class="fa fa-comments fa-5x"></i>
+								<i class="fa fa-list fa-3x"></i>
 							</div>
 							<div class="col-xs-9 text-right">
-								<div class="huge">26</div>
-								<div>New Comments!</div>
+								<div class="huge"  id="all">0</div>
+								<div>Semua Penjualan</div>
 							</div>
 						</div>
 					</div>
-					<a href="#">
+					<a href="#" onclick="return load('','')">
 						<div class="panel-footer">
 							<span class="pull-left">View Details</span>
 							<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -64,20 +76,20 @@
 					</a>
 				</div>
 			</div>
-			<div class="col-lg-3 col-md-6">
-				<div class="panel panel-green">
+			<div class="col-lg-2 col-md-6">
+				<div class="panel panel-success">
 					<div class="panel-heading">
 						<div class="row">
 							<div class="col-xs-3">
-								<i class="fa fa-tasks fa-5x"></i>
+								<i class="fa fa-check fa-3x"></i>
 							</div>
 							<div class="col-xs-9 text-right">
-								<div class="huge">12</div>
-								<div>New Tasks!</div>
+								<div class="huge" id="paid">0</div>
+								<div>Sudah Dibayar</div>
 							</div>
 						</div>
 					</div>
-					<a href="#">
+					<a href="#" onclick="return load('','0')">
 						<div class="panel-footer">
 							<span class="pull-left">View Details</span>
 							<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -86,20 +98,20 @@
 					</a>
 				</div>
 			</div>
-			<div class="col-lg-3 col-md-6">
+			<div class="col-lg-2 col-md-6">
 				<div class="panel panel-yellow">
 					<div class="panel-heading">
 						<div class="row">
 							<div class="col-xs-3">
-								<i class="fa fa-shopping-cart fa-5x"></i>
+								<i class="fa fa-file fa-3x"></i>
 							</div>
 							<div class="col-xs-9 text-right">
-								<div class="huge">124</div>
-								<div>New Orders!</div>
+								<div class="huge" id="invoice">0</div>
+								<div>Dalam Penagihan</div>
 							</div>
 						</div>
 					</div>
-					<a href="#">
+					<a href="#" onclick="return load('','1')">
 						<div class="panel-footer">
 							<span class="pull-left">View Details</span>
 							<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -108,20 +120,64 @@
 					</a>
 				</div>
 			</div>
-			<div class="col-lg-3 col-md-6">
+			<div class="col-lg-2 col-md-6">
+				<div class="panel panel-green">
+					<div class="panel-heading">
+						<div class="row">
+							<div class="col-xs-3">
+								<i class="fa fa-tasks fa-3x"></i>
+							</div>
+							<div class="col-xs-9 text-right">
+								<div class="huge" id="terminate">0</div>
+								<div>Order Diterima</div>
+							</div>
+						</div>
+					</div>
+					<a href="#" onclick="return load('','2')">
+						<div class="panel-footer">
+							<span class="pull-left">View Details</span>
+							<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+							<div class="clearfix"></div>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="col-lg-2 col-md-6">
+				<div class="panel panel-info">
+					<div class="panel-heading">
+						<div class="row">
+							<div class="col-xs-3">
+								<i class="fa fa-shopping-cart fa-3x"></i>
+							</div>
+							<div class="col-xs-9 text-right">
+								<div class="huge" id="sales_order"></div>
+								<div>Order Penjualan</div>
+							</div>
+						</div>
+					</div>
+					<a href="#" onclick="return load('','3')">
+						<div class="panel-footer">
+							<span class="pull-left">View Details</span>
+							<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+							<div class="clearfix"></div>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="col-lg-2 col-md-6">
 				<div class="panel panel-red">
 					<div class="panel-heading">
 						<div class="row">
 							<div class="col-xs-3">
-								<i class="fa fa-support fa-5x"></i>
+								<i class="fa fa-close fa-3x"></i>
 							</div>
 							<div class="col-xs-9 text-right">
-								<div class="huge">13</div>
-								<div>Support Tickets!</div>
+								<div class="huge" id="reject">0</div>
+								<div>Order Dibatalkan</div>
 							</div>
 						</div>
 					</div>
-					<a href="#">
+					<a href="#" onclick="return load('','4')">
 						<div class="panel-footer">
 							<span class="pull-left">View Details</span>
 							<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -136,7 +192,8 @@
 				
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						Semua Penjualan 
+						Penjualan <span id="range">Dalam Satu Tahun Terakhir</span>
+						<input type="hidden" id="range_type" value="Y">
 						<ul class="navbar-right" style="float:right;margin-right: 0px;list-style: none;">
 							<li class="dropdown">
 								<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;margin-top:15px;">
@@ -144,25 +201,31 @@
 								</a>
 								<ul class="dropdown-menu dropdown-messages">
 									<li>
-										<a href="#">
+										<a href="#" onclick="return load('D')">
+											Hari Ini
+										</a>
+									</li>
+									<li class="divider"></li>
+									<li>
+										<a href="#" onclick="return load('W')">
 											Satu Minggu Terakhir
 										</a>
 									</li>
 									<li class="divider"></li>
 									<li>
-										<a href="#">
+										<a href="#" onclick="return load('M')">
 											Satu Bulan Terakhir
 										</a>
 									</li>
 									<li class="divider"></li>
 									<li>
-										<a href="<?php echo base_url()?>index.php/transaksi/input">
+										<a href="#"  onclick="return load('M2')"">
 											Dua Bulan Terakhir
 										</a>
 									</li>
 									<li class="divider"></li>
 									<li>
-										<a href="#">
+										<a href="#"  onclick="return load('Y')">
 											Satu Tahun Terakhir
 										</a>
 									</li>
@@ -187,7 +250,7 @@
 							  <th>Status/Action</th>
 							</tr>
 						</thead>
-						<tbody id=>
+						<tbody>
 							
 						</tbody>
 					  </table>
@@ -312,8 +375,9 @@
 			<div class="row">
 				<div class="col-md-12">
 					<div class="form-group">
-						<label>Nomor Order</label>
-						<input type="text" id="id_order" value="" class="form-control" readonly>
+						<label>Nomor Transaksi</label>
+						<input type="text" id="nomor_transaksi" value="" class="form-control" readonly>
+						<input type="hidden" id="id_order" value="" class="form-control" readonly>
 					</div>
 					<div class="form-group">
 						<label>Nama Pelanggan</label>
@@ -345,16 +409,68 @@
 <script src="<?=base_url()?>plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="<?=base_url()?>plugins/datatables/dataTables.bootstrap.min.js"></script>
 <script>
-load();
+load('Y');
 $(".chosen-select").chosen({no_results_text: "Tidak Ditemukan", width: "100%"}); 
-function load(){	
+
+$.ajax({
+	url: '<?php echo base_url()?>index.php/transaksi/load_list_sum',
+	type: "POST",
+	data: {
+		range:$('#range_type').val(),status:status
+	},
+	success: function(datax) {
+		var datax = JSON.parse(datax);
+		$('#all').text('0');
+		$('#paid').text('0');
+		$('#invoice').text('0');
+		$('#terminate').text('0');
+		$('#sales_order').text('0');
+		$('#reject').text('0');
+		if(datax.code == 0){
+			$.each(datax.data,function(i, item){
+				if(item.status=='all'){
+					$('#all').text(item.total);
+				}else if(item.status=='0'){
+					$('#paid').text(item.total);
+				}else if(item.status=='1'){
+					$('#invoice').text(item.total);
+				}else if(item.status=='2'){
+					$('#terminate').text(item.total);
+				}else if(item.status=='3'){
+					$('#sales_order').text(item.total);
+				}else if(item.status=='4'){
+					$('#reject').text(item.total);
+				}
+			});
+		}
+	}
+});
+function load(x='', status=''){
+	if(x == 'W'){
+		$('#range_type').val(x);
+		$('#range').text('Dalam Satu Minggu Terakhir');
+	}else if(x == 'M'){
+		$('#range_type').val(x);
+		$('#range').text('Dalam Satu Bulan Terakhir');
+	}else if(x == 'M2'){
+		$('#range_type').val(x);
+		$('#range').text('Dalam Dua Bulan Terakhir');
+	}else if(x == 'Y'){
+		$('#range_type').val(x);
+		$('#range').text('Dalam Satu Tahun Terakhir');
+	}else if(x == 'D'){
+		$('#range_type').val(x);
+		$('#range').text('Hari Ini');
+	}
+	
+	
 	$("#example").dataTable({
 			"processing": true,
 			"scrollX":true,
 			"ajax": {
 				"url": "<?php echo base_url()?>index.php/transaksi/load_list",
 				"type": "POST",
-				data: {},
+				data: {range:$('#range_type').val(),status:status},
 			},
 			"destroy": true,
 			"oLanguage": {
@@ -363,7 +479,7 @@ function load(){
 			"aoColumns": [
 				{
 					render: function (data, type, row, meta) {
-						var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">'+
+						var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
 							'<li class="dropdown">'+
 								'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
 									' <i style="color:black;" class="fa fa-caret-down"></i> '+
@@ -421,20 +537,25 @@ function load(){
 				{
 					render: function (data, type, row, meta) {
 						if(row.status == 0){
-							var inv = '<a href="#" style="color:blue;">Print</a><ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">';
+							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
+							var sts = "Paid";
 						}else if(row.status == 1){
-							var inv = '<a href="#" style="color:orange;">Bayar</a><ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">';
+							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
+							var sts = "Invoice";
 						}else if(row.status == 2){
-							var inv = '<a href="#" style="color:green;">Invoice</a><ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">';
+							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
+							var sts = "Terminate";
 						}else if(row.status == 3){
-							var inv = '<a href="#" style="color:purple;" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+row.status+'&#39;)">Waiting</a><ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">';
+							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
+							var sts = "Sales Order";
 						}else if(row.status == 4){
-							var inv = '<a href="#" style="color:red;" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+row.status+'&#39;)">Reject</a><ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">';
+							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
+							var sts = "Reject";
 						}
 							
 							inv = inv+'<li class="dropdown">'+
 								'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
-									' <i style="color:green;" class="fa fa-caret-down"></i> '+
+									'<span class="pull-left">'+sts+'</span> <i style="color:green;" class="fa fa-caret-down pull-right"></i> '+
 								'</a>'+
 								'<ul class="dropdown-menu dropdown-messages">'+
 									'<li>'+
@@ -459,7 +580,7 @@ function load(){
 									'</li>'+
 									'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#">'+
+										'<a href="<?php echo base_url()?>index.php/transaksi/buat_pembayaran?id='+row.id_pelanggan_dec+'">'+
 											'Buat Pembayaran'+
 										'</a>'+
 									'</li>';
@@ -495,7 +616,7 @@ function load(){
 									'</li>'+
 									'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+row.status+'&#39;)">'+
+										'<a href="#" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+row.status+'&#39;,&#39;'+row.nomor_transaksi+'&#39;)">'+
 											'Ubah status'+
 										'</a>'+
 									'</li>';
@@ -510,7 +631,7 @@ function load(){
 									'</li>'+
 									'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+row.status+'&#39;)">'+
+										'<a href="#" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+row.status+'&#39;,&#39;'+row.nomor_transaksi+'&#39;)">'+
 											'Ubah status'+
 										'</a>'+
 									'</li>';
@@ -588,11 +709,12 @@ function detail(x){
 	$('#modal-detail').modal();
 }
 
-function change_status(id, cus, ref, stat){
+function change_status(id, cus, ref, stat, nomor_transaksi){
 	$('#id_order').val(id);
 	$('#nama_pelanggan').val(cus);
 	$('#no_ref').val(ref);
 	$('#status').val(stat);
+	$('#nomor_transaksi').val(nomor_transaksi);
 	$("#status").trigger("chosen:updated");
 	$('#modal-ubah-status').modal();
 }

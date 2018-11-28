@@ -71,6 +71,52 @@
 			}
 		}
 		
+		public function search_invoice($search=null){
+			$perusahaan = $this->session->userdata('perusahaan');
+			$cabang = $this->session->userdata('pn_wilayah');
+			$where = "";
+			if($search){
+				$where = "and upper(a.nomor_invoice) like '%".strtoupper($search)."%'";
+			}
+			$query 	= "
+			SELECT
+				a.*, a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan
+			FROM
+				dk_transaksi a
+			left join dk_pembayaran b on a.nomor_transaksi = b.nomor_transaksi
+			where a.perusahaan='$perusahaan' and a.cabang='$cabang' and a.status='1' $where 
+			GROUP BY a.nomor_transaksi order by SUBSTR(a.nomor_invoice,4) *1 limit 0,10";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return 0;
+			}
+		}
+		
+		public function search_transaksi($search=null){
+			$perusahaan = $this->session->userdata('perusahaan');
+			$cabang = $this->session->userdata('pn_wilayah');
+			$where = "";
+			if($search){
+				$where = "and upper(a.nomor_transaksi) like '%".strtoupper($search)."%'";
+			}
+			$query 	= "
+			SELECT
+				a.*, a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan
+			FROM
+				dk_transaksi a
+			left join dk_pembayaran b on a.nomor_transaksi = b.nomor_transaksi
+			where a.perusahaan='$perusahaan' and a.cabang='$cabang' and a.status='1' $where 
+			GROUP BY a.nomor_transaksi order by SUBSTR(a.nomor_invoice,4) *1 limit 0,10";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return 0;
+			}
+		}
+		
 		public function account_list($pembiayaan=false){
 			$where ="";
 			if($pembiayaan){
@@ -87,11 +133,88 @@
 			}
 		}
 		
-		public function load_list(){
+		public function load_list($range=null,$status=null){
+			$date ="";
+			if($range == "D"){
+				$date = "and SUBSTR(tanggal_transaksi,1,10) = '".date("Y-m-d")."'";
+			}else if($range == "W"){
+				$time = date("Y-m-d",strtotime('monday this week'));
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}else if($range == "M"){
+				$time = date("Y-m")."-01";
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}else if($range == "M2"){
+				$time = date("Y-m-01",strtotime("-1 month",strtotime(date("Y-m-d"))));
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}else if($range == "M2"){
+				$time = date("Y")."-01-01";
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}
+			
+			$sts = "";
+			if($status != ''){
+				if($status == 0){
+					$sts = "and status='0'";
+				}else if($status == 1){
+					$sts = "and status='1'";
+				}else if($status == 2){
+					$sts = "and status='2'";
+				}else if($status == 3){
+					$sts = "and status='3'";
+				}else if($status == 4){
+					$sts = "and status='4'";
+				}
+			}
+			
 			$perusahaan = $this->session->userdata('perusahaan');
 			$cabang = $this->session->userdata('pn_wilayah');
 			$admin = cek_admin();
-			$query 	= "select *, md5(id) as id_inv from dk_transaksi where perusahaan='$perusahaan' $admin order by tanggal_transaksi desc";
+			$query 	= "select *, md5(id) as id_inv, md5(id_pelanggan) as id_pelanggan_dec from dk_transaksi where perusahaan='$perusahaan' $date $sts $admin order by tanggal_transaksi desc";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return 0;
+			}
+		}
+		
+		public function load_list_sum($range=null,$status=null){
+			$date ="";
+			if($range == "D"){
+				$date = "and SUBSTR(tanggal_transaksi,1,10) = '".date("Y-m-d")."'";
+			}else if($range == "W"){
+				$time = date("Y-m-d",strtotime('monday this week'));
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}else if($range == "M"){
+				$time = date("Y-m")."-01";
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}else if($range == "M2"){
+				$time = date("Y-m-01",strtotime("-1 month",strtotime(date("Y-m-d"))));
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}else if($range == "M2"){
+				$time = date("Y")."-01-01";
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}
+			
+			$sts = "";
+			if($status != ''){
+				if($status == 0){
+					$sts = "and status='0'";
+				}else if($status == 1){
+					$sts = "and status='1'";
+				}else if($status == 2){
+					$sts = "and status='2'";
+				}else if($status == 3){
+					$sts = "and status='3'";
+				}else if($status == 4){
+					$sts = "and status='4'";
+				}
+			}
+			
+			$perusahaan = $this->session->userdata('perusahaan');
+			$cabang = $this->session->userdata('pn_wilayah');
+			$admin = cek_admin();
+			$query 	= "select status, count(*) as total from dk_transaksi where perusahaan='$perusahaan' $date $sts $admin group by status";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				return $q->result();
@@ -132,146 +255,164 @@
 			//1 invoice -> bayar
 			//2 sales order estimate (accepted) -> create invoice
 			//3 sales order estimate (pending)  -> waiting
-			$inv_no = "";
-			$tipe_transaksi = $this->input->post('tipe_transaksi');
-			if($tipe_transaksi == 0){
-				$tgl_inv = date("Y-m-d");
-				$sts = 0;
-			}else if($tipe_transaksi == 1){
-				$tgl_inv = date("Y-m-d", strtotime($this->input->post('tanggal_invoice')));
-				$sts = 1;
-				$inv_no = counter('c_inv');
-				add_counter('c_inv');
-			}else if($tipe_transaksi == 2){
-				$tgl_inv = "";
-				$sts = 3;
+			
+			if($this->input->post('nomor_transaksi') == ''){
+				$nomor_transaksi = counter('c_sales');
+			}else{
+				$nomor_transaksi = $this->input->post('nomor_transaksi');
+				
 			}
 			
-			$nm_pelanggan = $this->input->post('nama_pelanggan');
-			if($nm_pelanggan != ''){
-				$nm = explode(' - ',$nm_pelanggan);
-				if(count($nm) > 1){
-					$nm_pelanggan = $nm[1];
+			$query 	= "select nomor_transaksi from dk_transaksi where perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' and nomor_transaksi = '".$nomor_transaksi."'";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return '-1';
+			}else{
+				$inv_no = "";
+				$tipe_transaksi = $this->input->post('tipe_transaksi');
+				if($tipe_transaksi == 0){
+					$tgl_inv = date("Y-m-d");
+					$sts = 0;
+				}else if($tipe_transaksi == 1){
+					$tgl_inv = date("Y-m-d", strtotime($this->input->post('tanggal_invoice')));
+					$sts = 1;
+					$inv_no = counter('c_inv');
+					add_counter('c_inv');
+				}else if($tipe_transaksi == 2){
+					$tgl_inv = "";
+					$sts = 3;
 				}
-			}
-			
-			$data1 = array(
-						'discount'			=> str_replace(',','',$this->input->post('discount')),
-						'nama_pelanggan'	=> $nm_pelanggan,
-						'id_pelanggan'		=> $this->input->post('id_pelanggan'),
-						'email'				=> $this->input->post('email_pelanggan'),
-						'no_ref'			=> $this->input->post('no_referensi'),
-						'alamat_tagih'		=> $this->input->post('alamat_penagihan'),
-						'nomor_transaksi'	=> $this->input->post('nomor_transaksi'),
-						'metode_pembayaran' => $this->input->post('metode_pembayaran'),
+				
+				$nm_pelanggan = $this->input->post('nama_pelanggan');
+				if($nm_pelanggan != ''){
+					$nm = explode(' - ',$nm_pelanggan);
+					if(count($nm) > 1){
+						$nm_pelanggan = $nm[1];
+					}
+				}
+				add_counter('c_sales');
+				
+				$data1 = array(
+							'discount'			=> str_replace(',','',$this->input->post('discount')),
+							'nama_pelanggan'	=> $nm_pelanggan,
+							'id_pelanggan'		=> $this->input->post('id_pelanggan'),
+							'email'				=> $this->input->post('email_pelanggan'),
+							'no_ref'			=> $this->input->post('no_referensi'),
+							'alamat_tagih'		=> $this->input->post('alamat_penagihan'),
+							'nomor_transaksi'	=> $nomor_transaksi,
+							'metode_pembayaran' => $this->input->post('metode_pembayaran'),
+							'user'				=> $this->session->userdata('pn_id'),
+							'cabang'			=> $this->session->userdata('pn_wilayah'),
+							'perusahaan'		=> $this->session->userdata('perusahaan'),
+							'akun_tujuan'		=> $this->input->post('tujuan'),
+							'nomor_faktur'		=> $this->input->post('nomor_faktur'),
+							'pesan'				=> $this->input->post('pesan'),
+							'top'				=> $this->input->post('top'),
+							'tanggal_invoice'	=> $tgl_inv,
+							'nomor_invoice'		=> $inv_no,
+							'tanggal_transaksi'	=> date('Y-m-d H:i:s'),
+							'status'			=> $sts,
+						);
+				$this->db->insert('dk_transaksi',$data1);
+				$id_ref = $this->db->insert_id();
+				
+				
+				$transaksi = $this->input->post('transaksi');
+				$sub = 0;
+				$ppn = 0;
+				$item = 0;
+				foreach($transaksi as $row){
+					$nm_produk = explode(' - ',$row['nama_produk']);
+					$data = array(
+						'nama_produk'		=> $nm_produk[1],
+						'id_produk'			=> $row['id_produk'],
+						'deskripsi'			=> $row['deskripsi'],
+						'kuantitas'			=> $row['kuantitas'],
+						'satuan'			=> $row['satuan'],
+						'harga_satuan'		=> $row['harga_satuan_dec'],
+						'pajak'				=> round(($row['pajak']/100)*$row['kuantitas']*$row['harga_satuan_dec']),
+						'jumlah'			=> $row['jumlah_dec'],
+						'id_ref'			=> $id_ref,
 						'user'				=> $this->session->userdata('pn_id'),
 						'cabang'			=> $this->session->userdata('pn_wilayah'),
 						'perusahaan'		=> $this->session->userdata('perusahaan'),
-						'akun_tujuan'		=> $this->input->post('tujuan'),
-						'nomor_faktur'		=> $this->input->post('nomor_faktur'),
-						'pesan'				=> $this->input->post('pesan'),
-						'top'				=> $this->input->post('top'),
-						'tanggal_invoice'	=> $tgl_inv,
-						'nomor_invoice'		=> $inv_no,
 						'tanggal_transaksi'	=> date('Y-m-d H:i:s'),
-						'status'			=> $sts,
+						'status'			=> 0,
 					);
-			$this->db->insert('dk_transaksi',$data1);
-			$id_ref = $this->db->insert_id();
-			
-			
-			$transaksi = $this->input->post('transaksi');
-			$sub = 0;
-			$ppn = 0;
-			$item = 0;
-			foreach($transaksi as $row){
-				$nm_produk = explode(' - ',$row['nama_produk']);
-				$data = array(
-					'nama_produk'		=> $nm_produk[1],
-					'id_produk'			=> $row['id_produk'],
-					'deskripsi'			=> $row['deskripsi'],
-					'kuantitas'			=> $row['kuantitas'],
-					'satuan'			=> $row['satuan'],
-					'harga_satuan'		=> $row['harga_satuan_dec'],
-					'pajak'				=> round(($row['pajak']/100)*$row['kuantitas']*$row['harga_satuan_dec']),
-					'jumlah'			=> $row['jumlah_dec'],
-					'id_ref'			=> $id_ref,
-					'user'				=> $this->session->userdata('pn_id'),
-					'cabang'			=> $this->session->userdata('pn_wilayah'),
-					'perusahaan'		=> $this->session->userdata('perusahaan'),
-					'tanggal_transaksi'	=> date('Y-m-d H:i:s'),
-					'status'			=> 0,
-				);
-				$sub += $row['jumlah_dec'];
-				$ppn += $row['pajak'];
-				$item++;
-				$this->db->insert('dk_transaksi_detail',$data);
-			}
-			
-			$data2 = array(
-						'jumlah_bayar' => ($jumlah_bayar = $sub-(str_replace(',','',$this->input->post('discount')))),
-						'jumlah_item' => $item,
-						'jumlah_pajak' => $ppn,
-						'sub_total' => $sub,
-					);
-			$this->db->where('id',$id_ref);
-			$this->db->update('dk_transaksi',$data2);
-			
-			
-			if($tipe_transaksi != 2 || $tipe_transaksi != 3){
-			
-				$invoice = $this->input->post('tanggal_invoice');
-				
-				$ak_cred = '4-1110';//revenue - penjualan
-				$ak_deb = '1-1111';//kas
-				
-				if($this->input->post('tujuan') != ''){
-					$ak_deb = $this->input->post('tujuan');
+					$sub += $row['jumlah_dec'];
+					$ppn += $row['pajak'];
+					$item++;
+					$this->db->insert('dk_transaksi_detail',$data);
 				}
 				
-				if($tipe_transaksi == 1){
+				$data2 = array(
+							'jumlah_bayar' => ($jumlah_bayar = $sub-(str_replace(',','',$this->input->post('discount')))),
+							'jumlah_item' => $item,
+							'jumlah_pajak' => $ppn,
+							'sub_total' => $sub,
+						);
+				$this->db->where('id',$id_ref);
+				$this->db->update('dk_transaksi',$data2);
+				
+				
+				if($tipe_transaksi != 2 || $tipe_transaksi != 3){
+				
+					$invoice = $this->input->post('tanggal_invoice');
+					
 					$ak_cred = '4-1110';//revenue - penjualan
-					$ak_deb = '1-1320';//piutang usaha - penjualan
+					$ak_deb = '1-1111';//kas
+					
+					if($this->input->post('tujuan') != ''){
+						$ak_deb = $this->input->post('tujuan');
+					}
+					
+					if($tipe_transaksi == 1){
+						$ak_cred = '4-1110';//revenue - penjualan
+						$ak_deb = '1-1320';//piutang usaha - penjualan
+					}
+					
+					$debit = array(
+									'no_akun_debit'		=> $ak_deb,
+									'nama_akun_debit'	=> account_name($ak_deb),
+									'no_akun_credit'	=> $ak_cred,
+									'nama_akun_credit'	=> account_name($ak_cred),
+									'tanggal'			=> date('Y-m-d H:i:s'),
+									'no_bukti'			=> $nomor_transaksi,
+									'keterangan'		=> 'Penjualan',
+									'type'				=> 'Debit',
+									'jumlah_debit'		=> $jumlah_bayar,
+									'jumlah_credit'		=> $jumlah_bayar,
+									'user'				=> $this->session->userdata('pn_id'),
+									'cabang'			=> $this->session->userdata('pn_wilayah'),
+									'perusahaan'		=> $this->session->userdata('perusahaan'),
+									'create_date'		=> date("Y-m-d H:i:s"),
+									'status'			=> 0,
+									'no_ref'			=> $id_ref,
+								);
+					$this->db->insert('dk_jurnal',$debit);
 				}
 				
-				$debit = array(
-								'no_akun_debit'		=> $ak_deb,
-								'nama_akun_debit'	=> account_name($ak_deb),
-								'no_akun_credit'	=> $ak_cred,
-								'nama_akun_credit'	=> account_name($ak_cred),
-								'tanggal'			=> date('Y-m-d H:i:s'),
-								'no_bukti'			=> $this->input->post('nomor_transaksi'),
-								'keterangan'		=> 'Penjualan',
-								'type'				=> 'Debit',
-								'jumlah_debit'		=> $jumlah_bayar,
-								'jumlah_credit'		=> $jumlah_bayar,
-								'user'				=> $this->session->userdata('pn_id'),
-								'cabang'			=> $this->session->userdata('pn_wilayah'),
-								'perusahaan'		=> $this->session->userdata('perusahaan'),
-								'create_date'		=> date("Y-m-d H:i:s"),
-								'status'			=> 0,
-								'no_ref'			=> $id_ref,
-							);
-				$this->db->insert('dk_jurnal',$debit);
-			}
+				if($tipe_transaksi == 0){
+					$data = array(
+									'jumlah_bayar'			=> $jumlah_bayar,
+									'id_customer'			=> $this->input->post('id_pelanggan'),
+									'ref_transaksi'			=> $id_ref,
+									'metode_pembayaran'		=> 'Cash',
+									'tanggal_bayar'			=> date('Y-m-d'),
+									'referensi_pembayaran'	=> $this->input->post('no_referensi'),
+									'nomor_transaksi'		=> $nomor_transaksi,
+									'debit'					=> $ak_deb,
+									'nm_debit'				=> account_name($ak_deb),
+									'credit'				=> $ak_cred,
+									'nm_credit'				=> account_name($ak_cred),
+									'create_date'			=> date("Y-m-d H:i:s"),
+									'user'					=> $this->session->userdata('pn_id'),
+									'cabang'				=> $this->session->userdata('pn_wilayah'),
+									'perusahaan'			=> $this->session->userdata('perusahaan'),
+								);
+					$this->db->insert('dk_pembayaran',$data);
+				}
 			
-			if($tipe_transaksi == 0){
-				$data = array(
-								'id_customer'			=> $this->input->post('id_pelanggan'),
-								'ref_transaksi'			=> $id_ref,
-								'metode_pembayaran'		=> 'Cash',
-								'tanggal_bayar'			=> date('Y-m-d'),
-								'referensi_pembayaran'	=> $this->input->post('no_referensi'),
-								'debit'					=> $ak_deb,
-								'nm_debit'				=> account_name($ak_deb),
-								'credit'				=> $ak_cred,
-								'nm_credit'				=> account_name($ak_cred),
-								'create_date'			=> date("Y-m-d H:i:s"),
-								'user'					=> $this->session->userdata('pn_id'),
-								'cabang'				=> $this->session->userdata('pn_wilayah'),
-								'perusahaan'			=> $this->session->userdata('perusahaan'),
-							);
-				$this->db->insert('dk_pembayaran',$data);
 			}
 			
 			if ($this->db->trans_status() === FALSE)
@@ -283,6 +424,74 @@
 				return $id_ref;
 			}
 		}
+		
+		function save_bayar(){
+			$this->db->trans_begin();
+			$transaksi = $this->input->post('transaksi');
+			$id_temp="";
+			
+			foreach($transaksi as $row){
+				if($this->input->post('metode_pembayaran') == 'cash'){
+					$row['nm_debit'] = '1-1111';
+				}
+				$data = array(
+								'pesan'					=> $this->input->post('pesan'),
+								'jumlah_bayar'			=> str_replace(',','',$row['bayar']),
+								'id_customer'			=> $row['id_customer'],
+								'ref_transaksi'			=> "",
+								'metode_pembayaran'		=> $this->input->post('metode_pembayaran'),
+								'tanggal_bayar'			=> date("Y-m-d",strtotime($this->input->post('tanggal_bayar'))),
+								'referensi_pembayaran'	=> $row['referensi_pembayaran'],
+								'nomor_transaksi'		=> $row['nomor_transaksi'],
+								'debit'					=> $row['nm_debit'],
+								'nm_debit'				=> account_name($row['nm_debit']),
+								'credit'				=> '1-1320',
+								'nm_credit'				=> account_name('1-1320'),
+								'create_date'			=> date("Y-m-d H:i:s"),
+								'user'					=> $this->session->userdata('pn_id'),
+								'cabang'				=> $this->session->userdata('pn_wilayah'),
+								'perusahaan'			=> $this->session->userdata('perusahaan'),
+							);
+				$this->db->insert('dk_pembayaran',$data);
+				$id = $this->db->insert_id();
+				$id_temp .= $id."%";
+				
+				if(str_replace(',','',$row['bayar']) >= str_replace(',','',$row['total'])){
+					$this->db->query("update dk_transaksi set status='0' where nomor_transaksi='".$row['nomor_transaksi']."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."'");
+				}
+				
+				
+				$debit = array(
+								'no_akun_debit'		=> $row['nm_debit'],
+								'nama_akun_debit'	=> account_name($row['nm_debit']),
+								'no_akun_credit'	=> '1-1320',
+								'nama_akun_credit'	=> account_name('1-1320'),
+								'tanggal'			=> date('Y-m-d H:i:s'),
+								'no_bukti'			=> $row['nomor_transaksi'],
+								'keterangan'		=> 'Penjualan',
+								'type'				=> 'Debit',
+								'jumlah_debit'		=> str_replace(',','',$row['bayar']),
+								'jumlah_credit'		=> str_replace(',','',$row['bayar']),
+								'user'				=> $this->session->userdata('pn_id'),
+								'cabang'			=> $this->session->userdata('pn_wilayah'),
+								'perusahaan'		=> $this->session->userdata('perusahaan'),
+								'create_date'		=> date("Y-m-d H:i:s"),
+								'status'			=> 0,
+								'no_ref'			=> $row['referensi_pembayaran'],
+							);
+				$this->db->insert('dk_jurnal',$debit);
+			}
+			
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				return array('name'=>date("ymdHis")."_".$row['nomor_transaksi'],'id'=>$id_temp);
+			}
+		}
+		
 		
 		public function save_invoice($id = null){
 			$this->db->trans_begin();
@@ -447,6 +656,27 @@
 			$this->db->trans_begin();
 			$this->db->where('id',$id);
 			$this->db->update('dk_transaksi',array('lampiran'=>$name));
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				
+				return $id;
+			}
+		}
+		
+		public function save_bukti_bayar($name=null,$id=null){
+			$this->db->trans_begin();
+			$id = explode('%',$id);
+			foreach($id as $row){
+				if($row != ''){
+					$this->db->where('id',$row);
+					$this->db->update('dk_pembayaran',array('foto'=>$name));
+				}
+			}
+			
 			if ($this->db->trans_status() === FALSE)
 			{
 				$this->db->trans_rollback();
@@ -799,6 +1029,18 @@
 				}
 				
 				
+			}else{
+				return 0;
+			}
+		}
+		
+		function load_invoice($id){
+			$perusahaan = $this->session->userdata('perusahaan');
+			$cabang = $this->session->userdata('pn_wilayah');
+			$query 	= "select * from dk_transaksi where md5(id_pelanggan) = '$id' and status='1' and perusahaan='$perusahaan'";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
 			}else{
 				return 0;
 			}

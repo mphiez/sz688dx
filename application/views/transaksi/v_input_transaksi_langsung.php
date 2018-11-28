@@ -3,6 +3,67 @@
 		#modal-create{
 			padding-right:0px !Important;
 		}
+		.fa-5x{
+			color:lightblue;
+		}
+		
+		.ui-autocomplete
+		{
+			position:absolute;
+			cursor:default;
+			z-index:4000 !important
+		}
+		
+		.product_item{
+			color: #fff;
+			background: #3d8be3;
+			border: 2px solid #7590d1;
+			padding: 15px;
+			border-radius: 50%;
+		}
+		
+		.product_item_1{
+			color: #fff;
+			background: #337ab7;
+			border: 2px solid lightgray;
+			padding: 15px;
+			border-radius: 50%;
+		}
+		
+		.product_item_2{
+			color: #fff;
+			background: #5cb85c;
+			border: 2px solid lightgray;
+			padding: 15px;
+			border-radius: 50%;
+		}
+		
+		.product_item_3{
+			color: #fff;
+			background: #f0ad4e;
+			border: 2px solid lightgray;
+			padding: 15px;
+			border-radius: 50%;
+		}
+		
+		.product_item_4{
+			color: #fff;
+			background: #d9534f;
+			border: 2px solid lightgray;
+			padding: 15px;
+			border-radius: 50%;
+		}
+		.desc{
+			font-size:11px;
+		}
+		.chosen-drop .chosen-results li.no-results{
+			cursor:pointer;
+		}
+		
+		.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+			background-color: #fff !important;
+			opacity: 1;
+		}
 	</style>
 	<div id="page-wrapper">
 		<div class="row">
@@ -57,7 +118,13 @@
 						<div class="col-sm-6 col-md-3" >
 							<div class="form-group">
 								<label>Nomor Transaksi</label>
-								<input type="text" id="nomor_transaksi" class="form-control" placeholder="[Auto]">
+								<div class="input-group">
+									<?php $id_transaksi = counter('c_sales')?>
+									<input type="text" id="nomor_transaksi" class="form-control" placeholder="[Auto]" value="">
+									<div class="input-group-addon">
+										<input type="checkbox" id="transaksi_otomatis" checked onclick="return auto_transaksi()"> Auto
+									</div>
+								</div>
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3"  style="display:none;">
@@ -1244,6 +1311,16 @@
 </div>
 <?php $this->load->view('footer');?>
 <script>
+	function auto_transaksi(){
+		if ($('#transaksi_otomatis').is(':checked')) {
+			$('#nomor_transaksi').val('');
+			$("#nomor_transaksi").attr("readonly", true); 
+		}else{
+			$('#nomor_transaksi').val('<?php echo $id_transaksi;?>');
+			$("#nomor_transaksi").attr("readonly", false); 
+		}
+	}
+	
 	function curency(x=''){
 		if(x == ''){
 			x = 0;
@@ -1388,6 +1465,7 @@
 				transaksi.push(temp);
 			}
 		}
+		
 		if(transaksi.length > 0){
 			$.ajax({
 				url: '<?php echo base_url()?>index.php/transaksi/save',
@@ -1437,6 +1515,8 @@
 						});
 					}else if(datax.code == 1){
 						alert('Simpan gagal !');
+					}else if(datax.code == 2){
+						alert('Simpan gagal, Nomor Transaksi Sudah Digunakan !');
 					}else{
 						alert('Transaksi berhasil !');
 						if($('#invoice_status').val() == 1){

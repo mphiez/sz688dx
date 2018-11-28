@@ -503,13 +503,14 @@
 		function get_counter($x, $cab=null){
 			$id_cab = $this->session->userdata('pn_wilayah');
 			$id_per = $this->session->userdata('perusahaan');
+			$p = "p_".substr($x,2);
 			if($cab){
 				$id_cab = $cab;
 			}
 			if($id_cab == 0){
-				$query	= ("select $x,perusahaan, cabang from dk_counter where cabang='0' and perusahaan='$perusahaan' and perusahaan='$id_per'");
+				$query	= ("select $x,perusahaan, cabang, $p from dk_counter where cabang='0' and perusahaan='$perusahaan' and perusahaan='$id_per'");
 			}else{
-				$query	= ("select $x,perusahaan, cabang from dk_counter where cabang='$id_cab' and perusahaan='$id_per'");
+				$query	= ("select $x,perusahaan, cabang, $p from dk_counter where cabang='$id_cab' and perusahaan='$id_per'");
 			}
 			return $query 	= $this->db->query($query);
 			

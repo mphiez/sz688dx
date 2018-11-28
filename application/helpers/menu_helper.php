@@ -374,10 +374,11 @@
 		$CI =& get_instance();
 		$CI->load->model('menu_model');
 		$id_kategori = $CI->menu_model->get_counter($x,$cab);
-		
+		$p = "p_".substr($x,2);
 		if($id_kategori->num_rows() > 0){
 			$ret	= $id_kategori->result();
 			$id		= $ret[0]->$x;
+			$prefix	= $ret[0]->$p;
 			$cab	= $ret[0]->cabang;
 			$per	= $ret[0]->perusahaan;
 		}else{
@@ -385,21 +386,20 @@
 		}
 		$kd_barang = $id+1;
 		if(strlen($kd_barang)==1){
-			$kdadd		= "0000";
+			$kdadd		= "00000";
 		}else if(strlen($kd_barang)==2){
-			$kdadd		= "000";
+			$kdadd		= "0000";
 		}else if(strlen($kd_barang)==3){
-			$kdadd		= "00";
+			$kdadd		= "000";
 		}else if(strlen($kd_barang)==4){
+			$kdadd		= "00";
+		}else if(strlen($kd_barang)==5){
 			$kdadd		= "0";
 		}else{
-			$kdadd		= '0';
+			$kdadd		= "0";
 		}
 		$thnbln			= date("ymd");
-		if($x == 'c_inv'){
-			return $id = "INV".$thnbln.$per.$cab.$kd_barang;
-		}
-		return $id = "P".$thnbln.$per.$cab.$kd_barang;
+		return $id = $prefix.$kdadd.$kd_barang;
 	}
 	
 	function add_counter($x, $cab=null){

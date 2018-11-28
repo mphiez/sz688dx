@@ -24,20 +24,39 @@ class Transaksi extends CI_Controller {
 	
 	public function create_invoice(){
 		$data['judul']				= "Buat Penjualan";
+		$data['bank_list'] 			= $this->transaksi_model->bank_list();
 		$this->load->view('transaksi/v_input_transaksi',$data);
 	}
 	
 	public function create_order(){
 		$data['judul']				= "Buat Penjualan";
+		$data['bank_list'] 			= $this->transaksi_model->bank_list();
 		$this->load->view('transaksi/v_input_transaksi_order',$data);
 	}
 	
 	public function buat_invoice(){
 		$data['id'] 			= $this->input->get('inv');
 		$data['mode'] 			= $this->input->get('mode');
+		$data['bank_list'] 			= $this->transaksi_model->bank_list();
 		$data['data_invoice']	= $this->transaksi_model->dataInvoice($data['id']);
 		//echo "<pre>"; print_r($data['data_invoice']);exit;
 		$this->load->view('transaksi/v_create_invoice',$data);
+	}
+	
+	public function buat_pembayaran(){
+		
+		$data = $this->input->get('id');
+		if(isset($data)){
+			$data['data_invoice']				= $this->transaksi_model->load_invoice($data);
+			$data['load_data']					= 1;
+		}else{
+			$data['data_invoice']				= "";
+			$data['load_data']					= 0;
+		}
+		
+		$data['bank_list'] 			= $this->transaksi_model->bank_list();
+		
+		$this->load->view('transaksi/v_input_pembayaran',$data);
 	}
 	
 	function invoice(){
@@ -120,6 +139,58 @@ class Transaksi extends CI_Controller {
 		echo json_encode($return);
 	}
 	
+	public function search_invoice(){
+		$name = $this->input->post('pn_name');
+		$datax = $this->transaksi_model->search_invoice($name);
+		$list = array();
+		$temp = array();
+		if($datax > 0){
+			foreach($datax as $row){
+				$list[$row->nomor_invoice] = $row;
+			}
+			
+			$return = array(
+				'data' => $datax,
+				'user_list' => $list,
+				'code' => 0
+			);
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'user_list' => $list,
+				'code' => 1
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function search_transaksi(){
+		$name = $this->input->post('pn_name');
+		$datax = $this->transaksi_model->search_transaksi($name);
+		$list = array();
+		$temp = array();
+		if($datax > 0){
+			foreach($datax as $row){
+				$list[$row->nomor_transaksi] = $row;
+			}
+			
+			$return = array(
+				'data' => $datax,
+				'user_list' => $list,
+				'code' => 0
+			);
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'user_list' => $list,
+				'code' => 1
+			);
+		}
+		echo json_encode($return);
+	}
+	
 	public function number(){
 		echo to_number($this->input->post('total'));
 	}
@@ -133,11 +204,47 @@ class Transaksi extends CI_Controller {
 		$post = $this->input->post();
 		$datax = $this->transaksi_model->save($post);
 		if($datax){
+			if($datax == '-1'){
+				$return = array(
+					'data' => $datax,
+					'code' => 2,
+					'guid' => md5($datax)
+				);
+			}else{
+				$return = array(
+					'data' => $datax,
+					'code' => 0,
+					'guid' => md5($datax)
+				);
+			}
+			
+		}else{
 			$return = array(
 				'data' => $datax,
-				'code' => 0,
-				'guid' => md5($datax)
+				'code' => 1,
+				'guid' => 0
 			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function save_bayar(){
+		$post = $this->input->post();
+		$datax = $this->transaksi_model->save_bayar($post);
+		if($datax){
+			if($datax == '-1'){
+				$return = array(
+					'data' => $datax,
+					'code' => 2,
+					'guid' => $datax
+				);
+			}else{
+				$return = array(
+					'data' => $datax,
+					'code' => 0,
+					'guid' => $datax
+				);
+			}
 			
 		}else{
 			$return = array(
@@ -175,7 +282,7 @@ class Transaksi extends CI_Controller {
         $nmfile="";
 		$ekstensi_file	= '.jpg';
 		$this->load->library('upload');
-		$nmfile = $id.$ekstensi_file; //nama file + fungsi time
+		$nmfile = "T_".$id.$ekstensi_file; //nama file + fungsi time
 		$config['upload_path'] = './gambar_barang/'; //Folder untuk menyimpan hasil upload
 		$config['allowed_types'] = 'gif|jpg|png|jpeg|bmp'; //type yang dapat diakses bisa anda sesuaikan
 		$config['max_size'] = '3072'; //maksimum besar file 3M
@@ -198,6 +305,37 @@ class Transaksi extends CI_Controller {
 
     }
 	
+	public function save_bukti_bayar(){
+		//print_r($_FILES['file']);exit;
+		$id = $this->input->get('id');
+		$mp = $this->input->get('mp');
+        $nmfile="";
+		$ekstensi_file	= '.jpg';
+		$this->load->library('upload');
+		$nmfile = $mp."_".$ekstensi_file; //nama file + fungsi time
+		
+		$config['upload_path'] = './gambar_barang/'; //Folder untuk menyimpan hasil upload
+		$config['allowed_types'] = 'gif|jpg|png|jpeg|bmp'; //type yang dapat diakses bisa anda sesuaikan
+		$config['max_size'] = '3072'; //maksimum besar file 3M
+		$config['max_width']  = '5000'; //lebar maksimum 5000 px
+		$config['max_height']  = '5000'; //tinggi maksimu 5000 px
+		$config['file_name'] = $nmfile; //nama yang terupload nantinya
+
+		$this->upload->initialize($config);
+		//print_r($_FILES['file']['name']);exit;
+		if($_FILES['file']['name'])
+		{
+			if (!$this->upload->do_upload('file'))
+			{
+				echo $this->upload->display_errors();
+			}else{
+				$gbr = $this->upload->data();
+				$this->transaksi_model->save_bukti_bayar($nmfile,$id);
+			}
+		}
+
+    }
+	
 	public function expenses(){
 		$data['judul']				= "Buat Jurnal";
 		$data['account_list'] 			= $this->transaksi_model->account_list();
@@ -210,7 +348,9 @@ class Transaksi extends CI_Controller {
 	}
 	
 	public function load_list(){
-		$datax = $this->transaksi_model->load_list();
+		$range = $this->input->post('range');
+		$status = $this->input->post('status');
+		$datax = $this->transaksi_model->load_list($range,$status);
 		if($datax){
 			$temp = array();
 			foreach($datax as $row){
@@ -221,6 +361,39 @@ class Transaksi extends CI_Controller {
 				$row->discount = number_format($row->discount);
 				array_push($temp, $row);
 			}
+			$return = array(
+				'data' => $temp,
+				'code' => 0
+			);
+			
+		}else{
+			$return = array(
+				'data' => array(),
+				'code' => 1
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function load_list_sum(){
+		$range = $this->input->post('range');
+		$status = $this->input->post('status');
+		$datax = $this->transaksi_model->load_list_sum($range,$status);
+		if($datax){
+			$temp = array();
+			$total = 0;
+			foreach($datax as $row){
+				$total= $total+$row->total;
+				$row->total = number_format($row->total);
+				
+				array_push($temp, $row);
+			}
+			$temp2 = array(
+				'status' => 'all',
+				'total'		=> number_format($total)
+			);
+			array_push($temp, $temp2);
+			
 			$return = array(
 				'data' => $temp,
 				'code' => 0

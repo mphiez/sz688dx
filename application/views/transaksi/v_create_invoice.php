@@ -59,6 +59,11 @@
 		.chosen-drop .chosen-results li.no-results{
 			cursor:pointer;
 		}
+		
+		.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+			background-color: #fff !important;
+			opacity: 1;
+		}
 	</style>
 	
 	<?php if($data_invoice > 0){
@@ -77,6 +82,7 @@
 			$subtotal = $row->sub_total;
 			$foto = $row->lampiran;
 			$pesan = $row->pesan;
+			$nomor_invoice = $row->nomor_invoice;
 		}
 	?>
 	
@@ -135,7 +141,13 @@
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Nomor Transaksi</label>
-								<input type="text" id="nomor_transaksi" class="form-control" readonly value="[Auto]">
+								<div class="input-group">
+									<?php //$id_transaksi = counter('c_sales')?>
+									<input type="text" id="nomor_transaksi" class="form-control" readonly placeholder="[Auto]" value="<?php echo $nomor_invoice?>">
+									<div class="input-group-addon">
+										<input type="checkbox" id="transaksi_otomatis"> Auto
+									</div>
+								</div>
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
@@ -1316,6 +1328,7 @@
 	
 <?php $this->load->view('footer');?>
 <script>
+	
 	function curency(x=''){
 		if(x == ''){
 			x = 0;

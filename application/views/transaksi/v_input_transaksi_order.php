@@ -59,6 +59,11 @@
 		.chosen-drop .chosen-results li.no-results{
 			cursor:pointer;
 		}
+		
+		.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+			background-color: #fff !important;
+			opacity: 1;
+		}
 	</style>
 	<div id="page-wrapper">
 		<div class="row">
@@ -111,10 +116,16 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-sm-6 col-md-3">
+						<div class="col-sm-6 col-md-3" >
 							<div class="form-group">
 								<label>Nomor Transaksi</label>
-								<input type="text" id="nomor_transaksi" class="form-control" placeholder="[Auto]">
+								<div class="input-group">
+									<?php $id_transaksi = counter('c_sales')?>
+									<input type="text" id="nomor_transaksi" class="form-control" placeholder="[Auto]" value="">
+									<div class="input-group-addon">
+										<input type="checkbox" id="transaksi_otomatis" checked onclick="return auto_transaksi()"> Auto
+									</div>
+								</div>
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3" style="display:none">
@@ -1303,6 +1314,16 @@
 </div>
 <?php $this->load->view('footer');?>
 <script>
+	function auto_transaksi(){
+		if ($('#transaksi_otomatis').is(':checked')) {
+			$('#nomor_transaksi').val('');
+			$("#nomor_transaksi").attr("readonly", true); 
+		}else{
+			$('#nomor_transaksi').val('<?php echo $id_transaksi;?>');
+			$("#nomor_transaksi").attr("readonly", false); 
+		}
+	}
+	
 	function curency(x=''){
 		if(x == ''){
 			x = 0;
@@ -1506,6 +1527,8 @@
 						});
 					}else if(datax.code == 1){
 						alert('Simpan gagal !');
+					}else if(datax.code == 2){
+						alert('Simpan gagal, Nomor Transaksi Sudah Digunakan !');
 					}else{
 						alert('Transaksi berhasil !');
 						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
