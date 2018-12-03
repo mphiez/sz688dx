@@ -83,6 +83,7 @@
 			$foto = $row->lampiran;
 			$pesan = $row->pesan;
 			$nomor_invoice = $row->nomor_invoice;
+			$jumlah_termin = $row->jumlah_termin;
 		}
 	?>
 	
@@ -141,13 +142,7 @@
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Nomor Transaksi</label>
-								<div class="input-group">
-									<?php //$id_transaksi = counter('c_sales')?>
-									<input type="text" id="nomor_transaksi" class="form-control" readonly placeholder="[Auto]" value="<?php echo $nomor_invoice?>">
-									<div class="input-group-addon">
-										<input type="checkbox" id="transaksi_otomatis"> Auto
-									</div>
-								</div>
+								<input type="text" id="nomor_transaksi" class="form-control" readonly value="<?php echo $nomor_transaksi?>">
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
@@ -206,6 +201,36 @@
 							<div class="form-group">
 								<label>Nomor Faktur Pajak</label>
 								<input type="text" id="nomor_faktur" class="form-control" placeholder="[Auto]">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-3">
+							<div class="form-group">
+								<label>Deskripsi Penagihan</label>
+								<input type="text" id="deskripsi_termin" class="form-control">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-3">
+							<div class="form-group">
+								<label>No. Pembayaran / Termin</label>
+								<input type="text" id="termin_ke" class="form-control money">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-3">
+							<div class="form-group">
+								<label>Jumlah Tagihan</label>
+								<input type="text" id="jumlah_termin" onkeypress="return check_tagihan()" value="<?php echo $jumlah_bayar;?>" class="form-control money">
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12">
+						<div class="col-sm-12 col-md-12">
+							<div class="form-group">
+								<input type="checkbox" id="show_desc" checked onclick="return check_deskripsi()"> <i style="color:blue"> Munculkan deskripsi penagihan dalam invoice</i>
+							</div>
+						</div>
+						<div class="col-sm-12 col-md-12">
+							<div class="form-group">
+								<input type="checkbox" id="show_list" checked onclick="return check_deskripsi()"> <i style="color:blue"> Munculkan list penjualan dalam invoice</i>
 							</div>
 						</div>
 					</div>
@@ -347,6 +372,7 @@
 					</div>
 					<div class="col-md-12" id="btn_save">
 						<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>
+						<span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>
 						
 					</div>
 					<div class="col-md-12">
@@ -1328,6 +1354,13 @@
 	
 <?php $this->load->view('footer');?>
 <script>
+	function check_tagihan(){
+		if(decimal($('#jumlah_termin').val()) > decimal($('#total').val())){
+			alert('Total tagihan tidak boleh lebih besar dari penjualan');
+			$('#jumlah_termin').val(curency($('#total').val()));
+		}
+	}
+	
 	
 	function curency(x=''){
 		if(x == ''){
@@ -1348,13 +1381,14 @@
 		autoclose: true,
 	});
 	
-	function simpan_invoice(){
-		if($('#id_pelanggan').val() == ''){
-			alert('Silahkan pilih customer');
-			return false;
+	function check_deskripsi(){
+		if ($('#show_desc').is(':checked') || $('#show_list').is(':checked')) {
+			
+		}else{
+			document.getElementById("show_desc").checked = true;
+			document.getElementById("show_list").checked = true;
+			alert('Salah satu deskripsi harus dipilih ! ');
 		}
-		$('#invoice_status').val('1');
-		$('#submit').submit();
 	}
 	
 	$(".chosen-select").chosen({no_results_text: "Tidak Ditemukan, klik di sini untuk menambahkan", width: "100%"}); 
@@ -1456,6 +1490,25 @@
 		s_add_supplier(x);
 	}
 	
+	
+	function simpan_invoice(){
+		if($('#id_pelanggan').val() == ''){
+			alert('Silahkan pilih customer');
+			return false;
+		}
+		$('#invoice_status').val('1');
+		$('#submit').submit();
+	}
+	
+	
+	function view_invoice(){
+		if($('#id_pelanggan').val() == ''){
+			alert('Silahkan pilih customer');
+			return false;
+		}
+		preview_invoice();
+	}
+	
 	$('#submit').submit(function(e){
 		var counter = $('#counter').val();
 		var transaksi = new Array();
@@ -1492,6 +1545,15 @@
 				transaksi.push(temp);
 			}
 		}
+		if ($('#show_list').is(':checked') && $('#show_list').is(':checked')) {
+			var sv = 1;
+		}else if($('#show_list').is(':checked')){
+			var sv = 2;
+		}else if($('#show_list').is(':checked')){
+			var sv = 3;
+		}else{
+			var sv = 0;
+		}
 		if(transaksi.length > 0){
 			$.ajax({
 				url: '<?php echo base_url()?>index.php/transaksi/save_invoice',
@@ -1514,6 +1576,9 @@
 					pesan				: $('#pesan').val(),
 					lampiran			: $('#lampiran').val(),
 					nomor_faktur		: $('#nomor_faktur').val(),
+					deskripsi_termin	: $('#deskripsi_termin').val(),
+					termin_ke			: $('#termin_ke').val(),
+					jumlah_termin		: $('#jumlah_termin').val(),
 					transaksi 			: transaksi
 				},
 				success: function(datax) {
@@ -1532,7 +1597,7 @@
 							success: function(data){
 								alert('Transaksi berhasil');
 								$('#invoice_status').val(0);
-								window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
+								window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
 								location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
 							  
 							}
@@ -1541,7 +1606,7 @@
 						alert('Simpan gagal !');
 					}else{
 						alert('Transaksi berhasil !');
-						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
+						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
 						location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
 					}
 					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';
@@ -1554,6 +1619,126 @@
 		}
 		return false;
 	});
+	
+	function preview_invoice(){
+		var counter = $('#counter').val();
+		var transaksi = new Array();
+		if($('#metode_pembayaran').val() != "cash" && $('#tujuan_transfer').val() == ""){
+			alert("Silahkan pilih tujuan pembayaran !");
+			return false;
+		}else if($('#id_pelanggan').val() == ''){
+			alert("Silahkan Masukan Pelanggan !");
+			return false;
+		}else if($('#top').val() == ''){
+			alert("Silahkan Masukan Term Of Payment !");
+			return false;
+		}else if($('#tanggal_invoice').val() == ''){
+			alert("Silahkan Masukan Tanggal Invoice !");
+			return false;
+		}
+		
+		if($('#invoice_status').val() == 1){
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span><span class="btn btn-default pull-right"><i class="fa fa-spinner"></i> Preview Invoice</span>';
+			
+			
+		}
+		
+		for(i=1;i<=counter;i++){
+			var temp = {
+				nama_produk	:$('#nama_produk_'+i).val(),
+				id_produk	:$('#id_produk_'+i).val(),
+				deskripsi	:$('#deskripsi_'+i).val(),
+				kuantitas	:$('#kuantitas_'+i).val(),
+				satuan		:$('#satuan_'+i).val(),
+				harga_satuan_dec:$('#harga_satuan_dec_'+i).val(),
+				pajak		:$('#pajak_'+i).val(),
+				jumlah_dec	:$('#jumlah_dec_'+i).val(),
+			}
+			if($('#jumlah_dec_'+i).val() != 0 && $('#id_produk_'+i).val() != ''){
+				transaksi.push(temp);
+			}
+		}
+		if ($('#show_list').is(':checked') && $('#show_desc').is(':checked')) {
+			var sv = 1;
+			if($('#deskripsi_termin').val() == ''){
+				alert('masukan deskripsi penagihan');
+				return false
+			}
+			
+			if($('#termin_ke').val() == ''){
+				alert('masukan nomor pembayaran');
+				return false
+			}
+			
+			if($('#jumlah_termin').val() == ''){
+				alert('masukan jumlah tagihan');
+				return false
+			}
+		}else if($('#show_list').is(':checked')){
+			var sv = 2;
+		}else if($('#show_desc').is(':checked')){
+			var sv = 3;
+			if($('#deskripsi_termin').val() == ''){
+				alert('masukan deskripsi penagihan');
+				return false
+			}
+			
+			if($('#termin_ke').val() == ''){
+				alert('masukan nomor termin');
+				return false
+			}
+			
+			if($('#jumlah_termin').val() == ''){
+				alert('masukan jumlah tagihan');
+				return false
+			}
+		}else{
+			var sv = 0;
+		}
+		if(transaksi.length > 0){
+			$.ajax({
+				url: '<?php echo base_url()?>index.php/transaksi/save_invoice_preview',
+				type: "POST",
+				data: {
+					id_transaksi		: $('#id_transaksi').val(),
+					tipe_transaksi		: 1,
+					discount			: $('#discount').val(),
+					id_pelanggan		: $('#id_pelanggan').val(),
+					nama_pelanggan		: $('#nama_pelanggan').val(),
+					email_pelanggan		: $('#email_pelanggan').val(),
+					no_referensi		: $('#no_referensi').val(),
+					alamat_penagihan	: $('#alamat_penagihan').val(),
+					tanggal_transaksi	: $('#tanggal_transaksi').val(),
+					nomor_transaksi		: $('#nomor_transaksi').val(),
+					metode_pembayaran	: $('#metode_pembayaran').val(),
+					tujuan				: $('#tujuan_transfer').val(),
+					top					: $('#top').val(),
+					tanggal_invoice		: $('#tanggal_invoice').val(),
+					pesan				: $('#pesan').val(),
+					lampiran			: $('#lampiran').val(),
+					nomor_faktur		: $('#nomor_faktur').val(),
+					deskripsi_termin	: $('#deskripsi_termin').val(),
+					termin_ke			: $('#termin_ke').val(),
+					jumlah_termin		: $('#jumlah_termin').val(),
+					transaksi 			: transaksi
+				},
+				success: function(datax) {
+					var datax = JSON.parse(datax);
+					if(datax.code == 1){
+						alert('Simpan gagal !');
+					}else{
+						//alert('Transaksi berhasil !');
+						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+'&sv='+sv+"&preview=yes&no_termin="+$('#termin_ke').val());
+					}
+					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span><span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>';
+				}
+			});
+		}else{
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span><span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>';
+			alert('Tidak ada transaksi !');
+		}
+		return false;
+	};
 	
 	function add_product(){
 		var num = $('#counter').val();
@@ -1843,6 +2028,7 @@
 		
 		var total = subtotal-decimal($('#discount').val());
 		$('#total').val(curency(total))
+		$('#jumlah_termin').val(curency($('#total').val()));
 		
 	}
 	

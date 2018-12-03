@@ -74,6 +74,11 @@ class Master extends CI_Controller {
 		$this->load->view('master/paket/v_list_paket',$data);
 	}
 	
+	public function produk_manajemen(){
+		$data['judul'] 			= "Daftar Produk";
+		$this->load->view('master/paket/v_list_purchase',$data);
+	}
+	
 	public function buat_produk(){
 		$data['judul'] 			= "Create Produk";
 		$this->load->view('master/paket/v_add_paket',$data);
@@ -110,17 +115,42 @@ class Master extends CI_Controller {
 		$draw = intval($this->input->get("draw"));
 		$start = intval($this->input->get("start"));
 		$length = intval($this->input->get("length"));
+		$param = $this->input->post('param');
 
-
-		$data	= $this->master_model->getListPaket();
+		$data	= $this->master_model->getListPaket($param);
 
 		$val = array();
 		
-		$result = $this->result();
 		$temp = array();
-		if($data->num_rows() > 0){
-			foreach($data->result() as $row){
-				$row->harga = number_format($row->harga);
+		if($data > 0){
+			foreach($data as $row){
+				$row->harga_jual = number_format($row->harga_jual);
+				$row->harga_beli = number_format($row->harga_beli);
+				array_push($temp,$row);
+			}
+		}
+		$result['data'] = $temp;
+		
+		echo json_encode($result);
+		exit();
+	}
+	
+	public function get_list_pembelian(){
+		
+		$draw = intval($this->input->get("draw"));
+		$start = intval($this->input->get("start"));
+		$length = intval($this->input->get("length"));
+		$param = $this->input->post('param');
+
+		$data	= $this->master_model->get_list_pembelian($param);
+
+		$val = array();
+		
+		$temp = array();
+		if($data > 0){
+			foreach($data as $row){
+				$row->harga_jual = number_format($row->harga_jual);
+				$row->harga_beli = number_format($row->harga_beli);
 				array_push($temp,$row);
 			}
 		}

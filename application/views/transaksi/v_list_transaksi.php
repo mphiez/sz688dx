@@ -247,6 +247,7 @@
 							  <th>Lampiran</th>
 							  <th>Pesan</th>
 							  <th>Total</th>
+							  <th>Sisa Tagihan</th>
 							  <th>Status/Action</th>
 							</tr>
 						</thead>
@@ -389,11 +390,15 @@
 					</div>
 					<div class="form-group">
 						<label>Status</label>
-						<select id="status" class="form-control chosen-select">
+						<select id="status" onchange="return show_termin()" class="form-control chosen-select">
 							<option value="2">Accept</option>
 							<option value="3">Waiting</option>
 							<option value="4">Reject</option>
 						</select>
+					</div>
+					<div class="form-group" id="j_termin" style="display:none">
+						<label>Jumlah Termin</label>
+						<input type="text" id="jumlah_termin" value="1" class="form-control money">
 					</div>
 				</div>
 			</div>
@@ -409,6 +414,14 @@
 <script src="<?=base_url()?>plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="<?=base_url()?>plugins/datatables/dataTables.bootstrap.min.js"></script>
 <script>
+
+function show_termin(){
+	$('#j_termin').css('display','none');
+	if($('#status').val() == 2){
+		$('#j_termin').css('display','');
+	}
+}
+
 load('Y');
 $(".chosen-select").chosen({no_results_text: "Tidak Ditemukan", width: "100%"}); 
 
@@ -534,6 +547,7 @@ function load(x='', status=''){
 				},
 				{ "data": "pesan"},
 				{ "data": "jumlah_bayar"},
+				{ "data": "tagihan"},
 				{
 					render: function (data, type, row, meta) {
 						if(row.status == 0){
@@ -580,7 +594,7 @@ function load(x='', status=''){
 									'</li>'+
 									'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="<?php echo base_url()?>index.php/transaksi/buat_pembayaran?id='+row.id_pelanggan_dec+'">'+
+										'<a href="<?php echo base_url()?>index.php/transaksi/pembayaran?id='+row.id_pelanggan_dec+'">'+
 											'Buat Pembayaran'+
 										'</a>'+
 									'</li>';
@@ -645,7 +659,7 @@ function load(x='', status=''){
 					}
 				}
 			],
-			"order": [[ 0, "desc" ]],
+			"order": [[ 1, "desc" ]],
 		});
 }
 
@@ -734,6 +748,7 @@ function do_change(){
 		url: '<?php echo base_url()?>index.php/transaksi/change_status',
 		type: "POST",
 		data: {
+			jumlah_termin	: $('#jumlah_termin').val(),
 			status 			: $('#status').val(),
 			id 				: $('#id_order').val(),
 		},

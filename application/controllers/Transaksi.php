@@ -37,17 +37,17 @@ class Transaksi extends CI_Controller {
 	public function buat_invoice(){
 		$data['id'] 			= $this->input->get('inv');
 		$data['mode'] 			= $this->input->get('mode');
-		$data['bank_list'] 			= $this->transaksi_model->bank_list();
-		$data['data_invoice']	= $this->transaksi_model->dataInvoice($data['id']);
-		//echo "<pre>"; print_r($data['data_invoice']);exit;
+		$data['bank_list'] 		= $this->transaksi_model->bank_list();
+		$data['data_termin']	= $this->transaksi_model->dataTermin($data['id']);
+		$data['data_invoice']	= $this->transaksi_model->dataInvoice($data['id'],null,null,null,$data['mode']);
 		$this->load->view('transaksi/v_create_invoice',$data);
 	}
 	
 	public function buat_pembayaran(){
 		
-		$data = $this->input->get('id');
-		if(isset($data)){
-			$data['data_invoice']				= $this->transaksi_model->load_invoice($data);
+		$id = $this->input->get('id');
+		if(isset($id)){
+			$data['data_invoice']				= $this->transaksi_model->load_invoice($id);
 			$data['load_data']					= 1;
 		}else{
 			$data['data_invoice']				= "";
@@ -59,14 +59,42 @@ class Transaksi extends CI_Controller {
 		$this->load->view('transaksi/v_input_pembayaran',$data);
 	}
 	
+	public function pembayaran(){
+		
+		$id = $this->input->get('id');
+		if(isset($id)){
+			$data['data_invoice']				= $this->transaksi_model->load_invoice($id);
+			if($data['data_invoice'] > 0){
+				$data['data_pelanggan']				= $this->transaksi_model->data_invoice_pelanggan($data['data_invoice'][0]->id_pelanggan);
+			}else{
+				$data['data_pelanggan'] = "";
+			}
+			$data['load_data']					= 1;
+		}else{
+			$data['data_invoice']				= "";
+			$data['load_data']					= 0;
+		}
+		
+		$data['bank_list'] 			= $this->transaksi_model->bank_list();
+		
+		$this->load->view('transaksi/v_bayar_invoice',$data);
+	}
+	
 	function invoice(){
 		$id = $this->input->get('inv');
 		$mode = $this->input->get('mode');
-		if(isset($mode) || $mode != ''){
+		$sv = $this->input->get('sv');
+		$no_termin = $this->input->get('no_termin');
+		$preview = $this->input->get('preview');
+		if((isset($mode) || $mode != '') && $preview != 'yes'){
 			$this->transaksi_model->createInvoice($id);
-			$data['data_invoice']			= $this->transaksi_model->dataInvoice($id);
-		}else{
-			$data['data_invoice']			= $this->transaksi_model->dataInvoice($id);
+		}
+		
+		$data['data_invoice']			= $this->transaksi_model->dataInvoice($id, $sv, $preview, $no_termin,$mode);
+		if($preview != 'yes'){
+			//$this->transaksi_model->deletedataInvoice($id, $sv, $preview, $no_termin);
+			
+			//harus dihapus 
 		}
 		
 		$html							= $this->load->view('transaksi/v_invoice',$data,true);
@@ -203,6 +231,34 @@ class Transaksi extends CI_Controller {
 	public function save(){
 		$post = $this->input->post();
 		$datax = $this->transaksi_model->save($post);
+		if($datax){
+			if($datax == '-1'){
+				$return = array(
+					'data' => $datax,
+					'code' => 2,
+					'guid' => md5($datax)
+				);
+			}else{
+				$return = array(
+					'data' => $datax,
+					'code' => 0,
+					'guid' => md5($datax)
+				);
+			}
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function save_invoice_preview(){
+		$post = $this->input->post();
+		$datax = $this->transaksi_model->save_invoice_preview($post);
 		if($datax){
 			if($datax == '-1'){
 				$return = array(

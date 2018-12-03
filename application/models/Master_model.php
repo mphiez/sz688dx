@@ -27,15 +27,15 @@
 			}
 		}
 		
-		public function getListPaket($id=null){		
+		public function getListPaket($param=null){		
 			$where = "";
-			if($id){
-				$where = "where id_produk = '$id'";
+			if($param){
+				$where = "where category = '$param'";
 			}
 			$query	= "select *, if(status='1','Used', 'Not Used') as status_paket from dk_produk $where order by nama_produk";
 			$query 	= $this->db->query($query);
 			if($query->num_rows() > 0){
-				return $query;
+				return $query->result();
 			}else{
 				return 0;
 			}
@@ -47,6 +47,20 @@
 				$where = "where id_produk = '$id'";
 			}
 			$query	= "select * from dk_produk_detail $where order by nama_produk";
+			$query 	= $this->db->query($query);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return 0;
+			}
+		}
+		
+		public function get_list_pembelian($id=null){		
+			$where = "";
+			if($id){
+				$where = "where status = '$id'";
+			}
+			$query	= "select * from dk_pembelian_produk $where order by substr(nomor_transaksi,2)";
 			$query 	= $this->db->query($query);
 			if($query->num_rows() > 0){
 				return $query->result();

@@ -1508,6 +1508,9 @@
 					pesan				: $('#pesan').val(),
 					lampiran			: $('#lampiran').val(),
 					nomor_faktur		: $('#nomor_faktur').val(),
+					deskripsi_termin	: "",
+					termin_ke			: 1,
+					jumlah_termin		: 0,
 					transaksi 			: transaksi
 				},
 				success: function(datax) {
@@ -1526,7 +1529,7 @@
 							success: function(data){
 								alert('Transaksi berhasil');
 								$('#invoice_status').val(0);
-								window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
+								window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 								location.replace('<?php echo base_url()?>index.php/transaksi/create_invoice');
 							  
 							}
@@ -1537,7 +1540,7 @@
 						alert('Simpan gagal, Nomor Transaksi Sudah Digunakan !');
 					}else{
 						alert('Transaksi berhasil !');
-						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
+						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 						location.replace('<?php echo base_url()?>index.php/transaksi/create_invoice');
 					}
 					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';

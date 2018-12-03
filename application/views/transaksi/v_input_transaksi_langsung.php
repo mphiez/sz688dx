@@ -1487,6 +1487,9 @@
 					pesan				: $('#pesan').val(),
 					lampiran			: $('#lampiran').val(),
 					nomor_faktur		: $('#nomor_faktur').val(),
+					deskripsi_termin	: "",
+					termin_ke			: 1,
+					jumlah_termin		: 0,
 					transaksi 			: transaksi
 				},
 				success: function(datax) {
@@ -1506,7 +1509,7 @@
 							  alert('Transaksi berhasil');
 							  if($('#invoice_status').val() == 1){
 								  $('#invoice_status').val(0);
-								  location.replace('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
+								  location.replace('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 							  }else{
 								  location.replace('<?php echo base_url()?>index.php/transaksi/input');
 							  }
@@ -1521,7 +1524,7 @@
 						alert('Transaksi berhasil !');
 						if($('#invoice_status').val() == 1){
 							$('#invoice_status').val(0);
-							location.replace('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid);
+							location.replace('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 						}else{
 						  location.replace('<?php echo base_url()?>index.php/transaksi/input');
 						}

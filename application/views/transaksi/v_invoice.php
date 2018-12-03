@@ -1,6 +1,7 @@
 <?php
 	if($data_invoice > 0){
 		$jumlah = 0;
+		
 		foreach($data_invoice as $row){
 			$logo = base_url()."/assets/".$row->logo;
 			$nama_perusahaan = $row->nama_perusahaan;
@@ -188,30 +189,68 @@ table.bordered th {
 		</tr>
 	</table>
 	<table width="100%" class="gridtable">
+		<?php if($this->input->get('sv') == 1 || $this->input->get('sv') == 3){?>
+			<tr class="bg-gray disabled color-palette">
+				<td align="center" width="5%"  style="background-color:#d2d6de"><b>No<br></b></td>
+				<td align="center" colspan="3"  style="background-color:#d2d6de"><b>Keterangan<br></b></td>
+				<td align="center" width="10%"  style="background-color:#d2d6de"><b>Termin Ke-<br></b></td>
+				<td align="center" width="10%"  style="background-color:#d2d6de"><b>Tagihan<br></b></td>
+				<td align="center" width="10%"  style="background-color:#d2d6de"><b>PPN<br></b></td>
+				<td align="center" width="13%"  style="background-color:#d2d6de"><b>Total Tagihan<br></b></td>
+			</tr>
+			<?php 
+			echo "<pre>";print_r($data_invoice);
+			if(!empty($data_invoice[0]->detail)){
+				foreach($data_invoice[0]->detail as $row){
+					$deskripsi = $row->deskripsi;
+					$total = $row->jumlah_bayar;
+					$no_termin = $row->nomor_termin;
+					$ppn = 0;
+					$tagihan = $row->jumlah_bayar;
+				}
+			}else{
+				$deskripsi = '';
+				$total = 0;
+				$no_termin = 0;
+				$ppn = 0;
+				$tagihan = 0;
+			}?>
+			<tr>
+				<td width="5%" >1</td>
+				<td align="center" colspan="3"><?php echo $deskripsi?></td>
+				<td align="center" width="13%"><?php echo $no_termin;?></td>
+				<td align="right" width="13%"><?=number_format($tagihan,0,'.','.')?></td>
+				<td align="right" width="13%"><?php echo $ppn;?></td>
+				<td align="right" width="13%"><?=number_format($tagihan,0,'.','.')?></td>
+				
+			</tr>
+		<?php }else{
+			?>
+			<tr class="bg-gray disabled color-palette">
+				<td align="center" width="5%"  style="background-color:#d2d6de"><b>No<br></b></td>
+				<td align="center" colspan="3"  style="background-color:#d2d6de"><b>Keterangan<br></b></td>
+				<td align="center" width="10%"  style="background-color:#d2d6de"><b>Kuantitas<br></b></td>
+				<td align="center" width="10%"  style="background-color:#d2d6de"><b>Harga Satuan<br></b></td>
+				<td align="center" width="10%"  style="background-color:#d2d6de"><b>PPN<br></b></td>
+				<td align="center" width="13%"  style="background-color:#d2d6de"><b>Jumlah<br></b></td>
+			</tr>
+			<?php
+			$no = 1;
+			foreach($data_invoice as $row){
+				
+			?>
+			<tr>
+				<td width="5%" ><?php echo $no?></td>
+				<td align="center" colspan="3"><?php echo $row->nama_produk?></td>
+				<td align="center" width="13%"><?php echo $row->kuantitas?></td>
+				<td align="right" width="13%"><?=number_format($row->harga_satuan,0,'.','.')?></td>
+				<td align="right" width="13%"><?=number_format($row->pajak,0,'.','.')?></td>
+				<td align="right" width="13%"><?=number_format($row->jumlah,0,'.','.')?></td>
+				
+			</tr>
+		<?php $no++; }
 		
-		<tr class="bg-gray disabled color-palette">
-			<td align="center" width="5%"  style="background-color:#d2d6de"><b>No<br></b></td>
-			<td align="center" colspan="3"  style="background-color:#d2d6de"><b>Keterangan<br></b></td>
-			<td align="center" width="10%"  style="background-color:#d2d6de"><b>Kuantitas<br></b></td>
-			<td align="center" width="10%"  style="background-color:#d2d6de"><b>Harga Satuan<br></b></td>
-			<td align="center" width="10%"  style="background-color:#d2d6de"><b>PPN<br></b></td>
-			<td align="center" width="13%"  style="background-color:#d2d6de"><b>Jumlah<br></b></td>
-		</tr>
-		<?php $no = 1;
-		foreach($data_invoice as $row){
-			
-		?>
-		
-		<tr>
-			<td width="5%" ><?php echo $no?></td>
-			<td align="center" colspan="3"><?php echo $row->nama_produk?></td>
-			<td align="center" width="13%"><?php echo $row->kuantitas?></td>
-			<td align="right" width="13%"><?=number_format($row->harga_satuan,0,'.','.')?></td>
-			<td align="right" width="13%"><?=number_format($row->pajak,0,'.','.')?></td>
-			<td align="right" width="13%"><?=number_format($row->jumlah,0,'.','.')?></td>
-			
-		</tr>
-		<?php $no++; }?>
+		}?>
 		<tr>
 			<td align="center" width="50%" colspan="4">
 			<b>Jatuh Tempo Pembayaran : <?php echo date("d F Y",strtotime("+".$top." days",strtotime($tanggal_invoice)));?><br>
