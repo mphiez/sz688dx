@@ -334,7 +334,7 @@
 						
 					</div>
 					<div class="col-md-12" id="btn_save">
-						<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>
+						<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>
 						
 					</div>
 					<div class="col-md-12">
@@ -1339,7 +1339,7 @@
 	}
 	
 	$('.date').datepicker({
-		format: "dd/mm/yyyy",
+		dateFormat: "dd/mm/yy",
 		autoclose: true,
 	});
 	
@@ -1460,7 +1460,7 @@
 		}
 		
 		if($('#invoice_status').val() == 1){
-			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan & Cetak Invoice</span>';
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan</span>';
 		}else if($('#id_pelanggan').val() == ''){
 			alert("Silahkan Masukan Pelanggan !");
 			return false;
@@ -1523,7 +1523,7 @@
 							success: function(data){
 								alert('Transaksi berhasil');
 								$('#invoice_status').val(0);
-								window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
+								///window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 								location.replace('<?php echo base_url()?>index.php/transaksi/create_order');
 							  
 							}
@@ -1534,14 +1534,14 @@
 						alert('Simpan gagal, Nomor Transaksi Sudah Digunakan !');
 					}else{
 						alert('Transaksi berhasil !');
-						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
+//	window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 						location.replace('<?php echo base_url()?>index.php/transaksi/create_order');
 					}
-					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';
+					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>';
 				}
 			});
 		}else{
-			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>';
 			alert('Tidak ada transaksi !');
 			$('#invoice_status').val(0);
 		}

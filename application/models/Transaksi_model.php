@@ -169,12 +169,18 @@
 			$perusahaan = $this->session->userdata('perusahaan');
 			$cabang = $this->session->userdata('pn_wilayah');
 			$admin = cek_admin();
+			
+			//tagihan dari definisi ini adalah sisa bayar
+			//sisa tagihan
 			$query 	= "
 			SELECT
-				a.*, md5(a.id) as id_inv, md5(a.id_pelanggan) as id_pelanggan_dec, a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan
+				a.*, md5(a.id) as id_inv, md5(a.id_pelanggan) as id_pelanggan_dec, 
+				a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan,
+				a.jumlah_bayar - sum(if(a.nomor_transaksi = c.nomor_transaksi, if(c.status != 2,c.jumlah_bayar,0),0)) as sisa_tagihan
 			FROM
 				dk_transaksi a
 			left join dk_pembayaran b on a.nomor_transaksi = b.nomor_transaksi
+			left join dk_invoice c on a.nomor_transaksi = c.nomor_transaksi
 			where a.perusahaan='$perusahaan' and a.cabang='$cabang' $date $sts $admin
 			GROUP BY a.nomor_transaksi order by SUBSTR(a.tanggal_transaksi,2) *1
 			";
@@ -183,6 +189,15 @@
 				return $q->result();
 			}else{
 				return 0;
+			}
+		}
+		
+		function load_list_invoice($id){
+			$q 		= $this->db->query("select nomor_invoice, type_invoice, nomor_termin, status, if(status=1,'Open',if(status=2,'reject',if(status=3,'Transaksi','Paid'))) as status_invoice from dk_invoice where nomor_transaksi='$id'");
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return array();
 			}
 		}
 		
@@ -381,12 +396,15 @@
 				$this->db->update('dk_transaksi',$data2);
 				
 				
-				if($tipe_transaksi != 2 || $tipe_transaksi != 3){
+				if($tipe_transaksi != 2 && $tipe_transaksi != 3){
 				
 					$data1['deskripsi'] 	= $this->input->post('deskripsi_termin');
 					$data1['nomor_termin'] 	= $this->input->post('termin_ke');
-					$data1['jumlah_bayar'] 	= str_replace(',','',$this->input->post('jumlah_termin'));
+					$data1['jumlah_bayar'] 	= $jumlah_bayar;
 					$data1['create_date'] = date('Y-m-d H:i:s');
+					if($tipe_transaksi == 1){
+						$data1['type_invoice'] 	= $this->input->post('type_invoice');
+					}
 					$this->db->insert('dk_invoice',$data1);
 					
 					$ak_cred = '4-1110';//revenue - penjualan
@@ -562,7 +580,7 @@
 					
 					$data1['deskripsi'] 	= $this->input->post('deskripsi_termin');
 					$data1['nomor_termin'] 	= $this->input->post('termin_ke');
-					$data1['jumlah_bayar'] 	= str_replace(',','',$this->input->post('jumlah_termin'));
+					$data1['jumlah_bayar'] 	= str_replace(',','',$this->input->post('jumlah_tagihan'));
 					$data1['create_date'] = date('Y-m-d H:i:s');
 					$this->db->insert('dk_invoice_preview',$data1);
 				}
@@ -693,6 +711,8 @@
 				}
 			}
 			
+			
+			
 			$data1 = array(
 						'discount'			=> str_replace(',','',$this->input->post('discount')),
 						'nama_pelanggan'	=> $nm_pelanggan,
@@ -711,16 +731,29 @@
 						'nomor_invoice'		=> $inv_no,
 						'status'			=> $sts,
 					);
-			$this->db->where('id',$this->input->post('id_transaksi'));
-			$this->db->update('dk_transaksi',$data1);
+			if($this->input->post('termin_ke') > 1){
+				
+				$this->db->where('id',$this->input->post('id_transaksi'));
+				$this->db->update('dk_transaksi',$data1);
+			
+			
+			}
+			
+			if($this->input->post('termin_ke') == 1){
+				$this->db->query("update dk_invoice set status='1' where id='".$this->input->post('id_transaksi')."'");
+			}
+			
 			$id_ref = $this->input->post('id_transaksi');
 			
-					
-			$data1['deskripsi'] 	= $this->input->post('deskripsi_termin');
-			$data1['nomor_termin'] 	= $this->input->post('termin_ke');
-			$data1['jumlah_bayar'] 	= $this->input->post('jumlah_termin');
-			$data1['create_date'] 	= date('Y-m-d H:i:s');
-			$this->db->insert('dk_invoice',$data1);
+			if($tipe_transaksi != 2 && $tipe_transaksi != 3 && $tipe_transaksi != 0){
+				$data1['deskripsi'] 	= $this->input->post('deskripsi_termin');
+				$data1['nomor_termin'] 	= $this->input->post('termin_ke');
+				$data1['jumlah_bayar'] 	= str_replace(',','',$this->input->post('jumlah_tagihan'));
+				$data1['type_invoice'] 	= $this->input->post('type_invoice');
+				$data1['nomor_transaksi'] 	= $this->input->post('nomor_transaksi');
+				$data1['create_date'] 	= date('Y-m-d H:i:s');
+				$this->db->insert('dk_invoice',$data1);
+			}
 			
 			
 			$transaksi = $this->input->post('transaksi');
@@ -762,7 +795,7 @@
 			$this->db->update('dk_transaksi',$data2);
 			
 			
-			if($tipe_transaksi != 2 || $tipe_transaksi != 3){
+			if($tipe_transaksi != 2 && $tipe_transaksi != 3){
 			
 				$invoice = $this->input->post('tanggal_invoice');
 				
@@ -905,12 +938,12 @@
 			if($preview == 'yes'){
 				$prev = "_preview";
 			}
-			$query 	= "select a.id as id_transaksi, a.email as email_pelanggan,a.*, b.*, c.*, d.logo, d.nama_perusahaan, d.nomor_telfon telfon_perusahaan, d.email as email_perusahaan, d.no_fax fax_perusahaan, d.alamat alamat_perusahaan, d.fullname, d.no_bank1, d.no_bank2, d.atasnama_bank1, d.atasnama_bank2, d.bank1, d.bank2 from dk_transaksi".$prev." as a right join dk_transaksi_detail".$prev." as b on a.id = b.id_ref left join dk_customer c on a.id_pelanggan = id_customer left join dk_company d on a.perusahaan = d.id where md5(a.id) = '$id' and a.id_pelanggan != ''";
+			$query 	= "select a.id as id_transaksi, a.email as email_pelanggan,a.*, b.*, c.*, d.logo, d.nama_perusahaan, d.nomor_telfon telfon_perusahaan, d.email as email_perusahaan, d.no_fax fax_perusahaan, d.alamat alamat_perusahaan, d.fullname, d.no_bank1, d.no_bank2, d.atasnama_bank1, d.atasnama_bank2, d.bank1, d.bank2 from dk_transaksi".$prev." as a right join dk_transaksi_detail".$prev." as b on a.id = b.id_ref left join dk_customer c on a.id_pelanggan = id_customer left join dk_company d on a.perusahaan = d.id where md5(a.id) = '$id' and a.id_pelanggan != ''  and a.perusahaan='".$this->session->userdata('perusahaan')."' and a.cabang='".$this->session->userdata('pn_wilayah')."'";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				
 				$ret = $q->result();
-				if($mode == null){
+				if($no_termin != 0){
 					$row = $ret[0];
 					
 					$q_inv = $this->db->query("select * from dk_invoice".$prev." where nomor_termin='$no_termin' and nomor_transaksi='".$row->nomor_transaksi."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'");
@@ -925,11 +958,30 @@
 			}
 		}
 		
-		public function dataTermin($id){
-			$query 	= "select a.id as id_transaksi, a.email as email_pelanggan,a.*, b.*, c.*, d.logo, d.nama_perusahaan, d.nomor_telfon telfon_perusahaan, d.email as email_perusahaan, d.no_fax fax_perusahaan, d.alamat alamat_perusahaan, d.fullname, d.no_bank1, d.no_bank2, d.atasnama_bank1, d.atasnama_bank2, d.bank1, d.bank2 from dk_transaksi as a right join dk_transaksi_detail as b on a.id = b.id_ref left join dk_customer c on a.id_pelanggan = id_customer left join dk_company d on a.perusahaan = d.id where md5(a.id) = '$id' and a.id_pelanggan != ''";
-			$q 		= $this->db->query($query);
-			if($q->num_rows() > 0){
-				return $q->result();
+		public function deletedataInvoice($id=null,$sv=null,$preview="", $no_termin=null,$mode=null, $nomor_transaksi=null){
+			$this->db->trans_begin();
+			$this->db->query("delete from dk_transaksi_preview where md5(id) = '$id'  and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'");
+			
+			$this->db->query("delete from dk_transaksi_detail_preview where md5(id_ref) = '$id'  and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'");
+			
+			$this->db->query("delete from dk_invoice_preview where nomor_termin='$no_termin' and nomor_transaksi='".$nomor_transaksi."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'");
+			//echo $this->db->last_query();
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				
+				return $id;
+			}
+		}
+		
+		public function dataTermin($id= null, $no_transaksi = null){
+			
+			$q_inv = $this->db->query("select * from dk_invoice where nomor_transaksi='".$no_transaksi."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."' and status != 2");
+			if($q_inv->num_rows() > 0){
+				return $q_inv->result();
 			}else{
 				return 0;
 			}
@@ -1140,6 +1192,8 @@
 		public function save_foto($name=null,$id=null){
 			$this->db->trans_begin();
 			$this->db->where('id_produk',$id);
+			$this->db->where('perusahaan',$this->session->userdata('perusahaan'));
+			$this->db->where('cabang',$this->session->userdata('pn_wilayah'));
 			$this->db->update('dk_produk',array('foto'=>$name));
 			if ($this->db->trans_status() === FALSE)
 			{
@@ -1195,6 +1249,7 @@
 		public function createInvoice($id){
 				
 			$perusahaan = $this->session->userdata('perusahaan');
+			$cabang = $this->session->userdata('pn_wilayah');
 			$query 	= "select * from dk_transaksi where md5(id) = '$id' and perusahaan='$perusahaan' and status ='2'";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
@@ -1203,7 +1258,7 @@
 					$inv_no = counter('c_inv');
 					add_counter('c_inv');
 					
-					$query 	= "update dk_transaksi set nomor_invoice = '".$inv_no."', top='2', status='1', tanggal_invoice='".date("Y-m-d")."' where md5(id) = '$id' and perusahaan='$perusahaan'";
+					$query 	= "update dk_transaksi set nomor_invoice = '".$inv_no."', top='2', status='1', tanggal_invoice='".date("Y-m-d")."' where md5(id) = '$id' and perusahaan='$perusahaan' and cabang='$cabang'";
 					$q 		= $this->db->query($query);
 				
 					$ak_cred = '4-1110';//revenue - penjualan

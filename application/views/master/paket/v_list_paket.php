@@ -1224,7 +1224,7 @@
 	}
 	
 	$('.date').datepicker({
-		format: "dd/mm/yyyy",
+		dateFormat: "dd/mm/yy",
 		autoclose: true,
 	});
 	

@@ -238,16 +238,16 @@
 					  <table class="table table-bordered table-hover dataTable" id="example">
 						<thead>
 							<tr>
-							  <th></th>
 							  <th>Tanggal</th>
 							  <th>No. Ref.</th>
 							  <th>Cabang</th>
 							  <th>Nama Pelanggan</th>
 							  <th>No. Transaksi</th>
-							  <th>Lampiran</th>
+							  <th>Invoice</th>
 							  <th>Pesan</th>
 							  <th>Total</th>
 							  <th>Sisa Tagihan</th>
+							  <th>Sisa Bayar</th>
 							  <th>Status/Action</th>
 							</tr>
 						</thead>
@@ -409,11 +409,58 @@
 		</div>
 	  </div>
 	</div>
+	<div id="modal-detail-invoice" class="modal fade" tabindex="-1" role="dialog">
+	  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title modal-success">Detail Invoice</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="row table-responsive" style="max-height:75vh">
+				<div class="col-md-12" id="body-invoice">
+					
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer" id="field_add">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div id="modal-print" class="modal fade" tabindex="-1" role="dialog">
+	  <div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title modal-success">Ubah Status Order Penjualan</h4>
+		  </div>
+		  <div class="modal-body" style="max-height:400px">
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table table-strips">
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer" id="field_add">
+			<button class="btn btn-success" onclick="return do_change()" id="btn_add">Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
 	</section>
 <?php $this->load->view('footer');?>
 <script src="<?=base_url()?>plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="<?=base_url()?>plugins/datatables/dataTables.bootstrap.min.js"></script>
 <script>
+
+function decimal(x=''){
+	if(x == ''){
+		x = 0;
+	}
+	return x.toString().replace(/[^0-9.-]+/g,"");
+}
 
 function show_termin(){
 	$('#j_termin').css('display','none');
@@ -490,79 +537,82 @@ function load(x='', status=''){
 				"sProcessing": '<i class="fa fa-spinner fa-pulse"></i> Loading...'
 			},
 			"aoColumns": [
-				{
-					render: function (data, type, row, meta) {
-						var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
-							'<li class="dropdown">'+
-								'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
-									' <i style="color:black;" class="fa fa-caret-down"></i> '+
-								'</a>'+
-								'<ul class="dropdown-menu dropdown-messages" style="right: auto !important;">'+
-									'<li>'+
-										'<a href="#" onclick="return detail(&#39;'+row.id+'&#39;)">'+
-											'Detail'+
-										'</a>'+
-									'</li>'+
-									'<li class="divider"></li>'+
-									'<li>'+
-										'<a href="#">'+
-											'Kirim Kembali Email'+
-										'</a>'+
-									'</li>'+
-									'<li class="divider"></li>'+
-									'<li>'+
-										'<a href="#">'+
-											'Print Invoice'+
-										'</a>'+
-									'</li>'+
-									'<li class="divider"></li>'+
-									'<li>'+
-										'<a href="#">'+
-											'Kirim Pengingat'+
-										'</a>'+
-									'</li>'+
-								'</ul>'+
-							'</li>'+
-						'</ul>';
-						return inv;
-					}
-				},
 				{ "data": "tanggal_transaksi"},
 				{ "data": "no_ref"},
 				{ "data": "cabang"},
 				{
 					render: function (data, type, row, meta) {
-						return '<a href="#" onclick="return detail_customer(&#39;'+row.id_pelanggan+'&#39;)">'+row.nama_pelanggan+'</a>';
+						return '<div id="td_h_'+row.id+'"><a href="#" onclick="return detail_customer(&#39;'+row.id_pelanggan+'&#39;)">'+row.nama_pelanggan+'</a></div>';
 					}
 				},
 				{ "data": "nomor_transaksi"},
 				{
 					render: function (data, type, row, meta) {
-						var lampiran = "";
-						if(row.lampiran){
-							lampiran = '<a href="<?php base_url()?>/gambar_barang/'+row.lampiran+'"><i class="fa fa-paperclip"></a></a>';
-						}
-						return lampiran;
+						var inv = "";
+						var margin = 0;
+						$.each(row.detail, function(i, item){
+							inv += '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;margin-top:'+margin+'px;">'+
+								'<li class="dropdown">'+
+									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="margin: 5px 15px;font-size:12px">'+
+										' <i style="color:black;float:left" class="fa fa-caret-down"></i>&nbsp;&nbsp;&nbsp;<span style="color:black;float:left;margin-top:-3px">&nbsp&nbsp'+item.nomor_invoice+'</span>'+
+									'</a>'+
+									'<ul class="dropdown-menu dropdown-messages" style="right: auto !important;">'+
+										'<li>'+
+											'<a href="#" onclick="return detail_invoice(&#39;'+row.id_inv+'&#39;,&#39;'+item.type_invoice+'&#39;,&#39;'+item.nomor_termin+'&#39;)">'+
+												'Detail Invoice'+
+											'</a>'+
+										'</li>'+
+										'<li class="divider"></li>'+
+										'<li>'+
+											'<a href="#">'+
+												'Bayar Invoice'+
+											'</a>'+
+										'</li>'+
+										'<li class="divider"></li>'+
+										'<li>'+
+											'<a href="#">'+
+												'Reject Invoice'+
+											'</a>'+
+										'</li>'+
+									'</ul>'+
+								'</li>'+
+							'</ul>';
+							margin += 20;
+						});
+						$('#td_h_'+row.id).css('height',margin+'px');
+						return inv;
 					}
 				},
 				{ "data": "pesan"},
 				{ "data": "jumlah_bayar"},
+				{ "data": "sisa_tagihan"},
 				{ "data": "tagihan"},
 				{
 					render: function (data, type, row, meta) {
-						if(row.status == 0){
+						var sts_transaksi = row.status;
+						if(row.status == 1 && (decimal(row.sisa_tagihan)*1) > 0){
+							sts_transaksi = 2;
+						}
+						
+						
+						if(sts_transaksi == 0){
 							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
 							var sts = "Paid";
-						}else if(row.status == 1){
+						}else if(sts_transaksi == 1){
 							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
 							var sts = "Invoice";
-						}else if(row.status == 2){
+						}else if(sts_transaksi == 2){
 							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
-							var sts = "Terminate";
-						}else if(row.status == 3){
+							if(row.status == 1 && sts_transaksi == 2){
+								var sts = "On Invoice";
+							}else{
+								var sts = "Terminate";
+							}
+							
+						}else if(sts_transaksi == 3){
 							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
 							var sts = "Sales Order";
-						}else if(row.status == 4){
+						}else if(sts_transaksi == 4){
 							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">';
 							var sts = "Reject";
 						}
@@ -577,18 +627,18 @@ function load(x='', status=''){
 											'Detail Order'+
 										'</a>'+
 									'</li>';
-							if(row.status == 0){
+							if(sts_transaksi == 0){//paid
 								inv = inv+'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#">'+
+										'<a href="<?php echo base_url()?>index.php/transaksi/invoice_detail?inv='+row.id_inv+'&sv=4&preview=no&no_termin=0" target="blank">'+
 											'Print Order'+
 										'</a>'+
 									'</li>';
 							}
-							if(row.status == 1){
+							if(sts_transaksi == 1){//invoice
 								inv = inv+'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#">'+
+										'<a href="<?php echo base_url()?>index.php/transaksi/invoice_detail?inv='+row.id_inv+'&sv=4&preview=no&no_termin=0" target="blank">'+
 											'Print Order'+
 										'</a>'+
 									'</li>'+
@@ -600,10 +650,10 @@ function load(x='', status=''){
 									'</li>';
 							}
 							
-							if(row.status == 2){
+							if(sts_transaksi == 2){//terminate
 								inv = inv+'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#">'+
+										'<a href="<?php echo base_url()?>index.php/transaksi/invoice_detail?inv='+row.id_inv+'&sv=4&preview=no&no_termin=0" target="blank">'+
 											'Print Order'+
 										'</a>'+
 									'</li>'+
@@ -621,31 +671,31 @@ function load(x='', status=''){
 									'</li>';
 							}
 							
-							if(row.status == 3){
+							if(sts_transaksi == 3){//sales order
 								inv = inv+'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#">'+
+										'<a href="<?php echo base_url()?>index.php/transaksi/invoice_detail?inv='+row.id_inv+'&sv=4&preview=no&no_termin=0" target="blank">'+
 											'Print Order'+
 										'</a>'+
 									'</li>'+
 									'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+row.status+'&#39;,&#39;'+row.nomor_transaksi+'&#39;)">'+
+										'<a href="#" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+sts_transaksi+'&#39;,&#39;'+row.nomor_transaksi+'&#39;)">'+
 											'Ubah status'+
 										'</a>'+
 									'</li>';
 							}
 							
-							if(row.status == 4){
+							if(sts_transaksi == 4){//reject
 								inv = inv+'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#">'+
+										'<a href="<?php echo base_url()?>index.php/transaksi/invoice_detail?inv='+row.id_inv+'&sv=4&preview=no&no_termin=0" target="blank">'+
 											'Print Order'+
 										'</a>'+
 									'</li>'+
 									'<li class="divider"></li>'+
 									'<li>'+
-										'<a href="#" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+row.status+'&#39;,&#39;'+row.nomor_transaksi+'&#39;)">'+
+										'<a href="#" onclick="return change_status(&#39;'+row.id+'&#39;,&#39;'+row.nama_pelanggan+'&#39;,&#39;'+row.no_ref+'&#39;,&#39;'+sts_transaksi+'&#39;,&#39;'+row.nomor_transaksi+'&#39;)">'+
 											'Ubah status'+
 										'</a>'+
 									'</li>';
@@ -659,7 +709,7 @@ function load(x='', status=''){
 					}
 				}
 			],
-			"order": [[ 1, "desc" ]],
+			"order": [[ 0, "desc" ]],
 		});
 }
 
@@ -735,12 +785,20 @@ function change_status(id, cus, ref, stat, nomor_transaksi){
 
 function create_invoice(id, mode){
 	
-	//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+id+'&mode='+mode);
-	/* setTimeout(function() {
-		load();
-	}, 2000); */
-	
 	location.replace('<?php echo base_url()?>index.php/transaksi/buat_invoice?inv='+id+'&mode='+mode);
+}
+
+function detail_invoice(id_inv=null,type_invoice=1,nomor_termin=null){
+	$.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/invoice_detail?inv='+id_inv+'&sv='+type_invoice+'&preview=no&no_termin='+nomor_termin,
+		type: "GET",
+		data: {},
+		success: function(datax) {
+			$('#body-invoice').empty();
+			document.getElementById('body-invoice').innerHTML = datax;
+			$('#modal-detail-invoice').modal();
+		}
+	});
 }
 
 function do_change(){

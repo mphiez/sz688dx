@@ -66,7 +66,16 @@
 		}
 	</style>
 	
-	<?php if($data_invoice > 0){
+	<?php 
+	$jumlah_tagihan = 0;
+	$no_termin = 0;
+	if($data_termin > 0){
+		foreach($data_termin as $row){
+			 $jumlah_tagihan = $jumlah_tagihan + $row->jumlah_bayar;
+			 $no_termin++;
+		}
+	}
+	if($data_invoice > 0){
 		foreach($data_invoice as $row){
 			$id_transaksi = $row->id_transaksi;
 			$id_pelanggan = $row->id_pelanggan;
@@ -212,20 +221,20 @@
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>No. Pembayaran / Termin</label>
-								<input type="text" id="termin_ke" class="form-control money">
+								<input type="text" id="termin_ke" class="form-control money" value="<?php echo ($no_termin+1)?>">
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Jumlah Tagihan</label>
-								<input type="text" id="jumlah_termin" onkeypress="return check_tagihan()" value="<?php echo $jumlah_bayar;?>" class="form-control money">
+								<input type="text" id="jumlah_termin" onkeyup="return check_tagihan()" value="<?php echo ($jumlah_bayar - $jumlah_tagihan);?>" class="form-control money">
 							</div>
 						</div>
 					</div>
-					<div class="col-md-12">
+					<div class="col-md-12" style="display:none">
 						<div class="col-sm-12 col-md-12">
 							<div class="form-group">
-								<input type="checkbox" id="show_desc" checked onclick="return check_deskripsi()"> <i style="color:blue"> Munculkan deskripsi penagihan dalam invoice</i>
+								<input type="checkbox" id="show_desc"  checked onclick="return check_deskripsi()"> <i style="color:blue"> Munculkan deskripsi penagihan dalam invoice</i>
 							</div>
 						</div>
 						<div class="col-sm-12 col-md-12">
@@ -260,13 +269,16 @@
 											<div class="input-group-addon" onclick="return delete_produk(<?php echo $i?>)">
 												<i class="fa fa-trash"></i>
 											</div>
-											<input type="text" value="<?php echo $rows->id_produk." - ".$rows->nama_produk?>" id="nama_produk_<?php echo $i?>" onkeyup="return cari_produk(<?php echo $i?>)" onchange="return check_produk(<?php echo $i?>)" class="form-control">
+											<input type="text" <?php if($no_termin >= 1){echo "readonly";}?> value="<?php echo $rows->id_produk." - ".$rows->nama_produk?>" id="nama_produk_<?php echo $i?>" onkeyup="return cari_produk(<?php echo $i?>)" onchange="return check_produk(<?php echo $i?>)" class="form-control">
 											<input type="hidden" id="id_produk_<?php echo $i?>" value="<?php echo $rows->id_produk?>" class="form-control">
 											
 										</div>
 									</td>
-									<td><textarea style="height: 33px;" id="deskripsi_<?php echo $i?>" value="<?php echo $rows->deskripsi?>" class="form-control"></textarea></td>
+									<td><textarea style="height: 33px;" <?php if($no_termin >= 1){echo "readonly";}?> id="deskripsi_<?php echo $i?>" value="<?php echo $rows->deskripsi?>" class="form-control"></textarea></td>
 									<td>
+										<?php if($no_termin >= 1){?>
+											<input type="text" value="<?php echo $rows->kuantitas?>" id="kuantitas_<?php echo $i?>" onkeyup="return hitung_item(<?php echo $i;?>)" class="form-control">
+										<?php }else{?>
 										<div class="input-group">
 											<div class="input-group-addon" style="padding: 5px;">
 												<button type="button" onclick="return min_item(<?php echo $i?>)">-</button>
@@ -276,14 +288,15 @@
 												<button type="button" onclick="return add_item(<?php echo $i?>)">+</button>
 											</div>
 										</div>
+										<?php }?>
 									</td>
-									<td><input type="text" value="<?php echo $rows->satuan?>" id="satuan_<?php echo $i?>" class="form-control" readonly></td>
+									<td><input type="text"<?php if($no_termin >= 1){echo "readonly";}?> value="<?php echo $rows->satuan?>" id="satuan_<?php echo $i?>" class="form-control" readonly></td>
 									<td>
 										<input type="text" value="<?php echo number_format($rows->harga_satuan)?>" id="harga_satuan_<?php echo $i?>" class="form-control" readonly>
 										<input type="hidden" value="<?php echo $rows->harga_satuan?>" id="harga_satuan_dec_<?php echo $i?>" class="form-control" readonly>
 									</td>
 									<td>
-										<select id="pajak_<?php echo $i?>" class="form-control chosen-select" onchange="return ppn(<?php echo $i?>)">
+										<select <?php if($no_termin >= 1){echo "disabled";}?> id="pajak_<?php echo $i?>" class="form-control chosen-select" onchange="return ppn(<?php echo $i?>)">
 											<?php if($rows->pajak == 0){
 												?>
 													<option value="0" selected>Non PPN </option>
@@ -316,7 +329,7 @@
 								</tr>
 								<?php }?>
 							</tbody>
-							<tfoot>
+							<tfoot <?php if($no_termin >= 1){echo "style='display:none'";}?>>
 								<tr>
 									<td colspan="7">
 										<button type="button" class="btn btn-success" onclick="return add_product()"><i class="fa fa-plus"></i> Tambah Baris</button>
@@ -348,7 +361,7 @@
 							<div class="form-group  pull-right">
 								<span>Subtotal</span>
 								<div class="input-group">
-									<input type="text" id="subtotal" readonly value="<?php echo $subtotal?>" class="form-control">
+									<input type="text" id="subtotal" readonly value="<?php echo $subtotal?>" class="form-control money">
 								</div>
 							</div>
 							<div class="form-group pull-right">
@@ -360,7 +373,7 @@
 							<div class="form-group pull-right">
 								<span>Total</span>
 								<div class="input-group">
-									<input type="text" id="total" readonly value="<?php echo $jumlah_bayar?>" class="form-control">
+									<input type="text" id="total" readonly value="<?php echo $jumlah_bayar?>" class="form-control money">
 								</div>
 							</div>
 						</div>
@@ -371,7 +384,7 @@
 						
 					</div>
 					<div class="col-md-12" id="btn_save">
-						<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>
+						<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>
 						<span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>
 						
 					</div>
@@ -440,6 +453,23 @@
 		  </div>
 		  <div class="modal-footer" id="field_add" style="position: fixed;background:#337ab7;bottom: 0;right: 0;width: 100%;border-top: 1px solid lightgray;">
 			<button class="btn btn-success" onclick="return do_add()" id="btn_add">Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div id="modal-preview" class="modal fade" tabindex="-1" role="dialog" style="padding-right:0px">
+	  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h3>Preview</h3>
+		  </div>
+		  <div class="modal-body table-responsive" style="max-height:400px">
+			<div class="row" style="margin:10px 15px !important" id="body-preview">
+			
+			</div>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
 		  </div>
 		</div>
 	  </div>
@@ -1350,14 +1380,36 @@
 	  </div>
 	</div>
 	<?php }?>
+	<div id="modal-print-sales" class="modal fade" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title modal-success">Detail Invoice</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="row table-responsive" style="max-height:75vh">
+				<div class="col-md-12" id="body-invoice">
+					<p><h3>Nomor Transaksi Anda : <span id="no_transaksi"></span></h3></p>
+					<p>Silahkan melakukan pencetakan transaksi</p>
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer" id="field_print">
+			
+		  </div>
+		</div>
+	  </div>
+	</div>
 </div>
 	
 <?php $this->load->view('footer');?>
 <script>
 	function check_tagihan(){
-		if(decimal($('#jumlah_termin').val()) > decimal($('#total').val())){
-			alert('Total tagihan tidak boleh lebih besar dari penjualan');
-			$('#jumlah_termin').val(curency($('#total').val()));
+		if(decimal($('#jumlah_termin').val()) *1 > '<?php echo $jumlah_bayar - $jumlah_tagihan;?>'){
+			
+			alert('Total tagihan tidak boleh lebih besar dari penjualan / sisa bayar');
+			$('#jumlah_termin').val('<?php echo $jumlah_bayar - $jumlah_tagihan;?>');
 		}
 	}
 	
@@ -1377,7 +1429,7 @@
 	}
 	
 	$('.date').datepicker({
-		format: "dd/mm/yyyy",
+		dateFormat: "dd/mm/yy",
 		autoclose: true,
 	});
 	
@@ -1527,7 +1579,7 @@
 		}
 		
 		if($('#invoice_status').val() == 1){
-			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan & Cetak Invoice</span>';
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan</span>';
 		}
 		
 		for(i=1;i<=counter;i++){
@@ -1545,11 +1597,11 @@
 				transaksi.push(temp);
 			}
 		}
-		if ($('#show_list').is(':checked') && $('#show_list').is(':checked')) {
+		if ($('#show_list').is(':checked') && $('#show_desc').is(':checked')) {
 			var sv = 1;
 		}else if($('#show_list').is(':checked')){
 			var sv = 2;
-		}else if($('#show_list').is(':checked')){
+		}else if($('#show_desc').is(':checked')){
 			var sv = 3;
 		}else{
 			var sv = 0;
@@ -1578,7 +1630,8 @@
 					nomor_faktur		: $('#nomor_faktur').val(),
 					deskripsi_termin	: $('#deskripsi_termin').val(),
 					termin_ke			: $('#termin_ke').val(),
-					jumlah_termin		: $('#jumlah_termin').val(),
+					jumlah_tagihan		: $('#jumlah_termin').val(),
+					type_invoice		: 1,
 					transaksi 			: transaksi
 				},
 				success: function(datax) {
@@ -1597,28 +1650,52 @@
 							success: function(data){
 								alert('Transaksi berhasil');
 								$('#invoice_status').val(0);
-								window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
-								location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
+								//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
+								//location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
 							  
 							}
 						});
+						
 					}else if(datax.code == 1){
 						alert('Simpan gagal !');
 					}else{
 						alert('Transaksi berhasil !');
-						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
-						location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
+						//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
+						//location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
 					}
-					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';
+					
+					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>';
+					
+					
+					$('#field_print').empty();
+					$('#field_print').append('<button class="btn btn-info" onclick="return print_btn(1,&#39;'+datax.guid+'&#39;)">Print Struk</button><button class="btn btn-success" onclick="return print_btn(2,&#39;'+datax.guid+'&#39;)">Print Order</button><button class="btn btn-warning" onclick="return print_btn(3,&#39;'+datax.guid+'&#39;)">Print Invoice Dan Order</button><button type="button" class="btn btn-default" onclick="return print_btn(4)">Tutup</button>');
+					
+					$('#modal-print-sales').modal();
 				}
 			});
+			
 		}else{
-			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>';
 			alert('Tidak ada transaksi !');
 			$('#invoice_status').val(0);
 		}
 		return false;
 	});
+	
+	function print_btn(x=null,guid=null){
+		if(x == 1){ 
+			//print struk
+			window.open('<?php echo base_url()?>index.php/transaksi/invoice_print?inv='+guid+"&sv=5&preview=no&no_termin="+$('#termin_ke').val());
+		}else if(x == 2){
+			//print order
+			window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+guid+"&sv=4&preview=no&no_termin="+$('#termin_ke').val());
+		}else if(x == 3){
+			//print invoice dan order
+			window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+guid+"&sv=1&preview=no&no_termin="+$('#termin_ke').val());
+		}else{
+			location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
+		}
+	}
 	
 	function preview_invoice(){
 		var counter = $('#counter').val();
@@ -1638,7 +1715,7 @@
 		}
 		
 		if($('#invoice_status').val() == 1){
-			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span><span class="btn btn-default pull-right"><i class="fa fa-spinner"></i> Preview Invoice</span>';
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-save"></i> Simpan</span><span class="btn btn-default pull-right"><i class="fa fa-spinner"></i> Preview Invoice</span>';
 			
 			
 		}
@@ -1719,7 +1796,7 @@
 					nomor_faktur		: $('#nomor_faktur').val(),
 					deskripsi_termin	: $('#deskripsi_termin').val(),
 					termin_ke			: $('#termin_ke').val(),
-					jumlah_termin		: $('#jumlah_termin').val(),
+					jumlah_tagihan		: $('#jumlah_termin').val(),
 					transaksi 			: transaksi
 				},
 				success: function(datax) {
@@ -1727,14 +1804,25 @@
 					if(datax.code == 1){
 						alert('Simpan gagal !');
 					}else{
+						$.ajax({
+							url: '<?php echo base_url()?>index.php/transaksi/invoice_preview?inv='+datax.guid+'&sv='+sv+"&preview=yes&no_termin="+$('#termin_ke').val(),
+							type: "GET",
+							data: {},
+							success: function(datax) {
+								$('#body-preview').empty();
+								document.getElementById('body-preview').innerHTML = datax;
+								$('#modal-preview').modal();
+							}
+						});
 						//alert('Transaksi berhasil !');
-						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+'&sv='+sv+"&preview=yes&no_termin="+$('#termin_ke').val());
+						//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+'&sv='+sv+"&preview=yes&no_termin="+$('#termin_ke').val());
+						//window.open();
 					}
-					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span><span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>';
+					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span><span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>';
 				}
 			});
 		}else{
-			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span><span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>';
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span><span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>';
 			alert('Tidak ada transaksi !');
 		}
 		return false;

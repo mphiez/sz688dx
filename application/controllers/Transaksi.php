@@ -38,8 +38,9 @@ class Transaksi extends CI_Controller {
 		$data['id'] 			= $this->input->get('inv');
 		$data['mode'] 			= $this->input->get('mode');
 		$data['bank_list'] 		= $this->transaksi_model->bank_list();
-		$data['data_termin']	= $this->transaksi_model->dataTermin($data['id']);
 		$data['data_invoice']	= $this->transaksi_model->dataInvoice($data['id'],null,null,null,$data['mode']);
+		$data['data_termin']	= $this->transaksi_model->dataTermin($data['id'], $data['data_invoice'][0]->nomor_transaksi);
+		//echo "<pre>";print_r($data['data_termin']);exit;
 		$this->load->view('transaksi/v_create_invoice',$data);
 	}
 	
@@ -91,16 +92,20 @@ class Transaksi extends CI_Controller {
 		}
 		
 		$data['data_invoice']			= $this->transaksi_model->dataInvoice($id, $sv, $preview, $no_termin,$mode);
-		if($preview != 'yes'){
-			//$this->transaksi_model->deletedataInvoice($id, $sv, $preview, $no_termin);
-			
-			//harus dihapus 
+		if($preview == 'yes'){
+			$this->transaksi_model->deletedataInvoice($id, $sv, $preview, $no_termin, null, $data['data_invoice'][0]->nomor_transaksi);
 		}
 		
-		$html							= $this->load->view('transaksi/v_invoice',$data,true);
+		$data['print']	= 1;
+		
 		$pdfFilePath					= "laba rugi.pdf";
 		$this->load->library('m_pdf');
 		$pdf			= $this->m_pdf->load();
+		$data['mpdf']	= $pdf;
+		
+		
+		$html							= $this->load->view('transaksi/v_invoice',$data,true);
+		
 		//$mpdf = new mPDF('c', 'A4-L'); 
 		$pdf->AddPage('P', '', '', '',
 				10, // margin_left
@@ -111,6 +116,68 @@ class Transaksi extends CI_Controller {
 				10); // margin footer
 		$pdf->WriteHTML($html);
 		$pdf->Output($pdfFilePath, "I");
+		
+	}
+	
+	function invoice_detail(){
+		$id = $this->input->get('inv');
+		$mode = $this->input->get('mode');
+		$sv = $this->input->get('sv');
+		$no_termin = $this->input->get('no_termin');
+		$preview = $this->input->get('preview');
+		if((isset($mode) || $mode != '') && $preview != 'yes'){
+			$this->transaksi_model->createInvoice($id);
+		}
+		
+		$data['data_invoice']			= $this->transaksi_model->dataInvoice($id, $sv, $preview, $no_termin,$mode);
+		if($preview == 'yes'){
+			$this->transaksi_model->deletedataInvoice($id, $sv, $preview, $no_termin, null, $data['data_invoice'][0]->nomor_transaksi);
+		}
+		
+		$data['get_data'] = $this->input->get();
+		$data['print']	= 0;
+		
+		$html							= $this->load->view('transaksi/v_invoice',$data);
+		
+	}
+	
+	function invoice_print(){
+		$id = $this->input->get('inv');
+		$mode = $this->input->get('mode');
+		$sv = $this->input->get('sv');
+		$no_termin = $this->input->get('no_termin');
+		$preview = $this->input->get('preview');
+		if((isset($mode) || $mode != '') && $preview != 'yes'){
+			$this->transaksi_model->createInvoice($id);
+		}
+		
+		$data['data_invoice']			= $this->transaksi_model->dataInvoice($id, $sv, $preview, $no_termin,$mode);
+		if($preview == 'yes'){
+			$this->transaksi_model->deletedataInvoice($id, $sv, $preview, $no_termin, null, $data['data_invoice'][0]->nomor_transaksi);
+		}
+		
+		$data['print']	= 2;
+		
+		$html							= $this->load->view('transaksi/v_invoice',$data);
+		
+	}
+	
+	function invoice_preview(){
+		$id = $this->input->get('inv');
+		$mode = $this->input->get('mode');
+		$sv = $this->input->get('sv');
+		$no_termin = $this->input->get('no_termin');
+		$preview = $this->input->get('preview');
+		if((isset($mode) || $mode != '') && $preview != 'yes'){
+			$this->transaksi_model->createInvoice($id);
+		}
+		
+		$data['data_invoice']			= $this->transaksi_model->dataInvoice($id, $sv, $preview, $no_termin,$mode);
+		if($preview == 'yes'){
+			$this->transaksi_model->deletedataInvoice($id, $sv, $preview, $no_termin, null, $data['data_invoice'][0]->nomor_transaksi);
+		}
+		$data['print']	= 1;
+		$html							= $this->load->view('transaksi/v_invoice',$data);
 		
 	}
 	
@@ -410,11 +477,14 @@ class Transaksi extends CI_Controller {
 		if($datax){
 			$temp = array();
 			foreach($datax as $row){
+				$row->detail = $this->transaksi_model->load_list_invoice($row->nomor_transaksi);
 				$row->jumlah_bayar = number_format($row->jumlah_bayar);
 				$row->jumlah_item = number_format($row->jumlah_item);
 				$row->jumlah_pajak = number_format($row->jumlah_pajak);
 				$row->sub_total = number_format($row->sub_total);
 				$row->discount = number_format($row->discount);
+				$row->tagihan = number_format($row->tagihan);
+				$row->sisa_tagihan = number_format($row->sisa_tagihan);
 				array_push($temp, $row);
 			}
 			$return = array(

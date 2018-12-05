@@ -334,7 +334,8 @@
 						
 					</div>
 					<div class="col-md-12" id="btn_save">
-						<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>
+						<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>
+						<span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>
 						
 					</div>
 					<div class="col-md-12">
@@ -402,6 +403,23 @@
 		  </div>
 		  <div class="modal-footer" id="field_add" style="position: fixed;background:#337ab7;bottom: 0;right: 0;width: 100%;border-top: 1px solid lightgray;">
 			<button class="btn btn-success" onclick="return do_add()" id="btn_add">Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div id="modal-preview" class="modal fade" tabindex="-1" role="dialog" style="padding-right:0px">
+	  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h3>Preview</h3>
+		  </div>
+		  <div class="modal-body table-responsive" style="max-height:400px">
+			<div class="row" style="margin:10px 15px !important" id="body-preview">
+			
+			</div>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
 		  </div>
 		</div>
 	  </div>
@@ -1339,7 +1357,7 @@
 	}
 	
 	$('.date').datepicker({
-		format: "dd/mm/yyyy",
+		dateFormat: "dd/mm/yy",
 		autoclose: true,
 	});
 	
@@ -1469,7 +1487,7 @@
 		}
 		
 		if($('#invoice_status').val() == 1){
-			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan & Cetak Invoice</span>';
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan</span>';
 		}
 		
 		for(i=1;i<=counter;i++){
@@ -1510,7 +1528,8 @@
 					nomor_faktur		: $('#nomor_faktur').val(),
 					deskripsi_termin	: "",
 					termin_ke			: 1,
-					jumlah_termin		: 0,
+					jumlah_tagihan		: '',
+					type_invoice		: 2,
 					transaksi 			: transaksi
 				},
 				success: function(datax) {
@@ -1529,7 +1548,7 @@
 							success: function(data){
 								alert('Transaksi berhasil');
 								$('#invoice_status').val(0);
-								window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
+								//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 								location.replace('<?php echo base_url()?>index.php/transaksi/create_invoice');
 							  
 							}
@@ -1540,19 +1559,119 @@
 						alert('Simpan gagal, Nomor Transaksi Sudah Digunakan !');
 					}else{
 						alert('Transaksi berhasil !');
-						window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
+						//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 						location.replace('<?php echo base_url()?>index.php/transaksi/create_invoice');
 					}
-					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';
+					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>';
 				}
 			});
 		}else{
-			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan & Cetak Invoice</span>';
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>';
 			alert('Tidak ada transaksi !');
 			$('#invoice_status').val(0);
 		}
 		return false;
 	});
+	
+	function view_invoice(){
+		if($('#id_pelanggan').val() == ''){
+			alert('Silahkan pilih customer');
+			return false;
+		}
+		preview_invoice();
+	}
+	
+	function preview_invoice(){
+		var counter = $('#counter').val();
+		var transaksi = new Array();
+		if($('#metode_pembayaran').val() != "cash" && $('#tujuan_transfer').val() == ""){
+			alert("Silahkan pilih tujuan pembayaran !");
+			return false;
+		}else if($('#id_pelanggan').val() == ''){
+			alert("Silahkan Masukan Pelanggan !");
+			return false;
+		}else if($('#top').val() == ''){
+			alert("Silahkan Masukan Term Of Payment !");
+			return false;
+		}else if($('#tanggal_invoice').val() == ''){
+			alert("Silahkan Masukan Tanggal Invoice !");
+			return false;
+		}
+		
+		if($('#invoice_status').val() == 1){
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan</span><span class="btn btn-default pull-right"><i class="fa fa-spinner"></i> Preview Invoice</span>';
+		}
+		
+		for(i=1;i<=counter;i++){
+			var temp = {
+				nama_produk	:$('#nama_produk_'+i).val(),
+				id_produk	:$('#id_produk_'+i).val(),
+				deskripsi	:$('#deskripsi_'+i).val(),
+				kuantitas	:$('#kuantitas_'+i).val(),
+				satuan		:$('#satuan_'+i).val(),
+				harga_satuan_dec:$('#harga_satuan_dec_'+i).val(),
+				pajak		:$('#pajak_'+i).val(),
+				jumlah_dec	:$('#jumlah_dec_'+i).val(),
+			}
+			if($('#jumlah_dec_'+i).val() != 0 && $('#id_produk_'+i).val() != ''){
+				transaksi.push(temp);
+			}
+		}
+		if(transaksi.length > 0){
+			$.ajax({
+				url: '<?php echo base_url()?>index.php/transaksi/save_invoice_preview',
+				type: "POST",
+				data: {
+					tipe_transaksi		: $('#tipe_transaksi').val(),
+					discount			: $('#discount').val(),
+					id_pelanggan		: $('#id_pelanggan').val(),
+					nama_pelanggan		: $('#nama_pelanggan').val(),
+					email_pelanggan		: $('#email_pelanggan').val(),
+					no_referensi		: $('#no_referensi').val(),
+					alamat_penagihan	: $('#alamat_penagihan').val(),
+					tanggal_transaksi	: $('#tanggal_transaksi').val(),
+					nomor_transaksi		: $('#nomor_transaksi').val(),
+					metode_pembayaran	: $('#metode_pembayaran').val(),
+					tujuan				: $('#tujuan_transfer').val(),
+					top					: $('#top').val(),
+					tanggal_invoice		: $('#tanggal_invoice').val(),
+					pesan				: $('#pesan').val(),
+					lampiran			: $('#lampiran').val(),
+					nomor_faktur		: $('#nomor_faktur').val(),
+					deskripsi_termin	: "",
+					termin_ke			: 1,
+					jumlah_tagihan		: $('#total').val(),
+					type_invoice		: 2,//2 untuk penjualan langsung atau invoice <=1
+					transaksi 			: transaksi
+				},
+				success: function(datax) {
+					var datax = JSON.parse(datax);
+					if(datax.code == 1){
+						alert('Simpan gagal !');
+					}else{
+						$.ajax({
+							url: '<?php echo base_url()?>index.php/transaksi/invoice_preview?inv='+datax.guid+"&sv=0&preview=yes&no_termin=1",
+							type: "GET",
+							data: {},
+							success: function(datax) {
+								$('#body-preview').empty();
+								document.getElementById('body-preview').innerHTML = datax;
+								$('#modal-preview').modal();
+							}
+						});
+						//alert('Transaksi berhasil !');
+						//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+'&sv='+sv+"&preview=yes&no_termin="+$('#termin_ke').val());
+						//window.open();
+					}
+					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span><span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>';
+				}
+			});
+		}else{
+			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span><span class="btn btn-default pull-right" onclick="return view_invoice()"><i class="fa fa-search"></i> Preview Invoice</span>';
+			alert('Tidak ada transaksi !');
+		}
+		return false;
+	};
 	
 	function add_product(){
 		var num = $('#counter').val();
