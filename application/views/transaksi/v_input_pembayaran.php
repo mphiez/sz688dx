@@ -165,16 +165,20 @@
 							<tbody id="produk">
 								<tr id="produk_1">
 									<td>
-										<input type="text" id="no_transaksi_1" onkeyup="return cari_transaksi(1)" class="form-control">
-										<input type="hidden" id="id_cust_1" class="form-control">
-									</td>
-									<td>
 										<div class="input-group">
 											<div class="input-group-addon" onclick="return delete_produk(1)">
 												<i class="fa fa-trash"></i>
 											</div>
-											<input type="text" id="no_invoice_1" onkeyup="return cari_invoice(1)" onchange="return check_produk(1)" class="form-control">
+											<input type="text" id="no_transaksi_1" onkeyup="return cari_transaksi(1)" class="form-control">
 										</div>
+										
+										<input type="hidden" id="id_cust_1" class="form-control">
+									</td>
+									<td>
+										
+										<select class="form-control chosen-select" id="no_invoice_1" onchange="selected_invoice(1)">
+										
+										</select>
 									</td>
 									<td>
 										<input type="text" id="referensi_pembayaran_1" class="form-control">
@@ -202,12 +206,6 @@
 								<span>Pesan</span>
 								<div class="input-group">
 									<textarea id="pesan" class="form-control"></textarea>
-								</div>
-							</div>
-							<div class="form-group">
-								<span>Lampiran</span>
-								<div class="input-group">
-									<input type="file" name="file"  id="image_file" class="form-control">
 								</div>
 							</div>
 						</div>
@@ -297,54 +295,36 @@
 		
 		for(i=1;i<=counter;i++){
 			var temp = {
-				referensi_pembayaran		:$('#referensi_pembayaran_'+i).val(),
-				no_invoice		:$('#no_invoice_'+i).val(),
-				nomor_transaksi	:$('#no_transaksi_'+i).val(),
-				total			:$('#jumlah_'+i).val(),
-				id_customer		:$('#id_cust_'+i).val(),
-				bayar			:$('#bayar_'+i).val(),
+				referensi_pembayaran	:$('#referensi_pembayaran_'+i).val(),
+				nomor_transaksi			:$('#no_transaksi_'+i).val(),
+				id_pelanggan			:$('#id_cust_'+i).val(),
+				no_invoice				:$('#no_invoice_'+i).val(),
+				total					:$('#jumlah_'+i).val(),
+				bayar					:$('#bayar_'+i).val(),
 			}
-			if($('#no_invoice_'+i).val() != '' && $('#no_transaksi_'+i).val() != '' && decimal($('#bayar_'+i).val())*1 > 0){
+			if ($('#no_transaksi_'+i).val() != '' && $('#no_invoice_'+i).val() != '' && $('#bayar_'+i).val() != '') {
 				transaksi.push(temp);
 			}
 		}
-		
 		if(transaksi.length > 0){
 			$.ajax({
-				url: '<?php echo base_url()?>index.php/transaksi/save_bayar',
+				url: '<?php echo base_url()?>index.php/transaksi/save_bayar_all',
 				type: "POST",
 				data: {
+					tanggal_bayar		: $('#tanggal_transaksi').val(),
 					no_referensi		: $('#no_referensi').val(),
 					metode_pembayaran	: $('#metode_pembayaran').val(),
-					tanggal_bayar		: $('#tanggal_transaksi').val(),
 					nm_debit 			: $('#tujuan_transfer').val(),
-					pesan 				: $('#tujuan_transfer').val(),
+					pesan 				: $('#pesan').val(),
 					transaksi			: transaksi
 				},
 				success: function(datax) {
 					var datax = JSON.parse(datax);
-					if(datax.code == 0 && $('#image_file').val() != ''){
-						var formData = new FormData();
-						formData.append('file', $('input[type=file]')[0].files[0]);
-						$.ajax({
-							url:'<?php echo base_url()?>index.php/transaksi/save_bukti_bayar?mp='+datax.data.name+'&id='+(datax.data.id),
-							type:"post",
-							data:  formData,
-							processData:false,
-							contentType:false,
-							cache:false,
-							async:false,
-							success: function(data){
-								alert('Pembayaran berhasil');
-								location.replace('<?php echo base_url()?>index.php/transaksi/buat_pembayaran');
-							  
-							}
-						});
-					}else if(datax.code == 1){
-						alert('Simpan gagal !');
-					}else{
+					if(datax.code == 0){
 						alert('Pembayaran berhasil !');
-						location.replace('<?php echo base_url()?>index.php/transaksi/buat_pembayaran');
+						location.replace('<?php echo base_url()?>index.php/transaksi');
+					}else{
+						alert('Simpan gagal !');
 					}
 					document.getElementById('btn_save').innerHTML = '<button class="btn btn-success pull-right"><i class="fa fa-save"></i> Simpan</button>';
 				}
@@ -362,16 +342,19 @@
 		num++;
 		$('#produk').append('<tr id="produk_'+num+'">'+
 									'<td>'+
-										'<input type="text" id="no_transaksi_'+num+'" onkeyup="return cari_transaksi('+num+')" class="form-control">'+
-										'<input type="hidden" id="id_cust_'+num+'" class="form-control">'+
-									'</td>'+
-									'<td>'+
 										'<div class="input-group">'+
 											'<div class="input-group-addon" onclick="return delete_produk('+num+')">'+
 												'<i class="fa fa-trash"></i>'+
 											'</div>'+
-											'<input type="text" id="no_invoice_'+num+'" onkeyup="return cari_invoice('+num+')" onchange="return check_produk('+num+')" class="form-control">'+
+											'<input type="text" id="no_transaksi_'+num+'" onkeyup="return cari_transaksi('+num+')" class="form-control">'+
 										'</div>'+
+										
+										'<input type="hidden" id="id_cust_'+num+'" class="form-control">'+
+									'</td>'+
+									'<td>'+
+										'<select class="form-control chosen-select" id="no_invoice_'+num+'"  onchange="selected_invoice('+num+')">'+
+										
+										'</select>'+
 									'</td>'+
 									
 									'<td>'+
@@ -399,14 +382,10 @@
 	
 	function delete_produk(x){
 		document.getElementById('produk_'+x+'').style.display = "none";
-		$('#id_produk_'+x).val('');
-		$('#kuantitas_'+x).val('');
+		$('#no_transaksi_'+x).val('');
+		$('#no_invoice_'+x).val('');
 		//var jumlah = harga;
-		$('#jumlah_'+x).val('');
-		$('#jumlah_dec_'+x).val(0);
-		$('#satuan_'+x).val('');
-		$('#harga_satuan_'+x).val('');
-		$('#harga_satuan_dec_'+x).val('');
+		$('#bayar_'+x).val('');
 	}
 	
 	function cari_invoice(x){
@@ -476,6 +455,8 @@
 		$('#jumlah_'+x).val('');
 		$('#bayar_'+x).val('');
 		$('#id_cust_'+x).val('');
+		$('#no_invoice_'+x).empty();
+		$('#no_invoice_'+x).trigger("chosen:updated");
 		$.ajax({
 			url: '<?php echo base_url()?>index.php/transaksi/search_transaksi',
 			type: "POST",
@@ -506,16 +487,32 @@
 								var index = str[0];
 								var nomor_invoice = datax.user_list[index]['nomor_invoice'];
 								var nomor_transaksi = datax.user_list[index]['nomor_transaksi'];
-								var sub_total = datax.user_list[index]['sub_total'];
-								var jumlah_pajak = datax.user_list[index]['jumlah_pajak'];
-								var discount = datax.user_list[index]['discount'];
-								var jumlah_bayar = datax.user_list[index]['tagihan'];
+								var bayar = datax.user_list[index]['bayar'];
+								var tagih = datax.user_list[index]['tagih'];
 								var id_customer = datax.user_list[index]['id_pelanggan'];
-								$('#no_invoice_'+x).val(nomor_invoice);
 								$('#no_transaksi_'+x).val(nomor_transaksi);
-								$('#jumlah_'+x).val(curency(jumlah_bayar));
-								$('#bayar_'+x).val(curency(jumlah_bayar));
 								$('#id_cust_'+x).val(id_customer);
+								$('#jumlah_'+x).val('');
+								$('#bayar_'+x).val('');
+								$.ajax({
+									url: '<?php echo base_url()?>index.php/transaksi/load_invoice_search',
+									type: "POST",
+									data: {pn_name:$('#no_invoice_'+x).val()},
+									success: function(datax) {
+										var datax = JSON.parse(datax);
+										
+										if(datax.code == 0){
+											$.each(datax.data, function(i, item){
+												$('#no_invoice_'+x).append('<option id="option_'+x+'_'+item.nomor_invoice+'" value="'+item.nomor_invoice+'" data-jumlah="'+(item.tagih*1)+'" data-bayar="'+(item.bayar*1)+'">'+item.nomor_invoice+'</option>');
+											});
+											$('#no_invoice_'+x).trigger("chosen:updated");
+											selected_invoice(x);
+										}
+									}
+								});
+								
+								
+								
 							}
 						},
 						response: function(event, ui) {
@@ -543,5 +540,13 @@
 			$('#jumlah_'+x).val('');
 			$('#id_cust_'+x).val('');
 		}
+	}
+	
+	function selected_invoice(x){
+		var id = $('#no_invoice_'+x).val();
+		var jumlah = $('#option_'+x+'_'+id).attr('data-jumlah');
+		var bayar = $('#option_'+x+'_'+id).attr('data-bayar');
+		$('#jumlah_'+x).val(curency(jumlah-bayar));
+		$('#bayar_'+x).val(curency(jumlah-bayar));
 	}
 </script>

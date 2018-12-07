@@ -74,114 +74,122 @@
         <div class="row">
 			<div class="col-xs-12">
 				<form enctype="multipart/form-data" id="submit">
-					<div class="col-md-12">
-						<div class="col-sm-6 col-md-3">
-							<div class="form-group">
-								<label>Nama Pelanggan</label>
-								<input type="text" id="nama_pelanggan"  onkeyup="return cari_pelanggan()" class="form-control" placeholder="[Auto]">
-								<input type="hidden" id="id_pelanggan">
-								<input type="hidden" id="tipe_transaksi" value="0">
+					<div class="col-md-12" id="transaksi_toggle" style="display:none">
+						<div class="col-md-12">
+							<div class="col-sm-6 col-md-3">
+								<div class="form-group">
+									<label>Nama Pelanggan</label>
+									<input type="text" id="nama_pelanggan"  onkeyup="return cari_pelanggan()" class="form-control" placeholder="[Auto]">
+									<input type="hidden" id="id_pelanggan">
+									<input type="hidden" id="tipe_transaksi" value="0">
+								</div>
 							</div>
-						</div>
-						<div class="col-sm-6 col-md-3">
-							<div class="form-group">
-								<label>Email</label>
-								<input type="text" id="email_pelanggan" class="form-control">
+							<div class="col-sm-6 col-md-3">
+								<div class="form-group">
+									<label>Email</label>
+									<input type="text" id="email_pelanggan" class="form-control">
+								</div>
 							</div>
-						</div>
-						<div class="col-sm-12 col-md-3">
-							<div class="form-group" >
-								<label>No Referensi</label>
-								<input type="text" id="no_referensi" class="form-control moneydec">
+							<div class="col-sm-12 col-md-3">
+								<div class="form-group" >
+									<label>No Referensi</label>
+									<input type="text" id="no_referensi" class="form-control moneydec">
+								</div>
 							</div>
-						</div>
-						<div class="col-sm-6 col-md-3">
-							<div class="form-group">
-								<label>Alamat Penagihan</label>
-								<textarea id="alamat_penagihan" class="form-control" ></textarea>
-							</div>
-						</div>
-					</div>
-					
-					<div class="col-md-12">
-						<div class="col-sm-6 col-md-3">
-							<div class="form-group" >
-								<label>Tanggal Transaksi</label>
-								<div class="input-group">
-									<div class="input-group-addon">
-										<i class="fa fa-calendar"></i>
-									</div>
-									<input type="text" id="tanggal_transaksi" readonly class="form-control" value="<?php echo date('d/m/Y')?>">
+							<div class="col-sm-6 col-md-3">
+								<div class="form-group">
+									<label>Alamat Penagihan</label>
+									<textarea id="alamat_penagihan" class="form-control" ></textarea>
 								</div>
 							</div>
 						</div>
-						<div class="col-sm-6 col-md-3" >
-							<div class="form-group">
-								<label>Nomor Transaksi</label>
-								<div class="input-group">
-									<?php $id_transaksi = counter('c_sales')?>
-									<input type="text" id="nomor_transaksi" class="form-control" placeholder="[Auto]" value="">
-									<div class="input-group-addon">
-										<input type="checkbox" id="transaksi_otomatis" checked onclick="return auto_transaksi()"> Auto
+						
+						<div class="col-md-12">
+							<div class="col-sm-6 col-md-3">
+								<div class="form-group" >
+									<label>Tanggal Transaksi</label>
+									<div class="input-group">
+										<div class="input-group-addon">
+											<i class="fa fa-calendar"></i>
+										</div>
+										<input type="text" id="tanggal_transaksi" readonly class="form-control" value="<?php echo date('d/m/Y')?>">
 									</div>
 								</div>
 							</div>
-						</div>
-						<div class="col-sm-6 col-md-3"  style="display:none;">
-							<div class="form-group" >
-								<label>Tanggal Invoice</label>
-								<div class="input-group">
-									<div class="input-group-addon">
-										<i class="fa fa-calendar"></i>
+							<div class="col-sm-6 col-md-3" >
+								<div class="form-group">
+									<label>Nomor Transaksi</label>
+									<div class="input-group">
+										<?php $id_transaksi = counter('c_sales')?>
+										<input type="text" id="nomor_transaksi" class="form-control" placeholder="[Auto]" value="">
+										<div class="input-group-addon">
+											<input type="checkbox" id="transaksi_otomatis" checked onclick="return auto_transaksi()"> Auto
+										</div>
 									</div>
-									<input type="text" id="tanggal_invoice" class="form-control date" value="">
+								</div>
+							</div>
+							<div class="col-sm-6 col-md-3"  style="display:none;">
+								<div class="form-group" >
+									<label>Tanggal Invoice</label>
+									<div class="input-group">
+										<div class="input-group-addon">
+											<i class="fa fa-calendar"></i>
+										</div>
+										<input type="text" id="tanggal_invoice" class="form-control date" value="">
+									</div>
+								</div>
+							</div>
+							<div class="col-sm-6 col-md-3"  style="display:none;">
+								<div class="form-group">
+									<label>Term Of Payment (Hari)</label>
+									<select id="top" class="form-control">
+										<option value="10">NET 10</option>
+										<option value="15">NET 15</option>
+										<option value="30">NET 30</option>
+									</select>
 								</div>
 							</div>
 						</div>
-						<div class="col-sm-6 col-md-3"  style="display:none;">
-							<div class="form-group">
-								<label>Term Of Payment (Hari)</label>
-								<select id="top" class="form-control">
-									<option value="10">NET 10</option>
-									<option value="15">NET 15</option>
-									<option value="30">NET 30</option>
-								</select>
+						<div class="col-md-12">
+							<div class="col-sm-6 col-md-3">
+								<div class="form-group" >
+									<label>Metode Pembayaran</label>
+									<select id="metode_pembayaran" onchange="return tujuan()" class="form-control">
+										<option value="cash">Cash</option>
+										<option value="debit">Debit</option>
+										<option value="credit">Credit</option>
+										<option value="transfer">Transfer</option>
+									</select>
+								</div>
 							</div>
-						</div>
-					</div>
-					<div class="col-md-12">
-						<div class="col-sm-6 col-md-3">
-							<div class="form-group" >
-								<label>Metode Pembayaran</label>
-								<select id="metode_pembayaran" onchange="return tujuan()" class="form-control">
-									<option value="cash">Cash</option>
-									<option value="debit">Debit</option>
-									<option value="credit">Credit</option>
-									<option value="transfer">Transfer</option>
-								</select>
-							</div>
-						</div>
-						<div class="col-sm-6 col-md-3">
-							<div class="form-group" id="tujuan">
-								<label>Tujuan</label>
-								<select id="tujuan_transfer" class="form-control" disabled>
-									<option value="">Pilih Salah Satu</option>
-									<?php 
-										if($bank_list > 0){
-											foreach($bank_list as $row){
-												echo '<option value="'.$row->account_num.'">'.$row->account_name.'</option>';
+							<div class="col-sm-6 col-md-3">
+								<div class="form-group" id="tujuan">
+									<label>Tujuan</label>
+									<select id="tujuan_transfer" class="form-control" disabled>
+										<option value="">Pilih Salah Satu</option>
+										<?php 
+											if($bank_list > 0){
+												foreach($bank_list as $row){
+													echo '<option value="'.$row->account_num.'">'.$row->account_name.'</option>';
+												}
 											}
-										}
-									?>
-								</select>
+										?>
+									</select>
+								</div>
+							</div>
+							<div class="col-sm-6 col-md-3" style="display:none;">
+								<div class="form-group">
+									<label>Nomor Faktur Pajak</label>
+									<input type="text" id="nomor_faktur" class="form-control" placeholder="[Auto]">
+								</div>
 							</div>
 						</div>
-						<div class="col-sm-6 col-md-3" style="display:none;">
-							<div class="form-group">
-								<label>Nomor Faktur Pajak</label>
-								<input type="text" id="nomor_faktur" class="form-control" placeholder="[Auto]">
-							</div>
-						</div>
+					</div>
+					<div class="col-md-9" id="show_button" style="padding:10px;">
+					</div>
+					<div class="col-md-3" style="margin-top: -15px;">
+						<input type="hidden" value="0" id="id_carret">
+						<span onclick="return show_hide()" id="show_hide_element">Tampilkan Pengaturan <i class="fa fa-caret-down" style="border:2px solid lightgray;border-radius:50%;padding:1px 4px;background-color:#fff"></i></span>
 					</div>
 					<div class="col-md-12">
 						<table class="table table-hover table-strips">
@@ -1311,6 +1319,17 @@
 </div>
 <?php $this->load->view('footer');?>
 <script>
+	function show_hide(){
+		$('#transaksi_toggle').slideToggle();
+		if($('#id_carret').val() == 0){
+			$('#id_carret').val(1);
+			document.getElementById('show_hide_element').innerHTML = 'Sembunyikan Pengaturan <i class="fa fa-caret-up" style="border:2px solid lightgray;border-radius:50%;padding:1px 4px;background-color:#fff"></i>';
+			
+		}else{
+			$('#id_carret').val(0);
+			document.getElementById('show_hide_element').innerHTML = 'Tampilkan Pengaturan <i class="fa fa-caret-down" style="border:2px solid lightgray;border-radius:50%;padding:1px 4px;background-color:#fff"></i>';
+		}
+	}
 	function auto_transaksi(){
 		if ($('#transaksi_otomatis').is(':checked')) {
 			$('#nomor_transaksi').val('');
@@ -1509,6 +1528,8 @@
 							  alert('Transaksi berhasil');
 							  if($('#invoice_status').val() == 1){
 								  $('#invoice_status').val(0);
+								  window.open('<?php echo base_url()?>index.php/transaksi/invoice_print?inv='+datax.guid+"&sv=5&preview=no&no_termin="+$('#termin_ke').val());
+								  
 								  location.replace('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
 							  }else{
 								  location.replace('<?php echo base_url()?>index.php/transaksi/input');
@@ -1522,12 +1543,9 @@
 						alert('Simpan gagal, Nomor Transaksi Sudah Digunakan !');
 					}else{
 						alert('Transaksi berhasil !');
-						if($('#invoice_status').val() == 1){
-							$('#invoice_status').val(0);
-							location.replace('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
-						}else{
-						  location.replace('<?php echo base_url()?>index.php/transaksi/input');
-						}
+						window.open('<?php echo base_url()?>index.php/transaksi/invoice_print?inv='+datax.guid+"&sv=5&preview=no&no_termin="+$('#termin_ke').val());
+						
+						location.replace('<?php echo base_url()?>index.php/transaksi/input');
 					}
 					document.getElementById('btn_save').innerHTML = '<button class="btn btn-success pull-right"><i class="fa fa-save"></i> Simpan</button>';
 				}

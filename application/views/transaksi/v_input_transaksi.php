@@ -1329,6 +1329,27 @@
 		</div>
 	  </div>
 	</div>
+	<div id="modal-print-sales" class="modal fade" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title modal-success">Detail Invoice</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="row table-responsive" style="max-height:75vh">
+				<div class="col-md-12" id="body-invoice">
+					<p><h3>Nomor Transaksi Anda : <span id="no_transaksi"></span></h3></p>
+					<p>Silahkan melakukan pencetakan transaksi</p>
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer" id="field_print">
+			
+		  </div>
+		</div>
+	  </div>
+	</div>
 </div>
 <?php $this->load->view('footer');?>
 <script>
@@ -1538,7 +1559,7 @@
 						var formData = new FormData();
 						formData.append('file', $('input[type=file]')[0].files[0]);
 						$.ajax({
-							url:'<?php echo base_url()?>index.php/transaksi/save_bukti?id='+(datax.data),
+							url:'<?php echo base_url()?>index.php/transaksi/save_bukti?id='+(datax.data.id),
 							type:"post",
 							data:  formData,
 							processData:false,
@@ -1548,21 +1569,27 @@
 							success: function(data){
 								alert('Transaksi berhasil');
 								$('#invoice_status').val(0);
-								//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
-								location.replace('<?php echo base_url()?>index.php/transaksi/create_invoice');
+								//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
+								//location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
 							  
 							}
 						});
+						
 					}else if(datax.code == 1){
 						alert('Simpan gagal !');
-					}else if(datax.code == 2){
-						alert('Simpan gagal, Nomor Transaksi Sudah Digunakan !');
 					}else{
 						alert('Transaksi berhasil !');
-						//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv=2&preview=no&no_termin=1");
-						location.replace('<?php echo base_url()?>index.php/transaksi/create_invoice');
+						//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
+						//location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
 					}
+					
 					document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right" onclick="return simpan_invoice()"><i class="fa fa-save"></i> Simpan</span>';
+					
+					
+					$('#field_print').empty();
+					$('#field_print').append('<button class="btn btn-info" onclick="return print_btn(1,&#39;'+datax.guid+'&#39;)">Print Struk</button><button class="btn btn-success" onclick="return print_btn(2,&#39;'+datax.guid+'&#39;)">Print Order</button><button class="btn btn-warning" onclick="return print_btn(3,&#39;'+datax.guid+'&#39;)">Print Invoice Dan Order</button><button type="button" class="btn btn-default" onclick="return print_btn(4)">Tutup</button>');
+					
+					$('#modal-print-sales').modal();
 				}
 			});
 		}else{
@@ -1572,6 +1599,21 @@
 		}
 		return false;
 	});
+	
+	function print_btn(x=null,guid=null){
+		if(x == 1){ 
+			//print struk
+			window.open('<?php echo base_url()?>index.php/transaksi/invoice_print?inv='+guid+"&sv=5&preview=no&no_termin="+$('#termin_ke').val());
+		}else if(x == 2){
+			//print order
+			window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+guid+"&sv=4&preview=no&no_termin="+$('#termin_ke').val());
+		}else if(x == 3){
+			//print invoice dan order
+			window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+guid+"&sv=1&preview=no&no_termin="+$('#termin_ke').val());
+		}else{
+			location.replace('<?php echo base_url()?>index.php/transaksi/list_transaksi');
+		}
+	}
 	
 	function view_invoice(){
 		if($('#id_pelanggan').val() == ''){

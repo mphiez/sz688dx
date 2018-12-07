@@ -101,14 +101,67 @@
 			if($search){
 				$where = "and upper(a.nomor_transaksi) like '%".strtoupper($search)."%'";
 			}
-			$query 	= "
-			SELECT
-				a.*, a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan
+			$query 	= "SELECT
+				a.nomor_transaksi, a.id_pelanggan
 			FROM
 				dk_transaksi a
-			left join dk_pembayaran b on a.nomor_transaksi = b.nomor_transaksi
 			where a.perusahaan='$perusahaan' and a.cabang='$cabang' and a.status='1' $where 
-			GROUP BY a.nomor_transaksi order by SUBSTR(a.nomor_invoice,4) *1 limit 0,10";
+			order by SUBSTR(a.nomor_transaksi,4) *1 limit 0,10";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return 0;
+			}
+		}
+		
+		function load_invoice_search($id=''){
+			$where = "";
+			if($id != ''){
+				$where = " e.nomor_transaksi = '$id' ";
+			}
+			
+			$query 	= "SELECT
+							a.jumlah_bayar AS tagih,
+							f.bayar AS bayar,
+							a.nomor_invoice,
+							e.nomor_transaksi,
+							a.id_pelanggan
+						FROM
+							dk_invoice a
+						LEFT JOIN (
+							SELECT
+								c.nomor_transaksi,
+								c.id
+							FROM
+								dk_transaksi c
+							WHERE
+								c.perusahaan = '".$this->session->userdata('perusahaan')."'
+							AND c.cabang = '".$this->session->userdata('pn_wilayah')."'
+							AND c.`status` = 1
+							GROUP BY
+								c.nomor_transaksi
+						) e ON e.nomor_transaksi = a.nomor_transaksi
+						LEFT JOIN (
+							SELECT
+								d.nomor_transaksi,
+							d.no_invoice,
+								sum(d.jumlah_bayar) bayar
+							FROM
+								dk_pembayaran d
+							WHERE
+								d.perusahaan = '".$this->session->userdata('perusahaan')."'
+							AND d.cabang = '".$this->session->userdata('pn_wilayah')."'
+							GROUP BY
+								d.no_invoice
+						) f ON f.no_invoice = a.nomor_invoice
+						WHERE
+							a.perusahaan = '".$this->session->userdata('perusahaan')."'
+						AND a.cabang = '".$this->session->userdata('pn_wilayah')."'
+						and a.`status` = 1
+						$where
+						ORDER BY
+							SUBSTR(a.nomor_transaksi, 2) * 1";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				return $q->result();
@@ -172,17 +225,34 @@
 			
 			//tagihan dari definisi ini adalah sisa bayar
 			//sisa tagihan
-			$query 	= "
-			SELECT
-				a.*, md5(a.id) as id_inv, md5(a.id_pelanggan) as id_pelanggan_dec, 
-				a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan,
-				a.jumlah_bayar - sum(if(a.nomor_transaksi = c.nomor_transaksi, if(c.status != 2,c.jumlah_bayar,0),0)) as sisa_tagihan
-			FROM
-				dk_transaksi a
-			left join dk_pembayaran b on a.nomor_transaksi = b.nomor_transaksi
-			left join dk_invoice c on a.nomor_transaksi = c.nomor_transaksi
-			where a.perusahaan='$perusahaan' and a.cabang='$cabang' $date $sts $admin
-			GROUP BY a.nomor_transaksi order by SUBSTR(a.tanggal_transaksi,2) *1
+			$query 	= "SELECT
+							e.tagihan as inv, f.bayar as byr, md5(a.id) as id_inv, a.*
+						FROM
+							dk_transaksi a
+						LEFT JOIN (
+							SELECT
+							c.nomor_transaksi, sum(c.jumlah_bayar) tagihan
+							FROM 
+								dk_invoice c
+							WHERE
+								c.perusahaan = '".$this->session->userdata('perusahaan')."'
+							AND c.cabang = '".$this->session->userdata('pn_wilayah')."'
+							and c.`status` != 2
+							GROUP BY c.nomor_transaksi
+						) e on e.nomor_transaksi = a.nomor_transaksi
+						LEFT JOIN (
+							SELECT
+							d.nomor_transaksi, sum(d.jumlah_bayar) bayar
+							FROM 
+								dk_pembayaran d
+							WHERE
+								d.perusahaan = '".$this->session->userdata('perusahaan')."'
+							AND d.cabang = '".$this->session->userdata('pn_wilayah')."'
+							GROUP BY d.nomor_transaksi
+						) f on f.nomor_transaksi = a.nomor_transaksi
+						WHERE
+							a.perusahaan = '".$this->session->userdata('perusahaan')."'
+						AND a.cabang = '".$this->session->userdata('pn_wilayah')."' order by SUBSTR(a.nomor_transaksi,2) *1
 			";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
@@ -272,16 +342,57 @@
 			}
 		}
 		
-		public function data_invoice_pelanggan($id = null){
+		public function data_invoice_pelanggan($id = null, $inv=null){
+			if($id != ''){
+				$where = " and md5(e.id) = '$id' ";
+			}
+			
+			if($inv != ''){
+				$where .= " and a.nomor_invoice = '$inv' ";
+			}
+			
 			$perusahaan = $this->session->userdata('perusahaan');
 			$cabang = $this->session->userdata('pn_wilayah');
 			$query 	= "SELECT
-				a.*, a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan
-			FROM
-				dk_transaksi a
-			left join dk_pembayaran b on a.nomor_transaksi = b.nomor_transaksi
-			where a.perusahaan='$perusahaan' and a.cabang='$cabang' and a.status='1' 
-			GROUP BY a.nomor_transaksi order by SUBSTR(a.nomor_invoice,4) *1";
+							a.jumlah_bayar AS tagih,
+							f.bayar AS bayar,
+							a.nomor_invoice,
+							e.nomor_transaksi
+						FROM
+							dk_invoice a
+						LEFT JOIN (
+							SELECT
+								c.nomor_transaksi,
+								c.id
+							FROM
+								dk_transaksi c
+							WHERE
+								c.perusahaan = '".$this->session->userdata('perusahaan')."'
+							AND c.cabang = '".$this->session->userdata('pn_wilayah')."'
+							AND c.`status` = 1
+							GROUP BY
+								c.nomor_transaksi
+						) e ON e.nomor_transaksi = a.nomor_transaksi
+						LEFT JOIN (
+							SELECT
+								d.nomor_transaksi,
+							d.no_invoice,
+								sum(d.jumlah_bayar) bayar
+							FROM
+								dk_pembayaran d
+							WHERE
+								d.perusahaan = '".$this->session->userdata('perusahaan')."'
+							AND d.cabang = '".$this->session->userdata('pn_wilayah')."'
+							GROUP BY
+								d.no_invoice
+						) f ON f.no_invoice = a.nomor_invoice
+						WHERE
+							a.perusahaan = '".$this->session->userdata('perusahaan')."'
+						AND a.cabang = '".$this->session->userdata('pn_wilayah')."'
+						and a.`status` = 1
+						$where
+						ORDER BY
+							SUBSTR(a.nomor_transaksi, 2) * 1";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				return $q->result();
@@ -353,6 +464,7 @@
 							'nomor_invoice'		=> $inv_no,
 							'tanggal_transaksi'	=> $tgl_transaksi = date('Y-m-d H:i:s'),
 							'status'			=> $sts,
+							'tipe_transaksi'	=> $tipe_transaksi,
 						);
 				$this->db->insert('dk_transaksi',$data1);
 				$id_ref = $this->db->insert_id();
@@ -403,9 +515,11 @@
 					$data1['jumlah_bayar'] 	= $jumlah_bayar;
 					$data1['create_date'] = date('Y-m-d H:i:s');
 					if($tipe_transaksi == 1){
+						unset($data1['tipe_transaksi']);
 						$data1['type_invoice'] 	= $this->input->post('type_invoice');
+						$this->db->insert('dk_invoice',$data1);
 					}
-					$this->db->insert('dk_invoice',$data1);
+					
 					
 					$ak_cred = '4-1110';//revenue - penjualan
 					$ak_deb = '1-1111';//kas
@@ -442,6 +556,7 @@
 				
 				if($tipe_transaksi == 0){
 					$data = array(
+									'no_invoice'			=> $inv_no,
 									'jumlah_bayar'			=> $jumlah_bayar,
 									'id_customer'			=> $this->input->post('id_pelanggan'),
 									'ref_transaksi'			=> $id_ref,
@@ -469,7 +584,7 @@
 				return false;
 			}else{
 				$this->db->trans_commit();
-				return $id_ref;
+				return array('id'=>$id_ref,'no_transaksi'=>$nomor_transaksi);
 			}
 		}
 		
@@ -607,31 +722,101 @@
 					$row['nm_debit'] = '1-1111';
 				}
 				
-				$perusahaan = $this->session->userdata('perusahaan');
-				$cabang = $this->session->userdata('pn_wilayah');
-				$query 	= "
-				SELECT
-					a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan
-				FROM
-					dk_transaksi a
-				left join dk_pembayaran b on a.nomor_transaksi = b.nomor_transaksi
-				where a.perusahaan='$perusahaan' and a.cabang='$cabang' and a.status='1' and a.nomor_transaksi = '".$row['nomor_transaksi']."' 
-				GROUP BY a.nomor_transaksi order by SUBSTR(a.nomor_invoice,4) *1";
-				$q 		= $this->db->query($query);
-				if($q->num_rows() > 0){
-					$ret = $q->result();
-					if(str_replace(',','',$row['bayar']) >= $ret[0]->tagihan){
-						$this->db->query("update dk_transaksi set status='0' where nomor_transaksi='".$row['nomor_transaksi']."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."'");
-					}
-				}else{
-					$this->db->query("update dk_transaksi set status='0' where nomor_transaksi='".$row['nomor_transaksi']."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' and jumlah_bayar <= '".str_replace(',','',$row['bayar'])."'"); 
+				if(str_replace(',','',$row['bayar']) == str_replace(',','',$row['total'])){
+					$this->db->query("update dk_invoice set status='0' where status != '0' and status != '2' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."' and nomor_transaksi='".$this->input->post('nomor_transaksi')."' and nomor_invoice='".$row['no_invoice']."'");
 				}
 				
-				
 				$data = array(
+								'no_invoice'			=> $row['no_invoice'],
 								'pesan'					=> $this->input->post('pesan'),
 								'jumlah_bayar'			=> str_replace(',','',$row['bayar']),
-								'id_customer'			=> $row['id_customer'],
+								'id_customer'			=> $this->input->post('id_pelanggan'),
+								'ref_transaksi'			=> "",
+								'metode_pembayaran'		=> $this->input->post('metode_pembayaran'),
+								'tanggal_bayar'			=> date("Y-m-d",strtotime(str_replace('/','-',$this->input->post('tanggal_bayar')))),
+								'referensi_pembayaran'	=> $row['referensi_pembayaran'],
+								'nomor_transaksi'		=> $this->input->post('nomor_transaksi'),
+								'debit'					=> $row['nm_debit'],
+								'nm_debit'				=> account_name($row['nm_debit']),
+								'credit'				=> '1-1320',
+								'nm_credit'				=> account_name('1-1320'),
+								'create_date'			=> date("Y-m-d H:i:s"),
+								'user'					=> $this->session->userdata('pn_id'),
+								'cabang'				=> $this->session->userdata('pn_wilayah'),
+								'perusahaan'			=> $this->session->userdata('perusahaan'),
+							);
+				$this->db->insert('dk_pembayaran',$data);
+				$id = $this->db->insert_id();
+				$id_temp .= $id."%";
+				
+				$debit = array(
+								'no_akun_debit'		=> $row['nm_debit'],
+								'nama_akun_debit'	=> account_name($row['nm_debit']),
+								'no_akun_credit'	=> '1-1320',//ar
+								'nama_akun_credit'	=> account_name('1-1320'),
+								'tanggal'			=> date('Y-m-d H:i:s'),
+								'no_bukti'			=> $this->input->post('nomor_transaksi'),
+								'keterangan'		=> 'Penjualan',
+								'type'				=> 'Debit',
+								'jumlah_debit'		=> str_replace(',','',$row['bayar']),
+								'jumlah_credit'		=> str_replace(',','',$row['bayar']),
+								'user'				=> $this->session->userdata('pn_id'),
+								'cabang'			=> $this->session->userdata('pn_wilayah'),
+								'perusahaan'		=> $this->session->userdata('perusahaan'),
+								'create_date'		=> date("Y-m-d H:i:s"),
+								'status'			=> 0,
+								'no_ref'			=> $row['referensi_pembayaran'],
+							);
+				$this->db->insert('dk_jurnal',$debit);
+			}
+			
+			$this->db->query("UPDATE dk_transaksi
+								SET STATUS = '0'
+								WHERE
+									nomor_transaksi = '".$this->input->post('nomor_transaksi')."'
+								AND jumlah_bayar <= (
+									SELECT
+										sum(jumlah_bayar)
+									FROM
+										dk_pembayaran
+									WHERE
+										nomor_transaksi = '".$this->input->post('nomor_transaksi')."'
+									and perusahaan='".$this->session->userdata('perusahaan')."'
+									and cabang='".$this->session->userdata('pn_wilayah')."'
+								)
+								and perusahaan='".$this->session->userdata('perusahaan')."'
+								and cabang='".$this->session->userdata('pn_wilayah')."'
+								");
+			
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				return array('name'=>date("ymdHis")."_".$this->input->post('nomor_transaksi'),'id'=>$id_temp);
+			}
+		}
+		
+		function save_bayar_all(){
+			$this->db->trans_begin();
+			$id_temp = "";
+			$transaksi = $this->input->post('transaksi');
+			foreach($transaksi as $row){
+				$row['nm_debit'] = $this->input->post('nm_debit');
+				if($this->input->post('metode_pembayaran') == 'cash'){
+					$row['nm_debit'] = '1-1111';
+				}
+				
+				if(str_replace(',','',$row['bayar']) == str_replace(',','',$row['total'])){
+					$this->db->query("update dk_invoice set status='0' where status = '1' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."' and nomor_transaksi='".$row['nomor_transaksi']."' and nomor_invoice='".$row['no_invoice']."'");
+				}
+				
+				$data = array(
+								'no_invoice'			=> $row['no_invoice'],
+								'pesan'					=> $this->input->post('pesan'),
+								'jumlah_bayar'			=> str_replace(',','',$row['bayar']),
+								'id_customer'			=> $row['id_pelanggan'],
 								'ref_transaksi'			=> "",
 								'metode_pembayaran'		=> $this->input->post('metode_pembayaran'),
 								'tanggal_bayar'			=> date("Y-m-d",strtotime(str_replace('/','-',$this->input->post('tanggal_bayar')))),
@@ -653,7 +838,7 @@
 				$debit = array(
 								'no_akun_debit'		=> $row['nm_debit'],
 								'nama_akun_debit'	=> account_name($row['nm_debit']),
-								'no_akun_credit'	=> '1-1320',
+								'no_akun_credit'	=> '1-1320',//ar
 								'nama_akun_credit'	=> account_name('1-1320'),
 								'tanggal'			=> date('Y-m-d H:i:s'),
 								'no_bukti'			=> $row['nomor_transaksi'],
@@ -670,6 +855,24 @@
 							);
 				$this->db->insert('dk_jurnal',$debit);
 			}
+			
+			$this->db->query("UPDATE dk_transaksi
+								SET STATUS = '0'
+								WHERE
+									nomor_transaksi = '".$row['nomor_transaksi']."'
+								AND jumlah_bayar <= (
+									SELECT
+										sum(jumlah_bayar)
+									FROM
+										dk_pembayaran
+									WHERE
+										nomor_transaksi = '".$row['nomor_transaksi']."'
+									and perusahaan='".$this->session->userdata('perusahaan')."'
+									and cabang='".$this->session->userdata('pn_wilayah')."'
+								)
+								and perusahaan='".$this->session->userdata('perusahaan')."'
+								and cabang='".$this->session->userdata('pn_wilayah')."'
+								");
 			
 			if ($this->db->trans_status() === FALSE)
 			{
@@ -716,6 +919,7 @@
 			$data1 = array(
 						'discount'			=> str_replace(',','',$this->input->post('discount')),
 						'nama_pelanggan'	=> $nm_pelanggan,
+						'id_pelanggan'		=> $this->input->post('id_pelanggan'),
 						'email'				=> $this->input->post('email_pelanggan'),
 						'no_ref'			=> $this->input->post('no_referensi'),
 						'alamat_tagih'		=> $this->input->post('alamat_penagihan'),
@@ -731,7 +935,7 @@
 						'nomor_invoice'		=> $inv_no,
 						'status'			=> $sts,
 					);
-			if($this->input->post('termin_ke') > 1){
+			if($this->input->post('termin_ke') == 1){
 				
 				$this->db->where('id',$this->input->post('id_transaksi'));
 				$this->db->update('dk_transaksi',$data1);
@@ -836,6 +1040,7 @@
 				$data = array(
 								'id_customer'			=> $this->input->post('id_pelanggan'),
 								'ref_transaksi'			=> $id_ref,
+								'no_invoice'			=> $inv_no,
 								'metode_pembayaran'		=> 'Cash',
 								'tanggal_bayar'			=> date('Y-m-d'),
 								'referensi_pembayaran'	=> $this->input->post('no_referensi'),
@@ -938,15 +1143,19 @@
 			if($preview == 'yes'){
 				$prev = "_preview";
 			}
-			$query 	= "select a.id as id_transaksi, a.email as email_pelanggan,a.*, b.*, c.*, d.logo, d.nama_perusahaan, d.nomor_telfon telfon_perusahaan, d.email as email_perusahaan, d.no_fax fax_perusahaan, d.alamat alamat_perusahaan, d.fullname, d.no_bank1, d.no_bank2, d.atasnama_bank1, d.atasnama_bank2, d.bank1, d.bank2 from dk_transaksi".$prev." as a right join dk_transaksi_detail".$prev." as b on a.id = b.id_ref left join dk_customer c on a.id_pelanggan = id_customer left join dk_company d on a.perusahaan = d.id where md5(a.id) = '$id' and a.id_pelanggan != ''  and a.perusahaan='".$this->session->userdata('perusahaan')."' and a.cabang='".$this->session->userdata('pn_wilayah')."'";
+			
+			$where = "";
+			if($sv != 5){
+				$where = " and a.id_pelanggan != '' ";
+			}
+			$query 	= "select a.id as id_transaksi, a.tanggal_transaksi as tgl_transaksi_header, a.email as email_pelanggan,a.*, b.*, c.*, d.logo, d.nama_perusahaan, d.nomor_telfon telfon_perusahaan, d.email as email_perusahaan, d.no_fax fax_perusahaan, d.alamat alamat_perusahaan, d.fullname, d.no_bank1, d.no_bank2, d.atasnama_bank1, d.atasnama_bank2, d.bank1, d.bank2 from dk_transaksi".$prev." as a right join dk_transaksi_detail".$prev." as b on a.id = b.id_ref left join dk_customer c on a.id_pelanggan = id_customer left join dk_company d on a.perusahaan = d.id where md5(a.id) = '$id' $where  and a.perusahaan='".$this->session->userdata('perusahaan')."' and a.cabang='".$this->session->userdata('pn_wilayah')."'";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				
 				$ret = $q->result();
 				if($no_termin != 0){
 					$row = $ret[0];
-					
-					$q_inv = $this->db->query("select * from dk_invoice".$prev." where nomor_termin='$no_termin' and nomor_transaksi='".$row->nomor_transaksi."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'");
+					$q_inv = $this->db->query("select * from dk_invoice".$prev." where nomor_termin='$no_termin' and nomor_transaksi='".$row->nomor_transaksi."' and perusahaan='".$this->session->userdata('perusahaan')."' and status !='2' and cabang='".$this->session->userdata('pn_wilayah')."'");
 					$ret[0]->detail = array();
 					if($q_inv->num_rows() > 0){
 						$ret[0]->detail = $q_inv->result();
@@ -1295,11 +1504,10 @@
 			$cabang = $this->session->userdata('pn_wilayah');
 			$query 	= "
 			SELECT
-				a.*, a.jumlah_bayar - sum(if(a.nomor_transaksi = b.nomor_transaksi, b.jumlah_bayar,0)) as tagihan
+				a.*
 			FROM
 				dk_transaksi a
-			left join dk_pembayaran b on a.nomor_transaksi = b.nomor_transaksi
-			where a.perusahaan='$perusahaan' and a.cabang='$cabang' and a.status='1' and md5(a.id_pelanggan) = '$id' 
+			where a.perusahaan='$perusahaan' and a.cabang='$cabang' and a.status='1' and md5(a.id) = '$id' 
 			GROUP BY a.nomor_transaksi order by SUBSTR(a.nomor_invoice,4) *1";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){

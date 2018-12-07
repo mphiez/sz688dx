@@ -63,12 +63,13 @@ class Transaksi extends CI_Controller {
 	public function pembayaran(){
 		
 		$id = $this->input->get('id');
+		$inv = $this->input->get('inv');
 		if(isset($id)){
 			$data['data_invoice']				= $this->transaksi_model->load_invoice($id);
 			if($data['data_invoice'] > 0){
-				$data['data_pelanggan']				= $this->transaksi_model->data_invoice_pelanggan($data['data_invoice'][0]->id_pelanggan);
+				$data['data_pelanggan']			= $this->transaksi_model->data_invoice_pelanggan($id,$inv);
 			}else{
-				$data['data_pelanggan'] = "";
+				$data['data_pelanggan'] 		= "";
 			}
 			$data['load_data']					= 1;
 		}else{
@@ -87,9 +88,9 @@ class Transaksi extends CI_Controller {
 		$sv = $this->input->get('sv');
 		$no_termin = $this->input->get('no_termin');
 		$preview = $this->input->get('preview');
-		if((isset($mode) || $mode != '') && $preview != 'yes'){
+		/* if((isset($mode) || $mode != '') && $preview != 'yes'){
 			$this->transaksi_model->createInvoice($id);
-		}
+		} */
 		
 		$data['data_invoice']			= $this->transaksi_model->dataInvoice($id, $sv, $preview, $no_termin,$mode);
 		if($preview == 'yes'){
@@ -286,6 +287,26 @@ class Transaksi extends CI_Controller {
 		echo json_encode($return);
 	}
 	
+	function load_invoice_search(){
+		$id = $this->input->post('id');
+		$datax = $this->transaksi_model->load_invoice_search($id);
+		if($datax){
+			$return = array(
+				'data' => $datax,
+				'code' => 0,
+				'guid' => 0
+			);
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
 	public function number(){
 		echo to_number($this->input->post('total'));
 	}
@@ -303,13 +324,13 @@ class Transaksi extends CI_Controller {
 				$return = array(
 					'data' => $datax,
 					'code' => 2,
-					'guid' => md5($datax)
+					'guid' => md5($datax['id'])
 				);
 			}else{
 				$return = array(
 					'data' => $datax,
 					'code' => 0,
-					'guid' => md5($datax)
+					'guid' => md5($datax['id'])
 				);
 			}
 			
@@ -354,6 +375,34 @@ class Transaksi extends CI_Controller {
 	public function save_bayar(){
 		$post = $this->input->post();
 		$datax = $this->transaksi_model->save_bayar($post);
+		if($datax){
+			if($datax == '-1'){
+				$return = array(
+					'data' => $datax,
+					'code' => 2,
+					'guid' => $datax
+				);
+			}else{
+				$return = array(
+					'data' => $datax,
+					'code' => 0,
+					'guid' => $datax
+				);
+			}
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function save_bayar_all(){
+		$post = $this->input->post();
+		$datax = $this->transaksi_model->save_bayar_all($post);
 		if($datax){
 			if($datax == '-1'){
 				$return = array(
@@ -478,13 +527,19 @@ class Transaksi extends CI_Controller {
 			$temp = array();
 			foreach($datax as $row){
 				$row->detail = $this->transaksi_model->load_list_invoice($row->nomor_transaksi);
+				$row->tagihan = number_format($row->jumlah_bayar - $row->byr);
+				$row->sisa_tagihan = number_format($row->jumlah_bayar - $row->inv);
 				$row->jumlah_bayar = number_format($row->jumlah_bayar);
 				$row->jumlah_item = number_format($row->jumlah_item);
 				$row->jumlah_pajak = number_format($row->jumlah_pajak);
 				$row->sub_total = number_format($row->sub_total);
 				$row->discount = number_format($row->discount);
-				$row->tagihan = number_format($row->tagihan);
-				$row->sisa_tagihan = number_format($row->sisa_tagihan);
+				
+				if($row->tipe_transaksi == 0){
+					$row->tagihan = 0;
+					$row->sisa_tagihan = 0;
+				}
+				
 				array_push($temp, $row);
 			}
 			$return = array(

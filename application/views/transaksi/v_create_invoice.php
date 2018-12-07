@@ -93,6 +93,7 @@
 			$pesan = $row->pesan;
 			$nomor_invoice = $row->nomor_invoice;
 			$jumlah_termin = $row->jumlah_termin;
+			$tgl_transaksi_header = $row->tgl_transaksi_header;
 		}
 	?>
 	
@@ -144,7 +145,7 @@
 									<div class="input-group-addon">
 										<i class="fa fa-calendar"></i>
 									</div>
-									<input type="text" id="tanggal_transaksi" class="form-control" readonly value="<?php echo date("d/m/Y",strtotime($tanggal_transaksi))?>">
+									<input type="text" id="tanggal_transaksi" class="form-control" readonly value="<?php echo date("d/m/Y",strtotime($tgl_transaksi_header))?>">
 								</div>
 							</div>
 						</div>
@@ -215,13 +216,13 @@
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Deskripsi Penagihan</label>
-								<input type="text" id="deskripsi_termin" class="form-control">
+								<textarea type="text" id="deskripsi_termin" class="form-control"></textarea>
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>No. Pembayaran / Termin</label>
-								<input type="text" id="termin_ke" class="form-control money" value="<?php echo ($no_termin+1)?>">
+								<input type="text" id="termin_ke" readonly class="form-control money" value="<?php echo ($no_termin+1)?>">
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
@@ -277,7 +278,7 @@
 									<td><textarea style="height: 33px;" <?php if($no_termin >= 1){echo "readonly";}?> id="deskripsi_<?php echo $i?>" value="<?php echo $rows->deskripsi?>" class="form-control"></textarea></td>
 									<td>
 										<?php if($no_termin >= 1){?>
-											<input type="text" value="<?php echo $rows->kuantitas?>" id="kuantitas_<?php echo $i?>" onkeyup="return hitung_item(<?php echo $i;?>)" class="form-control">
+											<input type="text" value="<?php echo $rows->kuantitas?>" readonly id="kuantitas_<?php echo $i?>" onkeyup="return hitung_item(<?php echo $i;?>)" class="form-control">
 										<?php }else{?>
 										<div class="input-group">
 											<div class="input-group-addon" style="padding: 5px;">
@@ -1406,10 +1407,21 @@
 <?php $this->load->view('footer');?>
 <script>
 	function check_tagihan(){
-		if(decimal($('#jumlah_termin').val()) *1 > '<?php echo $jumlah_bayar - $jumlah_tagihan;?>'){
-			
-			alert('Total tagihan tidak boleh lebih besar dari penjualan / sisa bayar');
-			$('#jumlah_termin').val('<?php echo $jumlah_bayar - $jumlah_tagihan;?>');
+		var jum_bayar = decimal($('#jumlah_termin').val()) *1;
+		var jum_jual = decimal($('#total').val()) *1;
+		if($('#termin_ke').val() == '1'){
+			if(jum_bayar > jum_jual){
+					
+				alert('Total tagihan tidak boleh lebih besar dari penjualan / sisa bayar');
+				$('#jumlah_termin').val(jum_jual);
+			}
+
+		}else{ 
+			if(decimal($('#jumlah_termin').val()) *1 > '<?php echo $jumlah_bayar - $jumlah_tagihan;?>'){
+					
+				alert('Total tagihan tidak boleh lebih besar dari penjualan / sisa bayar');
+				$('#jumlah_termin').val('<?php echo $jumlah_bayar - $jumlah_tagihan;?>');
+			}
 		}
 	}
 	
@@ -1578,6 +1590,20 @@
 			return false;
 		}
 		
+		
+		var jum_bayar = decimal($('#jumlah_termin').val()) *1;
+		var jum_jual = decimal($('#total').val()) *1;
+		
+		if($('#termin_ke').val() == '1' && $('#deskripsi_termin').val() == ''){
+			if(jum_bayar < jum_jual){
+				alert('Silahkan masukan deskripsi penagihan !');
+				return false;
+			}
+		}else if($('#termin_ke').val() > 1 && $('#deskripsi_termin').val() == ''){
+			alert('Silahkan masukan deskripsi penagihan !');
+			return false;
+		}
+		
 		if($('#invoice_status').val() == 1){
 			document.getElementById('btn_save').innerHTML = '<span class="btn btn-danger pull-right"><i class="fa fa-spinner"></i> Simpan</span>';
 		}
@@ -1606,6 +1632,7 @@
 		}else{
 			var sv = 0;
 		}
+		
 		if(transaksi.length > 0){
 			$.ajax({
 				url: '<?php echo base_url()?>index.php/transaksi/save_invoice',

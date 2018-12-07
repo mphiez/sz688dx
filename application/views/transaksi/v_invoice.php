@@ -20,8 +20,6 @@ sv = 4 // halaman 1 hanya sales order
 			$telfon_perusahaan = $row->telfon_perusahaan;
 			$email_perusahaan = $row->email_perusahaan;
 			$fax_perusahaan = $row->fax_perusahaan;
-			$tanggal_invoice = $row->tanggal_invoice;
-			$nomor_invoice = $row->nomor_invoice;
 			$id_pelanggan = $row->id_pelanggan;
 			$jumlah_termin = $row->jumlah_termin;
 			$nama_customer = $row->nama_customer;
@@ -35,6 +33,7 @@ sv = 4 // halaman 1 hanya sales order
 			$fullname = $row->fullname;
 			$nomor_transaksi = $row->nomor_transaksi;
 			$tanggal_transaksi = $row->tanggal_transaksi;
+			$tgl_transaksi_header = $row->tgl_transaksi_header;
 			
 			$nomor_faktur = $row->nomor_faktur;
 			
@@ -44,6 +43,15 @@ sv = 4 // halaman 1 hanya sales order
 			$no_bank2 = $row->no_bank2;
 			$bank1 = $row->bank1;
 			$bank2 = $row->bank2;
+			
+			
+		}
+		
+		if(!empty($data_invoice[0]->detail)){
+				foreach($data_invoice[0]->detail as $row){
+					$tanggal_invoice = $row->tanggal_invoice;
+					$nomor_invoice = $row->nomor_invoice;
+				}
 		}
 		$grand = $jumlah - $discount;
 		$discount_1 = $discount;
@@ -162,8 +170,47 @@ table.bordered th {
 	float:right;
 }
 
-.button_print:hover{
+/* .button_print:hover{
 	background-color:lightblue;
+} */
+
+.btn-info {
+    background-color: #00c0ef;
+	border-color: #00acd6;
+}
+.btn {
+    border-radius: 3px;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border: 1px solid transparent;
+}
+
+.btn:hover {
+	background:#07a1c6;
+}
+
+.btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+	text-decoration: none;
+	color:white;
 }
 
 </style>
@@ -177,17 +224,17 @@ table.bordered th {
 		$no_termin = $this->input->get('no_termin');
 		?>
 		
-		<a href="<?php echo base_url()?>index.php/transaksi/invoice?inv=<?php echo $inv;?>&sv=1&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" style="width:80px;margin:5px;text-align:center"><i class="fa fa-file"> </i> Invoice & Penjualan .PDF</a>
+		<a class="btn btn-info" href="<?php echo base_url()?>index.php/transaksi/invoice?inv=<?php echo $inv;?>&sv=1&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" ><i class="fa fa-file"> </i> Invoice & Penjualan .PDF</a>
 		
 		
-		<a href="<?php echo base_url()?>index.php/transaksi/invoice?inv=<?php echo $inv;?>&sv=4&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" style="width:80px;margin:5px;text-align:center"><i class="fa fa-file"> </i> Invoice .PDF</a>
+		<a class="btn btn-info" href="<?php echo base_url()?>index.php/transaksi/invoice?inv=<?php echo $inv;?>&sv=4&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" ><i class="fa fa-file"> </i> Invoice .PDF</a>
 		
 		
-		<a href="<?php echo base_url()?>index.php/transaksi/invoice_print?inv=<?php echo $inv;?>&sv=5&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" style="width:80px;margin:5px;text-align:center"><i class="fa fa-file"> </i> Print Struk</a>
+		<a class="btn btn-info" href="<?php echo base_url()?>index.php/transaksi/invoice_print?inv=<?php echo $inv;?>&sv=5&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" style=";margin:5px;text-align:center"><i class="fa fa-print"> </i> Print Struk</a>
 		
-		<a href="<?php echo base_url()?>index.php/transaksi/invoice_print?inv=<?php echo $inv;?>&sv=4&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" style="width:80px;margin:5px;text-align:center"><i class="fa fa-print"> </i> Print Invoice</a>
+		<a class="btn btn-info" href="<?php echo base_url()?>index.php/transaksi/invoice_print?inv=<?php echo $inv;?>&sv=4&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" style="margin:5px;text-align:center"><i class="fa fa-print"> </i> Print Invoice</a>
 		
-		<a href="<?php echo base_url()?>index.php/transaksi/invoice_print?inv=<?php echo $inv;?>&sv=1&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" style="width:80px;margin:5px;text-align:center"><i class="fa fa-print"> </i> Print Invoice & Penjualan</a>
+		<a class="btn btn-info" href="<?php echo base_url()?>index.php/transaksi/invoice_print?inv=<?php echo $inv;?>&sv=1&preview=no&no_termin=<?php echo $no_termin?>" target="blank" class="button_print" style="margin:5px;text-align:center"><i class="fa fa-print"> </i> Print Invoice & Penjualan</a>
 		<?php
 	}
 	
@@ -217,7 +264,7 @@ table.bordered th {
 				<p><span style="text-align:left">Nomor Faktur</span></p>
 			</td>
 			<td align="right"  width="15%">
-				<p><span style="text-align:right"><?php echo date("d/m/y",strtotime($tanggal_invoice))?></span></p>
+				<p><span style="text-align:right"><?php echo date("d/m/Y",strtotime($tanggal_invoice))?></span></p>
 				<p><span style="text-align:right"><?php echo $nomor_invoice?></span></p>
 				<p><span style="text-align:right"><?php echo $id_pelanggan?></span></p>
 				<p><span style="text-align:right">&nbsp;<?php echo $nomor_faktur?></span></p>
@@ -410,7 +457,7 @@ table.bordered th {
 				<p><span style="text-align:left">Customer ID.</span></p>
 			</td>
 			<td align="right"  width="15%">
-				<p><span style="text-align:right"><?php echo date("d/m/y",strtotime($tanggal_transaksi))?></span></p>
+				<p><span style="text-align:right"><?php echo date("d/m/Y",strtotime($tgl_transaksi_header))?></span></p>
 				<p><span style="text-align:right"><?php echo $nomor_transaksi?></span></p>
 				<p><span style="text-align:right"><?php echo $id_pelanggan?></span></p>
 			</td>
@@ -515,7 +562,16 @@ table.bordered th {
 						<div class="col-md-12">
 							<div class="gallery-sec">		
 								<div class="image-hover img-layer-slide-left-right" style="border-bottom: 2px solid #000;">
-									<img src="<?php echo $logo;?>" style="max-width: 160px;max-height:80px">				
+									<img src="<?php echo $logo;?>" style="max-width: 50%;max-height:80px">		
+									<div style="max-width: 50%;float:right;">
+										<p style="font-size:10px"><b><?php echo $nama_perusahaan;?><b></p>
+										<p style="font-size:10px"><span><?php echo $alamat_perusahaan;?></span><br><span> Telf. <?php echo $telfon_perusahaan?></span></p>
+										
+									</div>		
+								</div>
+								<div>
+									<p style="font-size:10px"><span><?php echo date("Y-m-d H:i:s")?></p>
+									
 								</div>
 							</div>
 						</div>
@@ -588,6 +644,6 @@ table.bordered th {
 	<script>
 		<?php if($print == 2){ 
 			echo "window.print();";
-			echo "window.close()";
+			//echo "window.close()";
 		} ?>
 	</script>

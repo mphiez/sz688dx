@@ -19,13 +19,11 @@
 		</div>
 		<?php if($data_invoice > 0){
 			foreach($data_invoice as $row){
-				$id_pelanggan 		= $row->id_pelanggan;
-				$nama_pelanggan 		= $row->nama_pelanggan;
+				$nama_pelanggan 	= $row->nama_pelanggan;
 				$email 				= $row->email;
 				$id_pelanggan 		= $row->id_pelanggan;
 				$alamat_tagih 		= $row->alamat_tagih;
 				$nomor_invoice 		= $row->nomor_invoice;
-				$jumlah_bayar 		= number_format($row->tagihan);
 				$nomor_transaksi 	= $row->nomor_transaksi;
 				$tanggal_transaksi 	= date("d/m/Y",strtotime($row->tanggal_transaksi));
 			}
@@ -41,7 +39,7 @@
 								<input type="hidden" id="id_pelanggan" value="<?php echo $id_pelanggan?>">
 								<input type="hidden" id="tipe_transaksi" value="0">
 								<input type="hidden" id="counter" value="<?php echo count($data_pelanggan)?>">
-								<input type="text" id="nama_pelanggan"  onkeyup="return cari_pelanggan()" value="<?php echo $nama_pelanggan?>" class="form-control" placeholder="[Auto]">
+								<input type="text" readonly id="nama_pelanggan"  onkeyup="return cari_pelanggan()" value="<?php echo $nama_pelanggan?>" class="form-control" placeholder="[Auto]">
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
@@ -61,6 +59,12 @@
 					<div class="col-md-12">
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group" >
+								<label>Nomor Transaksi</label>
+								<input type="text" id="nomor_transaksi" readonly class="form-control" value="<?php echo $nomor_transaksi?>">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-3">
+							<div class="form-group" >
 								<label>Tanggal Pembayaran</label>
 								<div class="input-group">
 									<div class="input-group-addon">
@@ -74,18 +78,6 @@
 							<div class="form-group" >
 								<label>No Referensi</label>
 								<input type="text" id="no_referensi" class="form-control moneydec">
-							</div>
-						</div>
-						<div class="col-sm-6 col-md-3" style="display:none">
-							<div class="form-group">
-								<label>Nomor Transaksi</label>
-								<div class="input-group">
-									<?php $id_transaksi = counter('c_sales')?>
-									<input type="text" id="nomor_transaksi" class="form-control" placeholder="[Auto]" value="<?php echo $nomor_transaksi?>">
-									<div class="input-group-addon">
-										<input type="checkbox" id="transaksi_otomatis" checked onclick="return auto_transaksi()"> Auto
-									</div>
-								</div>
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3"  style="display:none;">
@@ -144,43 +136,10 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-md-12" <?php if($load_data == 0){echo "style='display:none'";}?>>
-						<div class="col-sm-6 col-md-6">
-							<div class="form-group">
-								<label>Invoice Berlangsung</label>
-								<ul class="navbar" style="margin-right: 0px;list-style: none;">
-									<li class="dropdown">
-										<a class="dropdown-toggle btn btn-success" data-toggle="dropdown" href="#" style="padding: 5px 15px;margin-top:15px;">
-											<i class="fa fa-shopping-cart fa-fw"></i> Outstanding Invoice <i class="fa fa-caret-down"></i>
-										</a>
-										<ul class="dropdown-menu dropdown-messages">
-											<?php if($data_pelanggan > 0){
-												$i = 1;
-											foreach($data_pelanggan as $row){
-												if($nomor_invoice != $row->nomor_invoice){
-												$i++;
-											?>
-											<li class="divider"></li>
-											<li>
-												<div class="form-group col-md-12 hover_inv" onclick="return select_invoice(<?php echo $i?>);" style="padding: 5px 3px;margin-bottom:2px;">
-													<div class="col-md-1"><input type="checkbox" id="id_invoice_<?php echo $i?>" onclick="return select_invoice(<?php echo $i?>);"></div>
-													<label class="col-md-8"><?php echo $row->nomor_invoice?></label>
-												</div>
-											</li>
-											<?php } } }?>
-										</ul>
-									</li>
-									<i style="color:red">Silahkan klik tombol Outstanding Invoice, untuk pilih invoice dari <b><?php echo $nama_pelanggan?> </b></i>
-								</ul>
-								
-							</div>
-						</div>
-					</div>
 					<div class="col-md-12">
 						<table class="table table-hover table-strips">
 							<thead>
 								<tr>
-									<th width="20%">Nomor Transaksi</th>
 									<th width="20%">Nomor Invoice</th>
 									<th width="20%">Nomor Referensi</th>
 									<th width="20%">Total Tagihan</th>
@@ -188,51 +147,40 @@
 								</tr>
 							</thead>
 							<tbody id="produk">
-								<tr id="produk_1">
-									<td>
-										<input type="text" id="no_transaksi_1" value="<?php echo $nomor_transaksi?>" class="form-control">
-										<input type="hidden" id="id_cust_1" value="<?php echo $id_pelanggan?>" class="form-control">
-										<input type="hidden" id="pay_this_1" value="1" class="form-control">
-									</td>
-									<td>
-										<input type="text" id="no_invoice_1" readonly value="<?php echo $nomor_invoice?>" class="form-control">
-									</td>
-									<td>
-										<input type="text" id="referensi_pembayaran_1" class="form-control">
-									</td>
-									<td>
-										<input type="text" id="jumlah_1"  value="<?php echo $jumlah_bayar?>" class="form-control" readonly>
-									</td>
-									<td>
-										<input type="text" id="bayar_1" value="<?php echo $jumlah_bayar?>" class="form-control money" onkeyup="return check_payment(1)">
-									</td>
-								</tr>
-								<?php if($data_pelanggan > 0){
-										$i = 1;
+								<?php
+									if($data_pelanggan > 0){
+									$i = 0;
 									foreach($data_pelanggan as $row){
-										if($nomor_invoice != $row->nomor_invoice){
-										$i++;
-									?>
-									<tr id="produk_<?php echo $i?>" style="display:none">
-										<td>
-											<input type="text" id="no_transaksi_<?php echo $i?>" value="<?php echo $row->nomor_transaksi?>" class="form-control">
-											<input type="hidden" id="id_cust_<?php echo $i?>" value="<?php echo $row->id_pelanggan?>" class="form-control">
-											<input type="hidden" id="pay_this_<?php echo $i?>" value="0" class="form-control">
-										</td>
-										<td>
-											<input type="text" class="form-control" id="no_invoice_<?php echo $i?>" readonly value="<?php echo $row->nomor_invoice?>">
-										</td>
-										<td>
-											<input type="text" id="referensi_pembayaran_<?php echo $i?>" class="form-control">
-										</td>
-										<td>
-											<input type="text" id="jumlah_<?php echo $i?>"  value="<?php echo number_format($row->tagihan)?>" class="form-control" readonly>
-										</td>
-										<td>
-											<input type="text" id="bayar_<?php echo $i?>" value="<?php echo number_format($row->tagihan)?>" class="form-control money" onkeyup="return check_payment(<?php echo $i?>)">
-										</td>
-									</tr>
-								<?php } } }?>
+										if($row->tagih >= $row->bayar){
+											$i++;
+											if($this->input->get('inv') != ''){
+												$pay = '';
+												if($this->input->get('inv') == $row->nomor_invoice){
+													$pay = 'checked';
+												}
+											}else{
+												$pay = 'checked';
+											}?>
+											<tr id="produk_<?php echo $i?>">
+												<td>
+													<div class="input-group">
+														<div class="input-group-addon">
+															<input type="checkbox" id="no_inv_<?php echo $i?>" <?php echo $pay?>>
+														</div>
+														<input type="text" class="form-control" id="no_invoice_<?php echo $i?>" readonly value="<?php echo $row->nomor_invoice?>">
+													</div>
+												</td>
+												<td>
+													<input type="text" id="referensi_pembayaran_<?php echo $i?>" class="form-control">
+												</td>
+												<td>
+													<input type="text" id="jumlah_<?php echo $i?>"  value="<?php echo number_format($row->tagih - $row->bayar)?>" class="form-control" readonly>
+												</td>
+												<td>
+													<input type="text" id="bayar_<?php echo $i?>" value="<?php echo number_format($row->tagih - $row->bayar)?>" class="form-control money" onkeyup="return check_payment(<?php echo $i?>)">
+												</td>
+											</tr>
+								<?php } } } ?>
 							</tbody>
 						</table>
 					</div>
@@ -352,12 +300,10 @@
 			var temp = {
 				referensi_pembayaran	:$('#referensi_pembayaran_'+i).val(),
 				no_invoice				:$('#no_invoice_'+i).val(),
-				nomor_transaksi			:$('#no_transaksi_'+i).val(),
 				total					:$('#jumlah_'+i).val(),
-				id_customer				:$('#id_cust_'+i).val(),
 				bayar					:$('#bayar_'+i).val(),
 			}
-			if($('#no_invoice_'+i).val() != '' && $('#no_transaksi_'+i).val() != '' && decimal($('#bayar_'+i).val())*1 > 0 && $('#pay_this_'+i).val() == 1){
+			if ($('#no_inv_'+i).is(':checked')) {
 				transaksi.push(temp);
 			}
 		}
@@ -367,11 +313,13 @@
 				url: '<?php echo base_url()?>index.php/transaksi/save_bayar',
 				type: "POST",
 				data: {
+					nomor_transaksi		: $('#nomor_transaksi').val(),
 					no_referensi		: $('#no_referensi').val(),
 					metode_pembayaran	: $('#metode_pembayaran').val(),
 					tanggal_bayar		: $('#tanggal_transaksi').val(),
 					nm_debit 			: $('#tujuan_transfer').val(),
 					pesan 				: $('#tujuan_transfer').val(),
+					id_pelanggan 		: $('#id_pelanggan').val(),
 					transaksi			: transaksi
 				},
 				success: function(datax) {
@@ -409,36 +357,6 @@
 		}
 		return false;
 	});
-	
-	function add_product(){
-		var num = $('#counter').val();
-		num++;
-		$('#produk').append('<tr id="produk_'+num+'">'+
-									'<td>'+
-										'<div class="input-group">'+
-											'<div class="input-group-addon" onclick="return delete_produk('+num+')">'+
-												'<i class="fa fa-trash"></i>'+
-											'</div>'+
-											'<input type="text" id="no_invoice_'+num+'" onkeyup="return cari_invoice('+num+')" onchange="return check_produk('+num+')" class="form-control">'+
-										'</div>'+
-									'</td>'+
-									'<td>'+
-										'<input type="text" id="no_transaksi_'+num+'" onkeyup="return cari_transaksi('+num+')" class="form-control">'+
-										'<input type="hidden" id="id_cust_'+num+'" class="form-control">'+
-									'</td>'+
-									'<td>'+
-										'<input type="text" id="referensi_pembayaran_'+num+'" class="form-control" readonly>'+
-									'</td>'+
-									'<td>'+
-										'<input type="text" id="jumlah_'+num+'" class="form-control" readonly>'+
-									'</td>'+
-									'<td>'+
-										'<input type="text" id="bayar_'+num+'" class="form-control money" onkeyup="return check_payment('+num+')">'+
-									'</td>'+
-								'</tr>');
-		$('#counter').val(num);
-		$(".chosen-select").chosen({no_results_text: "Tidak Ditemukan, klik di sini untuk menambahkan", width: "100%"}); 
-	}
 	
 	function tujuan(){
 		if($('#metode_pembayaran').val() == 'cash'){
