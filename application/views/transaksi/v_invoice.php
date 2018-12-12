@@ -570,7 +570,7 @@ table.bordered th {
 									</div>		
 								</div>
 								<div>
-									<p style="font-size:10px"><span><?php echo date("Y-m-d H:i:s")?></p>
+									<p style="font-size:10px"><span><?php echo date("Y-m-d H:i:s")?><span class="pull-right"><?php echo $nomor_transaksi?></span></p>
 									
 								</div>
 							</div>

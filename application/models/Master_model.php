@@ -27,12 +27,40 @@
 			}
 		}
 		
-		public function getListPaket($param=null){		
+		public function getListPaket($param=null, $id=null){		
 			$where = "";
 			if($param){
-				$where = "where category = '$param'";
+				$where = "where category = '$param' ";
+			}
+			
+			if($id){
+				if($where == ''){
+					$where .= " where id='$id' ";
+				}else{
+					$where .= " and id='$id' ";
+				}
+			}
+			
+			if($where == ''){
+				$where .= " where perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' ";
+			}else{
+				$where .= " and perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' ";
 			}
 			$query	= "select *, if(status='1','Used', 'Not Used') as status_paket from dk_produk $where order by nama_produk";
+			$query 	= $this->db->query($query);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return 0;
+			}
+		}
+		
+		public function get_paket_detail($id=null){		
+			$where = " where a.perusahaan='".$this->session->userdata('perusahaan')."' and a.cabang ='".$this->session->userdata('pn_wilayah')."' ";
+			if($id != ''){
+				$where .= " and a.id_paket='$id'";
+			}
+			$query	= "select a.id_produk, a.qty, b.nama_produk  from dk_produk_detail a left join dk_produk b on a.id_produk = b.id_produk $where order by b.nama_produk";
 			$query 	= $this->db->query($query);
 			if($query->num_rows() > 0){
 				return $query->result();
@@ -335,6 +363,21 @@
 			}else{
 				$this->db->trans_commit();
 				return $id_paket;
+			}
+		}
+		
+		public function delete_produk($post = array()){
+			$this->db->trans_begin();
+			$this->db->where('id',$post['id']);
+			$this->db->update('dk_produk',$post);
+			
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				return true;
 			}
 		}
 	}

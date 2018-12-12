@@ -53,13 +53,18 @@
 			}
 		}
 		
-		public function search_produk($search){
+		public function search_produk($search,$type=null){
 			$where = "";
 			$limit = "";
 			if(!empty($search)){
 				$where = " and (upper(nama_produk) like '%".strtoupper($search)."%' or id_produk like '%".$search."%')";
 				$limit = "limit 0,10";
 			}
+			
+			if($type){
+				$where .= " and category !='Item Paket' ";
+			}
+			
 			$perusahaan = $this->session->userdata('perusahaan');
 			$cabang = $this->session->userdata('pn_wilayah');
 			$query 	= "select * from dk_produk where status = '1' and perusahaan='$perusahaan' and (cabang='$cabang' || all_cabang='Y') $where order by nama_produk $limit";
@@ -263,7 +268,7 @@
 		}
 		
 		function load_list_invoice($id){
-			$q 		= $this->db->query("select nomor_invoice, type_invoice, nomor_termin, status, if(status=1,'Open',if(status=2,'reject',if(status=3,'Transaksi','Paid'))) as status_invoice from dk_invoice where nomor_transaksi='$id'");
+			$q 		= $this->db->query("select nomor_invoice, type_invoice, nomor_termin, status, if(status=1,'Open',if(status=2,'reject',if(status=3,'Transaksi','Paid'))) as status_invoice from dk_invoice where nomor_transaksi='$id' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."' and status != 2");
 			if($q->num_rows() > 0){
 				return $q->result();
 			}else{
@@ -518,6 +523,38 @@
 						unset($data1['tipe_transaksi']);
 						$data1['type_invoice'] 	= $this->input->post('type_invoice');
 						$this->db->insert('dk_invoice',$data1);
+						
+						if($this->input->post('termin_ke') == 1){
+							foreach($transaksi as $row_s){
+								$q_stock	= "select category, id_produk, nama_produk, '".$row_s['kuantitas']."' as qty, '".date("Y-m-d H:i:s")."' as datetime, '".$inv_no."' as invoice, '".$nomor_transaksi."' as transaksi, 0 as status, ".$this->session->userdata('pn_wilayah')." as cabang, ".$this->session->userdata('perusahaan')." as perusahaan, '".$this->session->userdata('pn_id')."' as user from dk_produk where perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' and id_produk = '".$row_s['id_produk']."' and stock_awal >= '".$row_s['kuantitas']."'";
+								
+								$q_stock 		= $this->db->query($q_stock);
+								if($q_stock->num_rows() > 0){
+									$ret = $q_stock->result();
+									if($ret[0]->category != 'Item Paket'){
+										$this->db->insert('dk_pengeluaran_stock', $ret[0]);
+										$this->db->query("update dk_produk set stock_awal=stock_awal-".$row_s['kuantitas']." where perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' and id_produk = '".$row_s['id_produk']."'");
+									}
+									
+								}
+							}
+						}
+					}
+					
+					if($tipe_transaksi == 0){
+						foreach($transaksi as $row_s){
+							$q_stock	= "select category, id_produk, nama_produk, '".$row_s['kuantitas']."' as qty, '".date("Y-m-d H:i:s")."' as datetime, '".$inv_no."' as invoice, '".$nomor_transaksi."' as transaksi, 0 as status, ".$this->session->userdata('pn_wilayah')." as cabang, ".$this->session->userdata('perusahaan')." as perusahaan, '".$this->session->userdata('pn_id')."' as user from dk_produk where perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' and id_produk = '".$row_s['id_produk']."' and stock_awal >= '".$row_s['kuantitas']."'";
+							
+							$q_stock 		= $this->db->query($q_stock);
+							if($q_stock->num_rows() > 0){
+								$ret = $q_stock->result();
+								if($ret[0]->category != 'Item Paket'){
+									$this->db->insert('dk_pengeluaran_stock', $ret[0]);
+									$this->db->query("update dk_produk set stock_awal=stock_awal-".$row_s['kuantitas']." where perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' and id_produk = '".$row_s['id_produk']."'");
+								}
+								
+							}
+						}
 					}
 					
 					
@@ -534,6 +571,8 @@
 					}
 					
 					$debit = array(
+									'nomor_invoice'		=> $inv_no,
+									'nomor_transaksi'	=> $nomor_transaksi,
 									'no_akun_debit'		=> $ak_deb,
 									'nama_akun_debit'	=> account_name($ak_deb),
 									'no_akun_credit'	=> $ak_cred,
@@ -750,6 +789,8 @@
 				$id_temp .= $id."%";
 				
 				$debit = array(
+								'nomor_invoice'		=> $row['no_invoice'],
+								'nomor_transaksi'	=> $this->input->post('nomor_transaksi'),
 								'no_akun_debit'		=> $row['nm_debit'],
 								'nama_akun_debit'	=> account_name($row['nm_debit']),
 								'no_akun_credit'	=> '1-1320',//ar
@@ -836,6 +877,8 @@
 				$id_temp .= $id."%";
 				
 				$debit = array(
+								'nomor_invoice'		=> $row['no_invoice'],
+								'nomor_transaksi'	=> $row['nomor_transaksi'],
 								'no_akun_debit'		=> $row['nm_debit'],
 								'nama_akun_debit'	=> account_name($row['nm_debit']),
 								'no_akun_credit'	=> '1-1320',//ar
@@ -957,6 +1000,23 @@
 				$data1['nomor_transaksi'] 	= $this->input->post('nomor_transaksi');
 				$data1['create_date'] 	= date('Y-m-d H:i:s');
 				$this->db->insert('dk_invoice',$data1);
+				
+				if($this->input->post('termin_ke') == 1){
+					foreach($transaksi as $row_s){
+						$q_stock	= "select id_produk, nama_produk, '".$row_s['kuantitas']."' as qty, '".date("Y-m-d H:i:s")."' as datetime, '".$inv_no."' as invoice, '".$this->input->post('nomor_transaksi')."' as transaksi, 0 as status, '".$this->session->userdata('pn_wilayah')."' as cabang, '".$this->session->userdata('perusahaan')."' as perusahaan, '".$this->session->userdata('pn_id')."' as user from dk_produk where perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' and id_produk = '".$row_s['id_produk']."' and stock_awal >= '".$row_s['kuantitas']."'";
+						
+						$q_stock 		= $this->db->query($q_stock);
+						if($q_stock->num_rows() > 0){
+							$ret = $q_stock->result();
+							if($ret[0]->category != 'Item Paket'){
+								$this->db->insert('dk_pengeluaran_stock', $ret[0]);
+								$this->db->query("update dk_produk set stock_awal=stock_awal-".$row_s['kuantitas']." where perusahaan='".$this->session->userdata('perusahaan')."' and cabang ='".$this->session->userdata('pn_wilayah')."' and id_produk = '".$row_s['id_produk']."'");
+							}
+							
+							
+						}
+					}
+				}
 			}
 			
 			
@@ -1016,6 +1076,8 @@
 				}
 				
 				$debit = array(
+								'nomor_invoice'		=> $inv_no,
+								'nomor_transaksi'	=> $this->input->post('nomor_transaksi'),
 								'no_akun_debit'		=> $ak_deb,
 								'nama_akun_debit'	=> account_name($ak_deb),
 								'no_akun_credit'	=> $ak_cred,
@@ -1188,7 +1250,7 @@
 		
 		public function dataTermin($id= null, $no_transaksi = null){
 			
-			$q_inv = $this->db->query("select * from dk_invoice where nomor_transaksi='".$no_transaksi."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."' and status != 2");
+			$q_inv = $this->db->query("select * from dk_invoice where nomor_transaksi='".$no_transaksi."' and perusahaan='".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'");
 			if($q_inv->num_rows() > 0){
 				return $q_inv->result();
 			}else{
@@ -1338,8 +1400,6 @@
 			}
 			$post['perusahaan'] = $this->session->userdata('perusahaan');
 			$post['cabang'] = $this->session->userdata('pn_wilayah');
-			$post['user'] = $this->session->userdata('pn_id');
-			$post['create_date'] = date("Y-m-d H:i:s");
 			$paket_produk = '';
 			if(isset($post['paket_produk'])){
 				$paket_produk = $post['paket_produk'];
@@ -1347,14 +1407,27 @@
 			unset($post['paket_produk']);
 			$post['harga_jual'] = str_replace(',','',$post['harga_jual']);
 			$post['harga_beli'] = str_replace(',','',$post['harga_beli']);
-			$post['stock_awal'] = str_replace(',','',$post['stock_awal']);
-			$post['stock_minimum'] = str_replace(',','',$post['stock_minimum']);
-			$post['tanggal_diterima'] = date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_diterima'])));
-			$post['id_produk'] = counter('c_paket');
-			$this->db->insert('dk_produk',$post);
-			$id_ref = $this->db->insert_id();
+			if(isset($post['id']) && $post['id'] != ''){
+				$this->db->where('id', $post['id']);
+				$this->db->where('cabang',$this->session->userdata('pn_wilayah'));
+				$this->db->where('perusahaan',$this->session->userdata('perusahaan'));
+				$this->db->update('dk_produk',$post);
+				$id_ref = $post['id'];
+			}else{
+				$post['stock_awal'] = str_replace(',','',$post['stock_awal']);
+				$post['stock_minimum'] = str_replace(',','',$post['stock_minimum']);
+				$post['tanggal_diterima'] = date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_diterima'])));
+				$post['id_produk'] = counter('c_paket');
+				add_counter('c_paket');
+				$post['user'] = $this->session->userdata('pn_id');
+				$post['create_date'] = date("Y-m-d H:i:s");
+				$this->db->insert('dk_produk',$post);
+				$id_ref = $this->db->insert_id();
+			}
 			
-			if(empty($paket_produk)){
+			
+			
+			if($post['category'] != 'Item Paket' && $post['category'] != 'Item Jasa'){
 				$data = array(
 							'tanggal'			=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_diterima']))),
 							'keterangan'		=> "Pembelian Produk",
@@ -1370,23 +1443,30 @@
 							'perusahaan'		=> $this->session->userdata('perusahaan'),
 							'create_date'		=> date("Y-m-d H:i:s")
 						);
-				$this->db->insert('dk_jurnal',$data);
+				if(!isset($post['id']) || $post['id'] == ''){
+					$this->db->insert('dk_jurnal',$data);
+				}
+				
 			}
 			
-			if($paket_produk != ''){
+			if($post['category'] == 'Item Paket'){
+				$this->db->where('id_paket',$id_ref);
+				$this->db->delete('dk_produk_detail');
 				foreach($paket_produk as $row){
 					$data = array(
-									'id_produk' => $row,
+									'id_produk' => $row['id'],
+									'qty' => $row['qty'],
 									'id_paket' => $id_ref,
 									'user' => $this->session->userdata('pn_id'),
 									'create_date' => date("Y-m-d H:i:s"),
 									'status' => 0,
-									'perusahaan' => $this->session->userdata('perusahaan')
+									'perusahaan' => $this->session->userdata('perusahaan'),
+									'cabang' => $this->session->userdata('pn_wilayah')
 								);
 					$this->db->insert('dk_produk_detail',$data);
 				}
 			}
-			add_counter('c_paket');
+			
 			if ($this->db->trans_status() === FALSE)
 			{
 				$this->db->trans_rollback();
@@ -1419,6 +1499,29 @@
 			$this->db->trans_begin();
 			$this->db->where('id',$post['id']);
 			$this->db->update('dk_transaksi',array('status'=>$post['status'],'jumlah_termin'=>$post['jumlah_termin']));
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				
+				return true;
+			}
+		}
+		
+		public function do_reject($post=array()){
+			$this->db->trans_begin();
+			$query 	= "select id from dk_pembayaran where no_invoice = '".$post['nomor_invoice']."' and perusahaan = '".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return false;
+			}else{
+				$this->db->query("update dk_invoice set status='2' where nomor_invoice = '".$post['nomor_invoice']."' and perusahaan = '".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'");
+			
+				$this->db->query("update dk_jurnal set jumlah_credit='0', jumlah_debit='0' where nomor_invoice = '".$post['nomor_invoice']."' and perusahaan = '".$this->session->userdata('perusahaan')."' and cabang='".$this->session->userdata('pn_wilayah')."'");
+			}
+			
 			if ($this->db->trans_status() === FALSE)
 			{
 				$this->db->trans_rollback();
@@ -1474,6 +1577,8 @@
 					$ak_deb = '1-1320';//piutang usaha - penjualan
 					
 					$debit = array(
+									'nomor_invoice'		=> $inv_no,
+									'nomor_transaksi'	=> '',
 									'no_akun_debit'		=> $ak_deb,
 									'nama_akun_debit'	=> account_name($ak_deb),
 									'no_akun_credit'	=> $ak_cred,

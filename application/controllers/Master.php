@@ -42,6 +42,12 @@ class Master extends CI_Controller {
 		$this->load->view('master/customer/v_list_customer',$data);
 	}
 	
+	public function pembelian_barang(){
+		$data['judul'] 			= "Daftar Customer";
+		$data['cabang']				= $this->laporan_model->getCabang();
+		$this->load->view('master/customer/v_list_customer',$data);
+	}
+	
 	public function get_customer(){
 		$id = $this->input->post('id');
 		$cabang = $this->input->post('cabang');
@@ -116,8 +122,9 @@ class Master extends CI_Controller {
 		$start = intval($this->input->get("start"));
 		$length = intval($this->input->get("length"));
 		$param = $this->input->post('param');
+		$id = $this->input->post('id');
 
-		$data	= $this->master_model->getListPaket($param);
+		$data	= $this->master_model->getListPaket($param, $id);
 
 		$val = array();
 		
@@ -126,6 +133,30 @@ class Master extends CI_Controller {
 			foreach($data as $row){
 				$row->harga_jual = number_format($row->harga_jual);
 				$row->harga_beli = number_format($row->harga_beli);
+				array_push($temp,$row);
+			}
+		}
+		$result['data'] = $temp;
+		
+		echo json_encode($result);
+		exit();
+	}
+	
+	public function get_paket_detail(){
+		
+		$draw = intval($this->input->get("draw"));
+		$start = intval($this->input->get("start"));
+		$length = intval($this->input->get("length"));
+		$id = $this->input->post('id');
+
+		$data	= $this->master_model->get_paket_detail($id);
+
+		$val = array();
+		
+		$temp = array();
+		if($data > 0){
+			foreach($data as $row){
+				$row->qty = number_format($row->qty);
 				array_push($temp,$row);
 			}
 		}
@@ -354,6 +385,24 @@ class Master extends CI_Controller {
 		}else{
 			$return = array(
 				'data' => $datax,
+				'code' => 1
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function delete_produk(){
+		$post = $this->input->post();
+		$datax = $this->master_model->delete_produk($post);
+		if($datax){
+			$return = array(
+				'data' => null,
+				'code' => 0
+			);
+			
+		}else{
+			$return = array(
+				'data' => null,
 				'code' => 1
 			);
 		}

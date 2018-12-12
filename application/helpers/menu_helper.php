@@ -399,7 +399,7 @@
 			$kdadd		= "0";
 		}
 		$thnbln			= date("ymd");
-		return $id = $prefix.$kdadd.$kd_barang;
+		return $id = $prefix.$cab.'-'.$kdadd.$kd_barang;
 	}
 	
 	function add_counter($x, $cab=null){

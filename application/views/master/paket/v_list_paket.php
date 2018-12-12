@@ -291,6 +291,8 @@
 							<label>Nama Item</label>
 							<div>
 								<input type="text" class="form-control form-control-sm " value="" id="s_nama_item">
+								<input type="hidden" class="form-control form-control-sm " value="" id="s_id_produk">
+								<input type="hidden" class="form-control form-control-sm " value="" id="s_id">
 							</div>
 						</div>
 						<div class="form-group col-md-4" style="padding-left:0px">
@@ -426,7 +428,7 @@
 							</div>
 						</div>
 						<div class="form-group col-md-6" style="padding-left:0px">
-							<label>Stock Awal</label>
+							<label>Jumlah Stock</label>
 							<div>
 								<input type="text" class="form-control form-control-sm money" value="" id="s_stock_awal">
 							</div>
@@ -480,6 +482,8 @@
 							<label>Nama Item</label>
 							<div>
 								<input type="text" class="form-control form-control-sm " value="" id="n_nama_item">
+								<input type="hidden" class="form-control form-control-sm " value="" id="n_id_produk">
+								<input type="hidden" class="form-control form-control-sm " value="" id="n_id">
 							</div>
 						</div>
 						<div class="form-group col-md-4" style="padding-left:0px">
@@ -615,7 +619,7 @@
 							</div>
 						</div>
 						<div class="form-group col-md-6" style="padding-left:0px;display:none">
-							<label>Stock Awal</label>
+							<label>Jumlah Stock</label>
 							<div>
 								<input type="text" class="form-control form-control-sm money" value="" id="n_stock_awal">
 							</div>
@@ -669,14 +673,43 @@
 							<label>Nama Paket</label>
 							<div>
 								<input type="text" class="form-control form-control-sm " value="" id="p_nama_item">
+								<input type="hidden" class="form-control form-control-sm " value="" id="p_id_produk">
+								<input type="hidden" class="form-control form-control-sm " value="" id="p_id">
 							</div>
 						</div>
 						<div class="form-group" style="padding-right:0px;">
 							<label>Pilih Produk</label>
 							<div>
-									<select id="p_paket_produk" multiple class="form-control chosen-select">
-									
-									</select>
+								<table class="table table-strips">
+									<thead>
+										<tr>
+											<th>Nama Produk</th>
+											<th>Qty</th>
+										</tr>
+									</thead>
+									<input type="hidden" id="counter" value="1">
+									<tbody id="produk_paket">
+										<tr id="paket_1">
+											<td>
+												<div class="input-group">
+													<div class="input-group-addon" onclick="return delete_paket(1)">
+														<i class="fa fa-trash"></i>
+													</div>
+													<input type="text" class="form-control" id="nama_paket_1" onchange="check_produk(1)" onkeyup="return pilih_paket(1)">
+													<input type="hidden" class="form-control" id="id_paket_1">
+												</div>
+											</td>
+											<td>
+												<input type="text" class="form-control money" id="qty_paket_1" onkeyup="check_qty(1)">
+											</td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr>
+											<td colspan="2"><button class="btn btn-success" type="button" onclick="return tambah_paket()"><i class="fa fa-plus"></i> Tambah</button></td>
+										</tr>
+									</tfoot>
+								</table>
 							</div>
 						</div>
 						<div class="form-group" style="padding-right:0px;display:none">
@@ -812,7 +845,7 @@
 							</div>
 						</div>
 						<div class="form-group col-md-6" style="padding-left:0px;display:none">
-							<label>Stock Awal</label>
+							<label>Jumlah Stock</label>
 							<div>
 								<input type="text" class="form-control form-control-sm money" value="" id="p_stock_awal">
 							</div>
@@ -866,6 +899,8 @@
 							<label>Nama Jasa</label>
 							<div>
 								<input type="text" class="form-control form-control-sm " value="" id="j_nama_item">
+								<input type="hidden" class="form-control form-control-sm " value="" id="j_id_produk">
+								<input type="hidden" class="form-control form-control-sm " value="" id="j_id">
 							</div>
 						</div>
 						<div class="form-group col-md-4" style="padding-left:0px;display:none">
@@ -923,7 +958,7 @@
 							</div>
 						</div>
 						<div class="form-group col-md-6" style="padding-left:0px;display:none">
-							<label>Stock Awal</label>
+							<label>Jumlah Stock</label>
 							<div>
 								<input type="text" class="form-control form-control-sm money" value="" id="j_stock_awal">
 							</div>
@@ -1133,7 +1168,7 @@
 				
 		  </div>
 		  <div class="modal-footer" id="field_add_supplier" style="position: fixed;background: #337ab7;bottom: 0;right: 0;height:10vh;width: 100%;border-top: 1px solid lightgray;">
-			<button type="submit" class="btn btn-success" id="btn_add"><i class="fa fa-save"></i> Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+			<button type="button" onclick="return save_produk()" class="btn btn-success" id="btn_add"><i class="fa fa-save"></i> Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
 		  </div>
 		  </form>
 		</div>
@@ -1166,26 +1201,32 @@
 			},
 			"aoColumns": [
 				{
-						render: function (data, type, row, meta) {
-							var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">'+
-								'<li class="dropdown">'+
-									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
-										' <i style="color:black;" class="fa fa-caret-down"></i> '+
-									'</a>'+
-									'<ul class="dropdown-menu dropdown-messages" style="right: auto !important;">'+
-										'<li>'+
-											'<a href="<?php echo base_url()?>index.php/master/update_produk/'+row.id_produk+'" onclick="return edit(&#39;'+row.id+'&#39;)"><i class="fa fa-pencil"></i> Update</a>'+
-										'</li>'+
-										'<li class="divider"></li>'+
-										'<li>'+
-											'<a href="<?php echo base_url()?>index.php/master/update_produk/'+row.id_produk+'" onclick="return edit(&#39;'+row.id+'&#39;)"><i class="fa fa-search"></i> Detail</a>'+
-										'</li>'+
-									'</ul>'+
-								'</li>'+
-							'</ul>';
-							return inv;
+					render: function (data, type, row, meta) {
+						var x = '';
+						if(row.category == 'Item Stock'){
+							var x = 1;
+						}else if(row.category == 'Item Non-Stock'){
+							var x = 2;
+						}else if(row.category == 'Item Paket'){
+							var x = 3;
+						}else if(row.category == 'Item Jasa'){
+							var x = 4;
 						}
-					},
+						var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">'+
+							'<li class="dropdown">'+
+								'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
+									' <i style="color:black;" class="fa fa-caret-down"></i> '+
+								'</a>'+
+								'<ul class="dropdown-menu dropdown-messages" style="right: auto !important;">'+
+									'<li>'+
+										'<a href="#" onclick="return update_produk('+x+',&#39;'+row.id+'&#39;)"><i class="fa fa-pencil"></i> Update</a>'+
+									'</li>'+
+								'</ul>'+
+							'</li>'+
+						'</ul>';
+						return inv;
+					}
+				},
 				{ "data": "id_produk"},
 				{ "data": "nama_produk"},
 				{ "data": "category"},
@@ -1194,7 +1235,28 @@
 				{ "data": "harga_jual"},
 				{ "data": "harga_beli"},
 				{ "data": "stock_awal"},
-				{ "data": "status_paket"},
+				{
+					render: function (data, type, row, meta) {
+						var sts = row.status_paket;
+						var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;">'+
+							'<li class="dropdown">'+
+								'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
+									sts+'&nbsp;<i style="color:black;float:right" class="fa fa-caret-down"></i> '+
+								'</a>'+
+								'<ul class="dropdown-menu dropdown-messages" style="right: auto !important;">'+
+									'<li>'+
+										'<a href="#" onclick="return delete_produk(&#39;'+row.id+'&#39;,0)"><i class="fa fa-trash"></i> Used</a>'+
+									'</li>'+
+									'<li class="divider"></li>'+
+									'<li>'+
+										'<a href="#" onclick="return delete_produk(&#39;'+row.id+'&#39;,1)"><i class="fa fa-check"></i> Not Used</a>'+
+									'</li>'+
+								'</ul>'+
+							'</li>'+
+						'</ul>';
+						return inv;
+					}
+				},
 				{
 					render: function (data, type, row, meta) {
 						var img = row.foto;
@@ -1207,6 +1269,466 @@
 			],
 			"order": [[ 0, "asc" ]],
 		});
+	}
+	
+	
+	function delete_produk(id,status){
+		$.ajax({
+			url: '<?php echo base_url()?>index.php/master/delete_produk',
+			type: "POST",
+			data: {
+				id:id,
+				status:status
+			},
+			success: function(datax) {
+				var datax = JSON.parse(datax);
+				if(datax.ceode == 0){
+					alert('Berhasil update status');
+					load();
+				}else{
+					alert('Gagal update status');
+					load();
+				}
+			}
+		});
+	}
+	
+	function tambah_paket(){
+		var c = $('#counter').val();
+		c++;
+		$('#produk_paket').append('<tr id="paket_'+c+'">'+
+									'<td>'+
+										'<div class="input-group">'+
+											'<div class="input-group-addon" onclick="return delete_paket('+c+')">'+
+												'<i class="fa fa-trash"></i>'+
+											'</div>'+
+											'<input type="text" class="form-control" id="nama_paket_'+c+'" onchange="check_produk('+c+')" onkeyup="return pilih_paket('+c+')">'+
+											'<input type="hidden" class="form-control" id="id_paket_'+c+'">'+
+										'</div>'+
+									'</td>'+
+									'<td>'+
+										'<input type="text" class="form-control money" id="qty_paket_'+c+'" onkeyup="check_qty('+c+')">'+
+									'</td>'+
+								'</tr>');
+		$('#counter').val(c);
+	}
+	
+	function check_produk(x){
+		if($('#id_paket_'+x).val() == '' && $('#qty_paket_'+x).val() == ''){
+			$('#nama_paket_'+x).val('');
+			$('#id_paket_'+x).val('');
+			$('#qty_paket_'+x).val('');
+		}
+	}
+	
+	function delete_paket(x){
+		$('#paket_'+x).css('display','none');
+		$('#nama_paket_'+x).val('');
+		$('#id_paket_'+x).val('');
+		$('#qty_paket_'+x).val('');
+	}
+	
+	function pilih_paket(x){
+		$('#id_paket_'+x).val('');
+		$('#qty_paket_'+x).val('');
+		$.ajax({
+			url: '<?php echo base_url()?>index.php/transaksi/search_produk',
+			type: "POST",
+			data: {pn_name:$('#nama_paket_'+x).val(),type:'create_paket'},
+			success: function(datax) {
+				if($("#nama_produk_"+x).val() == ''){
+					$('#nama_paket_'+x).val('');
+					$('#id_paket_'+x).val('');
+					$('#qty_paket_'+x).val('');
+				}
+				var datax = JSON.parse(datax);
+
+					var list_name = new Array();
+					$.each(datax.data, function(i, item){
+						var nama_produk = item.nama_produk;
+						var id_produk = item.id_produk;
+						list_name.push(id_produk+' - '+nama_produk);
+					});
+					
+					$("#nama_paket_"+x).autocomplete({
+						source: list_name,
+						select: function( event , ui ) {
+							if(ui.item.label == 'Produk tidak ditemukan, Silahkan Tambah produk terlebih dahulu'){
+								$('#nama_paket_'+x).val('');
+								$('#id_paket_'+x).val('');
+								$('#qty_paket_'+x).val('');
+							}else{
+								var str = (ui.item.label).split(' - ');
+								var index = str[0];
+								var id_produk = datax.user_list[index]['id_produk'];
+								var nama_produk = datax.user_list[index]['nama_produk'];
+								$('#nama_paket_'+x).val(nama_produk);
+								$('#id_paket_'+x).val(id_produk);
+								$('#qty_paket_'+x).val(1);
+							}
+						},
+						response: function(event, ui) {
+							if (!(ui.content.length)) {
+									var noResult = { value:"",label:"Produk tidak ditemukan, Silahkan Tambah produk terlebih dahulu" };
+									ui.content.push(noResult);
+							}
+						}
+					});
+					
+					if(datax.code != '0'){
+						$('#nama_paket_'+x).val('');
+						$('#id_paket_'+x).val('');
+						$('#qty_paket_'+x).val('');
+					}
+			}
+		});
+	}
+	
+	
+	function check_qty(x){
+		if((decimal($('#qty_paket_'+x).val())*1 < 1)){
+			alert('Quantity minimal 1');
+			$('#qty_paket_'+x).val(1);
+		}
+	}
+	
+	
+	var prefix = "";
+	for(x=1;x<=4;x++){
+		if(x == 1){
+			prefix = 's_';
+		}else if(x == 2){
+			prefix = 'n_';
+		}else if(x == 3){
+			prefix = 'p_';
+		}else if(x == 4){
+			prefix = 'j_';
+		}
+		$('#'+prefix+'tipe_item').empty();
+		$('#'+prefix+'tipe_item').append('<option value="">&nbsp;&nbsp;</option>');
+		
+		$('#'+prefix+'supplier').empty();
+		$('#'+prefix+'supplier').append('<option value="">&nbsp;&nbsp;</option>');
+	}
+	
+	
+	$.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/item_type',
+		type: "POST",
+		data: {},
+		success: function(datax) {
+			var datax = JSON.parse(datax);
+			if(datax.code == 0){
+				$.each(datax.data, function(i, item){
+						
+					if(item.tipe == 'Stock'){
+						$('#s_tipe_item').append('<option value="'+item.id+'">'+item.name+'</option>');
+					}else if(item.tipe == 'Non-Stock'){
+						$('#n_tipe_item').append('<option value="'+item.id+'">'+item.name+'</option>');
+					}else if(item.tipe == 'Paket'){
+						$('#p_tipe_item').append('<option value="'+item.id+'">'+item.name+'</option>');
+					}else if(item.tipe == 'Jasa'){
+						$('#j_tipe_item').append('<option value="'+item.id+'">'+item.name+'</option>');
+					}
+					
+				});
+			}
+			for(x=1;x<=4;x++){
+				if(x == 1){
+					prefix = 's_';
+				}else if(x == 2){
+					prefix = 'n_';
+				}else if(x == 3){
+					prefix = 'p_';
+				}else if(x == 4){
+					prefix = 'j_';
+				}
+				$("#"+prefix+"tipe_item").trigger("chosen:updated");
+			}
+		}
+	});
+	
+	
+	
+	
+	/* $.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/search_produk',
+		type: "POST",
+		data: {pn_name:$('#nama_produk_'+x).val()},
+		success: function(datax) {
+			var datax = JSON.parse(datax);
+			$('#p_paket_produk').empty();
+			if(datax.code == 0){
+				$.each(datax.data, function(i, item){
+					if(item.category != 'Item Paket'){
+						$('#p_paket_produk').append('<option value="'+item.id_produk+'">'+item.nama_produk+'</option>');
+					}
+				});
+				$("#p_paket_produk").trigger("chosen:updated");
+			}
+		}
+	}); */
+	
+	$.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/supplier',
+		type: "POST",
+		data: {},
+		success: function(datax) {
+			var datax = JSON.parse(datax);
+			if(datax.code == 0){
+				$.each(datax.data, function(i, item){
+					for(x=1;x<=4;x++){
+						if(x == 1){
+							prefix = 's_';
+						}else if(x == 2){
+							prefix = 'n_';
+						}else if(x == 3){
+							prefix = 'p_';
+						}else if(x == 4){
+							prefix = 'j_';
+						}
+						$('#'+prefix+'supplier').append('<option value="'+item.id+'">'+item.nama+'</option>');
+					}
+					
+				});
+			}
+			for(x=1;x<=4;x++){
+				if(x == 1){
+					prefix = 's_';
+				}else if(x == 2){
+					prefix = 'n_';
+				}else if(x == 3){
+					prefix = 'p_';
+				}else if(x == 4){
+					prefix = 'j_';
+				}
+				$("#"+prefix+"supplier").trigger("chosen:updated");
+			}
+		}
+	});
+	
+	$.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/account_name',
+		type: "POST",
+		data: {},
+		success: function(datax) {
+			var datax = JSON.parse(datax);
+			if(datax.code == 0){
+				$.each(datax.data, function(i, item){
+					for(x=1;x<=4;x++){
+						if(x == 1){
+							prefix = 's_';
+						}else if(x == 2){
+							prefix = 'n_';
+						}else if(x == 3){
+							prefix = 'p_';
+						}else if(x == 4){
+							prefix = 'j_';
+						}
+						$('#'+prefix+'account_penjualan').append('<option value="'+item.account_num+'">'+item.account_name+'</option>');
+					}
+					
+				});
+			}
+			for(x=1;x<=4;x++){
+				if(x == 1){
+					prefix = 's_';
+				}else if(x == 2){
+					prefix = 'n_';
+				}else if(x == 3){
+					prefix = 'p_';
+				}else if(x == 4){
+					prefix = 'j_';
+				}
+				$("#"+prefix+"account_penjualan").trigger("chosen:updated");
+			}
+		}
+	});
+	
+	$.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/account_name_sales',
+		type: "POST",
+		data: {},
+		success: function(datax) {
+			var datax = JSON.parse(datax);
+			if(datax.code == 0){
+				$.each(datax.data, function(i, item){
+					for(x=1;x<=4;x++){
+						if(x == 1){
+							prefix = 's_';
+						}else if(x == 2){
+							prefix = 'n_';
+						}else if(x == 3){
+							prefix = 'p_';
+						}else if(x == 4){
+							prefix = 'j_';
+						}
+						$('#'+prefix+'account_penjualan_sales').append('<option value="'+item.account_num+'">'+item.account_name+'</option>');
+					}
+					
+				});
+			}
+			for(x=1;x<=4;x++){
+				if(x == 1){
+					prefix = 's_';
+				}else if(x == 2){
+					prefix = 'n_';
+				}else if(x == 3){
+					prefix = 'p_';
+				}else if(x == 4){
+					prefix = 'j_';
+				}
+				$("#"+prefix+"account_penjualan_sales").trigger("chosen:updated");
+			}
+		}
+	});
+	
+	
+	
+	function update_produk(x, val){
+		$('#modal-product').modal();
+		produk_option(x);
+		$.ajax({
+			url: '<?php echo base_url()?>index.php/master/get_paket',
+			type: "POST",
+			data: {id:val},
+			success: function(datax) {
+				var datax = JSON.parse(datax);
+				$( ".date" ).datepicker( "option", "disabled", true );
+				$.each(datax.data, function(i, item){
+					if(x == 1){
+						$('#s_id').val(item.id);
+						$('#s_id_produk').val(item.id_produk);
+						$('#s_nama_item').val(item.nama_produk);
+						$('#s_satuan_item').val(item.satuan);
+						$('#s_harga_jual').val(item.harga_jual);
+						$('#s_deskripsi').val(item.deskripsi);
+						$('#s_tipe_item').val(item.tipe_item);
+						$('#s_harga_beli').val(item.harga_beli);
+						$('#s_stock_awal').val(item.stock_awal);
+						$('#s_stock_awal').prop('readonly', true);
+						$('#s_minimal_stock').val(item.stock_minimum);
+						$('#s_tanggal_terima').val(item.tanggal_diterima);
+						$('#s_tanggal_terima').prop('readonly', true);
+						$('#s_account_penjualan').val(item.account);
+						$('#s_account_penjualan').prop('readonly', true);
+						$('#s_account_penjualan').prop('disabled', true).trigger("chosen:updated");
+						$('#s_account_penjualan_sales').val(item.account_sales);
+						$('#s_account_penjualan_sales').prop('readonly', true);
+						$('#s_account_penjualan_sales').prop('disabled', true).trigger("chosen:updated");
+						$('#s_supplier').val(item.supplier);
+					}else if(x == 2){
+						$('#n_id').val(item.id);
+						$('#n_id_produk').val(item.id_produk);
+						$('#n_nama_item').val(item.nama_produk);
+						$('#n_satuan_item').val(item.satuan);
+						$('#n_harga_jual').val(item.harga_jual);
+						$('#n_deskripsi').val(item.deskripsi);
+						$('#n_tipe_item').val(item.tipe_item);
+						$('#n_harga_beli').val(item.harga_beli);
+						$('#n_stock_awal').val(item.stock_awal);
+						$('#n_stock_awal').prop('readonly', true);
+						$('#n_minimal_stock').val(item.stock_minimum);
+						$('#n_tanggal_terima').val(item.tanggal_diterima);
+						$('#n_tanggal_terima').prop('readonly', true);
+						$('#n_account_penjualan').val(item.account);
+						$('#n_account_penjualan').prop('readonly', true);
+						$('#n_account_penjualan').prop('disabled', true).trigger("chosen:updated");
+						$('#n_account_penjualan_sales').val(item.account_sales);
+						$('#n_account_penjualan_sales').prop('readonly', true);
+						$('#n_account_penjualan_sales').prop('disabled', true).trigger("chosen:updated");
+						$('#n_supplier').val(item.supplier);
+					}else if(x == 3){
+						$('#p_id').val(item.id);
+						$('#p_id_produk').val(item.id_produk);
+						$('#p_nama_item').val(item.nama_produk);
+						$('#p_harga_jual').val(item.harga_jual);
+						$('#p_deskripsi').val(item.deskripsi);
+						$('#p_tipe_item').val(item.tipe_item);
+						$('#p_harga_beli').val(item.harga_beli);
+						$('#p_stock_awal').val(item.stock_awal);
+						$('#p_stock_awal').prop('readonly', true);
+						$('#p_minimal_stock').val(item.stock_minimum);
+						$('#p_tanggal_terima').val(item.tanggal_diterima);
+						$('#p_tanggal_terima').prop('disabled', true).trigger("chosen:updated");
+						$('#p_tanggal_terima').prop('readonly', true);
+						$('#p_account_penjualan').val(item.account_sales);
+						$('#p_account_penjualan').prop('readonly', true);
+						$('#p_account_penjualan').prop('disabled', true).trigger("chosen:updated");
+						$('#p_account_penjualan_sales').val(item.account);
+						$('#p_account_penjualan_sales').prop('readonly', true);
+						$('#p_account_penjualan_sales').prop('disabled', true).trigger("chosen:updated");
+						$('#p_supplier').val(item.supplier);
+						$('#produk_paket').empty();
+						$.ajax({
+							url: '<?php echo base_url()?>index.php/master/get_paket_detail',
+							type: "POST",
+							data: {id:item.id},
+							success: function(datax2) {
+								var datax2 = JSON.parse(datax2);
+								var c = 0;
+								$.each(datax2.data, function(i2, item2){
+									c++;
+									$('#produk_paket').append('<tr id="paket_'+c+'">'+
+										'<td>'+
+											'<div class="input-group">'+
+												'<div class="input-group-addon" onclick="return delete_paket('+c+')">'+
+													'<i class="fa fa-trash"></i>'+
+												'</div>'+
+												'<input type="text" class="form-control" id="nama_paket_'+c+'" value="'+item2.id_produk+' - '+item2.nama_produk+'" onchange="check_produk('+c+')" onkeyup="return pilih_paket('+c+')">'+
+												'<input type="hidden" class="form-control" value="'+item2.id_produk+'" id="id_paket_'+c+'">'+
+											'</div>'+
+										'</td>'+
+										'<td>'+
+											'<input type="text" class="form-control money" id="qty_paket_'+c+'" value="'+item2.qty+'" onkeyup="check_qty('+c+')">'+
+										'</td>'+
+									'</tr>');
+								});
+								$('#counter').val(c);
+							}
+						});
+					}else if(x == 4){
+						$('#j_id').val(item.id);
+						$('#j_id_produk').val(item.id_produk);
+						$('#j_nama_item').val(item.nama_produk);
+						$('#j_satuan_item').val(item.satuan);
+						$('#j_harga_jual').val(item.harga_jual);
+						$('#j_deskripsi').val(item.deskripsi);
+						$('#j_tipe_item').val(item.tipe_item);
+						$('#j_harga_beli').val(item.harga_beli);
+						$('#j_stock_awal').val(item.stock_awal);
+						$('#j_stock_awal').prop('readonly', true);
+						$('#j_minimal_stock').val(item.stock_minimum);
+						$('#j_tanggal_terima').val(item.tanggal_diterima);
+						$('#j_tanggal_terima').prop('disabled', true).trigger("chosen:updated");
+						$('#j_tanggal_terima').prop('readonly', true);
+						$('#j_account_penjualan').val(item.account);
+						$('#j_account_penjualan').prop('readonly', true);
+						$('#j_account_penjualan').prop('disabled', true).trigger("chosen:updated");
+						$('#j_account_penjualan_sales').val(item.account_sales);
+						$('#j_account_penjualan_sales').prop('readonly', true);
+						$('#j_account_penjualan_sales').prop('disabled', true).trigger("chosen:updated");
+						$('#j_supplier').val(item.supplier);
+					}
+				});
+				for(x=1;x<=4;x++){
+					if(x == 1){
+						prefix = 's_';
+					}else if(x == 2){
+						prefix = 'n_';
+					}else if(x == 3){
+						prefix = 'p_';
+					}else if(x == 4){
+						prefix = 'j_';
+					}
+					$("#"+prefix+"account_penjualan").trigger("chosen:updated");
+					$("#"+prefix+"account_penjualan_sales").trigger("chosen:updated");
+					$("#"+prefix+"supplier").trigger("chosen:updated");
+					$("#"+prefix+"tipe_item").trigger("chosen:updated");
+				}
+			}
+		});
+		
 	}
 	
 	function curency(x=''){
@@ -1328,8 +1850,48 @@
 	}
 
 	function create(x=null){
+		
+		for(i=1;i<=4;i++){
+			if(i == 1){
+				prefix = 's_';
+			}else if(i == 2){
+				prefix = 'n_';
+			}else if(i == 3){
+				prefix = 'p_';
+			}else if(i == 4){
+				prefix = 'j_';
+			}
+			$('#'+prefix+'minimal_stock').prop('readonly', false);
+			$('#'+prefix+'tanggal_terima').prop('readonly', false);
+			$('#'+prefix+'stock_awal').prop('readonly', false);
+			$('#'+prefix+'account_penjualan').prop('readonly', false);
+			$('#'+prefix+'account_penjualan_sales').prop('readonly', false);
+			$('#'+prefix+'account_penjualan').prop('disabled', false).trigger("chosen:updated");
+			$('#'+prefix+'account_penjualan_sales').prop('disabled', false).trigger("chosen:updated");
+			$( ".date" ).datepicker( "option", "disabled", false );
+			
+		}
+		
+		
+		$('#produk_paket').empty();
+		$('#produk_paket').append('<tr id="paket_1">'+
+									'<td>'+
+										'<div class="input-group">'+
+											'<div class="input-group-addon" onclick="return delete_paket(1)">'+
+												'<i class="fa fa-trash"></i>'+
+											'</div>'+
+											'<input type="text" class="form-control" id="nama_paket_1" onchange="check_produk(1)" onkeyup="return pilih_paket(1)">'+
+											'<input type="hidden" class="form-control" id="id_paket_1">'+
+										'</div>'+
+									'</td>'+
+									'<td>'+
+										'<input type="text" class="form-control money" id="qty_paket_1" onkeyup="check_qty(1)">'+
+									'</td>'+
+								'</tr>');
+		$('#counter').val(1);
+		
 		$('#field_add_supplier').empty();
-		$('#field_add_supplier').append('<button class="btn btn-success" id="btn_add"><i class="fa fa-save"></i> Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>');
+		$('#field_add_supplier').append('<button class="btn btn-success" onclick="return save_produk()" id="btn_add"><i class="fa fa-save"></i> Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>');
 		
 		$('#field_add_supplier').css('display','');
 		var nm = $('#nama_produk_'+x).val();
@@ -1340,196 +1902,6 @@
 		$("#panel5").slideUp("slow");
 		$("#mainPanel").slideDown("slow");
 		$('#nama_produk_add').val(nm);
-		
-		var prefix = "";
-		for(x=1;x<=4;x++){
-			if(x == 1){
-				prefix = 's_';
-			}else if(x == 2){
-				prefix = 'n_';
-			}else if(x == 3){
-				prefix = 'p_';
-			}else if(x == 4){
-				prefix = 'j_';
-			}
-			$('#'+prefix+'tipe_item').empty();
-			$('#'+prefix+'tipe_item').append('<option value="">&nbsp;&nbsp;</option>');
-			
-			$('#'+prefix+'supplier').empty();
-			$('#'+prefix+'supplier').append('<option value="">&nbsp;&nbsp;</option>');
-		}
-		
-		
-		$.ajax({
-			url: '<?php echo base_url()?>index.php/transaksi/item_type',
-			type: "POST",
-			data: {},
-			success: function(datax) {
-				var datax = JSON.parse(datax);
-				if(datax.code == 0){
-					$.each(datax.data, function(i, item){
-							
-						if(item.tipe == 'Stock'){
-							$('#s_tipe_item').append('<option value="'+item.id+'">'+item.name+'</option>');
-						}else if(item.tipe == 'Non-Stock'){
-							$('#n_tipe_item').append('<option value="'+item.id+'">'+item.name+'</option>');
-						}else if(item.tipe == 'Paket'){
-							$('#p_tipe_item').append('<option value="'+item.id+'">'+item.name+'</option>');
-						}else if(item.tipe == 'Jasa'){
-							$('#j_tipe_item').append('<option value="'+item.id+'">'+item.name+'</option>');
-						}
-						
-					});
-				}
-				for(x=1;x<=4;x++){
-					if(x == 1){
-						prefix = 's_';
-					}else if(x == 2){
-						prefix = 'n_';
-					}else if(x == 3){
-						prefix = 'p_';
-					}else if(x == 4){
-						prefix = 'j_';
-					}
-					$("#"+prefix+"tipe_item").trigger("chosen:updated");
-				}
-			}
-		});
-		
-		
-		
-		
-		$.ajax({
-			url: '<?php echo base_url()?>index.php/transaksi/search_produk',
-			type: "POST",
-			data: {pn_name:$('#nama_produk_'+x).val()},
-			success: function(datax) {
-				var datax = JSON.parse(datax);
-				$('#p_paket_produk').empty();
-				if(datax.code == 0){
-					$.each(datax.data, function(i, item){
-						if(item.category != 'Item Paket'){
-							$('#p_paket_produk').append('<option value="'+item.id_produk+'">'+item.nama_produk+'</option>');
-						}
-					});
-					$("#p_paket_produk").trigger("chosen:updated");
-				}
-			}
-		});
-		
-		$.ajax({
-			url: '<?php echo base_url()?>index.php/transaksi/supplier',
-			type: "POST",
-			data: {},
-			success: function(datax) {
-				var datax = JSON.parse(datax);
-				if(datax.code == 0){
-					$.each(datax.data, function(i, item){
-						for(x=1;x<=4;x++){
-							if(x == 1){
-								prefix = 's_';
-							}else if(x == 2){
-								prefix = 'n_';
-							}else if(x == 3){
-								prefix = 'p_';
-							}else if(x == 4){
-								prefix = 'j_';
-							}
-							$('#'+prefix+'supplier').append('<option value="'+item.id+'">'+item.nama+'</option>');
-						}
-						
-					});
-				}
-				for(x=1;x<=4;x++){
-					if(x == 1){
-						prefix = 's_';
-					}else if(x == 2){
-						prefix = 'n_';
-					}else if(x == 3){
-						prefix = 'p_';
-					}else if(x == 4){
-						prefix = 'j_';
-					}
-					$("#"+prefix+"supplier").trigger("chosen:updated");
-				}
-			}
-		});
-		
-		$.ajax({
-			url: '<?php echo base_url()?>index.php/transaksi/account_name',
-			type: "POST",
-			data: {},
-			success: function(datax) {
-				var datax = JSON.parse(datax);
-				if(datax.code == 0){
-					$.each(datax.data, function(i, item){
-						for(x=1;x<=4;x++){
-							if(x == 1){
-								prefix = 's_';
-							}else if(x == 2){
-								prefix = 'n_';
-							}else if(x == 3){
-								prefix = 'p_';
-							}else if(x == 4){
-								prefix = 'j_';
-							}
-							$('#'+prefix+'account_penjualan').append('<option value="'+item.account_num+'">'+item.account_name+'</option>');
-						}
-						
-					});
-				}
-				for(x=1;x<=4;x++){
-					if(x == 1){
-						prefix = 's_';
-					}else if(x == 2){
-						prefix = 'n_';
-					}else if(x == 3){
-						prefix = 'p_';
-					}else if(x == 4){
-						prefix = 'j_';
-					}
-					$("#"+prefix+"account_penjualan").trigger("chosen:updated");
-				}
-			}
-		});
-		
-		$.ajax({
-			url: '<?php echo base_url()?>index.php/transaksi/account_name_sales',
-			type: "POST",
-			data: {},
-			success: function(datax) {
-				var datax = JSON.parse(datax);
-				if(datax.code == 0){
-					$.each(datax.data, function(i, item){
-						for(x=1;x<=4;x++){
-							if(x == 1){
-								prefix = 's_';
-							}else if(x == 2){
-								prefix = 'n_';
-							}else if(x == 3){
-								prefix = 'p_';
-							}else if(x == 4){
-								prefix = 'j_';
-							}
-							$('#'+prefix+'account_penjualan_sales').append('<option value="'+item.account_num+'">'+item.account_name+'</option>');
-						}
-						
-					});
-				}
-				for(x=1;x<=4;x++){
-					if(x == 1){
-						prefix = 's_';
-					}else if(x == 2){
-						prefix = 'n_';
-					}else if(x == 3){
-						prefix = 'p_';
-					}else if(x == 4){
-						prefix = 'j_';
-					}
-					$("#"+prefix+"account_penjualan_sales").trigger("chosen:updated");
-				}
-			}
-		});
 		
 		$('#modal-product').modal();
 	}
@@ -1547,6 +1919,11 @@
 		}
 		$('#'+prefix+'add_tipe_item').slideToggle();
 		$('#'+prefix+'tipe_item_select').slideToggle();
+		$('#'+prefix+'minimal_stock').prop('readonly', true);
+		$('#'+prefix+'tanggal_terima').prop('readonly', true);
+		$('#'+prefix+'account_penjualan').prop('readonly', true);
+		$('#'+prefix+'account_penjualan_sales').prop('readonly', true);
+		
 	}
 	
 	function hide_s_item(x){
@@ -1902,7 +2279,7 @@
 	/* function do_add_produk(x=null){
 		$('#submit_produk').submit();
 	} */
-	$('#submit_produk').submit(function(e){
+	function save_produk(){
 		var category = $('#category_produk').val();		
 		var id = $('#nomor_item_produk').val();
 		var category = $('#category_produk').val();
@@ -1926,6 +2303,8 @@
 			}
 			
 			var data1 = {
+				id:$('#s_id').val(),
+				id_produk:$('#s_id_produk').val(),
 				nama_produk:$('#s_nama_item').val(),
 				satuan:$('#s_satuan_item').val(),
 				harga_jual:$('#s_harga_jual').val(),
@@ -1958,6 +2337,8 @@
 			}
 			
 			var data1 = {
+				id:$('#n_id').val(),
+				id_produk:$('#n_id_produk').val(),
 				nama_produk:$('#n_nama_item').val(),
 				satuan:$('#n_satuan_item').val(),
 				harga_jual:$('#n_harga_jual').val(),
@@ -1978,15 +2359,35 @@
 			if($('#p_nama_item').val() == ''){
 				alert('Nama Produk Tidak Boleh Kosong');
 				return false;
-			}else if($('#p_paket_produk').val() == ''){
+			}/* else if($('#p_paket_produk').val() == ''){
 				alert('Silahkan Pilih Produk');
 				return false;
-			}else if($('#p_harga_jual').val() == ''){
+			} */else if($('#p_harga_jual').val() == ''){
 				alert('Harga Jual Tidak Boleh Kosong');
 				return false;
 			}
 			
+			var paket_produk = new Array();
+			for(i=1; i <= $('#counter').val(); i++ ){
+				if((decimal($('#qty_paket_'+i).val())*1 > 0) && $('#id_paket_'+i).val() != ''){
+					var pkt = {
+						'id' : $('#id_paket_'+i).val(),
+						'qty' : $('#qty_paket_'+i).val()
+					}
+					paket_produk.push(pkt);
+				}
+				
+			}
+			
+			if(paket_produk.length < 1){
+				alert('Tidak ada produk yg dipilih, silahkan pilih produk');
+				return false;
+			}
+			
+			
 			var data1 = {
+				id:$('#p_id').val(),
+				id_produk:$('#p_id_produk').val(),
 				nama_produk:$('#p_nama_item').val(),
 				satuan:'Paket',
 				harga_jual:$('#p_harga_jual').val(),
@@ -2001,7 +2402,7 @@
 				account:$('#p_account_penjualan').val(),
 				account_sales:$('#p_account_penjualan_sales').val(),
 				supplier:$('#p_supplier').val(),
-				paket_produk:$('#p_paket_produk').val(),
+				paket_produk,
 			}
 		}else if(category == 4){
 			prefix = 'j_';
@@ -2014,6 +2415,8 @@
 			}
 			
 			var data1 = {
+				id:$('#j_id').val(),
+				id_produk:$('#j_id_produk').val(),
 				nama_produk:$('#j_nama_item').val(),
 				satuan:$('#j_satuan_item').val(),
 				harga_jual:$('#j_harga_jual').val(),
@@ -2070,7 +2473,7 @@
 						$('#panel'+x2).css('display','none');
 					}
 					$('#modal-product').modal('hide');
-					$('#p_paket_produk').val('');
+					//$('#p_paket_produk').val('');
 					for(x2=1;x2<=4;x2++){
 						if(x2 == 1){
 							prefix2 = 's_';
@@ -2081,6 +2484,8 @@
 						}else if(x2 == 4){
 							prefix2 = 'j_';
 						}
+						$('#'+prefix2+'id').val('');
+						$('#'+prefix2+'id_produk').val('');
 						$('#'+prefix2+'nama_item').val('');
 						$('#'+prefix2+'satuan_item').val('');
 						$('#'+prefix2+'harga_jual').val('');
@@ -2092,6 +2497,7 @@
 						$('#'+prefix2+'tanggal_terima').val('');
 						$('#'+prefix2+'account_penjualan').val('');
 						$('#'+prefix2+'supplier').val('');
+						$('#'+prefix2+'foto').val('');
 					}
 					load();
 				}else if(datax.code == 0){
@@ -2101,7 +2507,7 @@
 					}
 					alert('Tambah Produk Berhasil');
 					$('#modal-product').modal('hide');
-					$('#p_paket_produk').val('');
+					//$('#p_paket_produk').val('');
 					for(x2=1;x2<=4;x2++){
 						if(x2 == 1){
 							prefix2 = 's_';
@@ -2112,6 +2518,8 @@
 						}else if(x2 == 4){
 							prefix2 = 'j_';
 						}
+						$('#'+prefix2+'id').val('');
+						$('#'+prefix2+'id_produk').val('');
 						$('#'+prefix2+'nama_item').val('');
 						$('#'+prefix2+'satuan_item').val('');
 						$('#'+prefix2+'harga_jual').val('');
@@ -2123,15 +2531,34 @@
 						$('#'+prefix2+'tanggal_terima').val('');
 						$('#'+prefix2+'account_penjualan').val('');
 						$('#'+prefix2+'supplier').val('');
+						$('#'+prefix2+'foto').val('');
 					}
 					load();
 				}else{
 					alert('Gagal simpan Produk, mohon ulangi kembali !');
+					return false;
 				}
+				
+				$('#produk_paket').empty();
+				$('#produk_paket').append('<tr id="paket_1">'+
+											'<td>'+
+												'<div class="input-group">'+
+													'<div class="input-group-addon" onclick="return delete_paket(1)">'+
+														'<i class="fa fa-trash"></i>'+
+													'</div>'+
+													'<input type="text" class="form-control" id="nama_paket_1" onchange="check_produk(1)" onkeyup="return pilih_paket(1)">'+
+													'<input type="hidden" class="form-control" id="id_paket_1">'+
+												'</div>'+
+											'</td>'+
+											'<td>'+
+												'<input type="text" class="form-control money" id="qty_paket_1" onkeyup="check_qty(1)">'+
+											'</td>'+
+										'</tr>');
+				$('#counter').val(1);
 			}
 		});
 		return false;
-	});
+	}
 
 function edit(x){
 	

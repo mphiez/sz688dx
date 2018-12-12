@@ -210,7 +210,8 @@ class Transaksi extends CI_Controller {
 	
 	public function search_produk(){
 		$name = $this->input->post('pn_name');
-		$datax = $this->transaksi_model->search_produk($name);
+		$type = $this->input->post('type');
+		$datax = $this->transaksi_model->search_produk($name,$type);
 		$list = array();
 		$temp = array();
 		if($datax > 0){
@@ -844,6 +845,24 @@ class Transaksi extends CI_Controller {
 		}else{
 			$return = array(
 				'data' => $datax,
+				'code' => 1
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function do_reject(){
+		$post = $this->input->post();
+		$datax = $this->transaksi_model->do_reject($post);
+		if($datax){
+			$return = array(
+				'data' => $post['id'],
+				'code' => 0
+			);
+			
+		}else{
+			$return = array(
+				'data' => $post['id'],
 				'code' => 1
 			);
 		}

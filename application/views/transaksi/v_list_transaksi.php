@@ -400,7 +400,29 @@
 			</div>
 		  </div>
 		  <div class="modal-footer" id="field_add">
-			<button class="btn btn-success" onclick="return do_change()" id="btn_add">Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+			<button class="btn btn-success" onclick="return do_change()" id="btn_add">Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div id="modal-reject" class="modal fade" tabindex="-1" role="dialog">
+	  <div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title modal-success">Reject Invoice</h4>
+		  </div>
+		  <div class="modal-body" style="max-height:400px">
+			<div class="row">
+				<div class="col-md-12">
+					<p>Apa Anda yakin untuk mereject Invoice <b id="id_inv_text"></b></p>
+					<input type="hidden" id="id_inv_val" value="">
+					<input type="hidden" id="id_trans" value="">
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer" id="field_add">
+			<button class="btn btn-danger" onclick="return do_reject()" id="btn_add">Reject</button><button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
 		  </div>
 		</div>
 	  </div>
@@ -575,6 +597,12 @@ function load(x='', status=''){
 												'<li class="divider"></li>'+
 												'<li>'+
 													'<a href="#">'+
+														'Recreate Invoice'+
+													'</a>'+
+												'</li>'+
+												'<li class="divider"></li>'+
+												'<li>'+
+													'<a href="#" onclick="return reject_invoice(&#39;'+row.id_inv+'&#39;,&#39;'+item.nomor_invoice+'&#39;);">'+
 														'Reject Invoice'+
 													'</a>'+
 												'</li>';
@@ -800,6 +828,13 @@ function create_invoice(id, mode){
 	location.replace('<?php echo base_url()?>index.php/transaksi/buat_invoice?inv='+id+'&mode='+mode);
 }
 
+function reject_invoice(id, invoice){
+	$('#id_trans').val(id);
+	$('#id_inv_val').val(invoice);
+	$('#id_inv_text').text(invoice);
+	$('#modal-reject').modal();
+}
+
 function detail_invoice(id_inv=null,type_invoice=1,nomor_termin=null){
 	$.ajax({
 		url: '<?php echo base_url()?>index.php/transaksi/invoice_detail?inv='+id_inv+'&sv='+type_invoice+'&preview=no&no_termin='+nomor_termin,
@@ -809,6 +844,28 @@ function detail_invoice(id_inv=null,type_invoice=1,nomor_termin=null){
 			$('#body-invoice').empty();
 			document.getElementById('body-invoice').innerHTML = datax;
 			$('#modal-detail-invoice').modal();
+		}
+	});
+}
+
+function do_reject(){
+	$.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/do_reject',
+		type: "POST",
+		data: {
+			nomor_invoice 	: $('#id_inv_val').val(),
+			id 				: $('#id_trans').val(),
+		},
+		success: function(datax) {
+			var datax = JSON.parse(datax);
+			if(datax.code == 0){
+				load();
+				$('#modal-reject').modal('hide');
+				alert('Reject berhasil !');
+			}else{
+				load();
+				alert('Reject gagal !');
+			}
 		}
 	});
 }
