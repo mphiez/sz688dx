@@ -233,8 +233,48 @@
 								<!-- /.dropdown-messages -->
 							</li>
 						</ul>
+						<ul class="navbar-right" style="float:right;margin-right: 0px;list-style: none;">
+							<li class="dropdown">
+								<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;margin-top:15px;">
+									<i class="fa fa-list"></i> Columns <i class="fa fa-caret-down"></i> 
+								</a>
+								<ul class="dropdown-menu dropdown-messages">
+									<?php $nm_table = array(
+											array('nm'		=> 'Tanggal','default'	=> 'Y'),
+											array('nm'		=> 'No. Ref','default'	=> 'N'),
+											array('nm'		=> 'Cabang','default'	=> 'N'),
+											array('nm'		=> 'No. Transaksi','default'	=> 'N'),
+											array('nm'		=> 'Invoice','default'	=> 'N'),
+											array('nm'		=> 'Pesan','default'	=> 'N'),
+											array('nm'		=> 'Total','default'	=> 'N'),
+											array('nm'		=> 'Sisa Tagihan','default'	=> 'N'),
+											array('nm'		=> 'Sisa Bayar','default'	=> 'N'),
+											array('nm'		=> 'Pengiriman Barang','default'	=> 'Y'),
+											array('nm'		=> 'Action', 'default'	=> 'Y')
+										);
+										$i= 0;
+										$n= 0;
+										foreach($nm_table as $row){
+											$i++;
+											$def = '';
+											if($row['default'] == 'Y'){
+												$def = 'disabled';
+											}
+										?>
+									<li style="padding:3px 15px;">
+										<label>
+										<input type="checkbox" <?php echo $def?> checked id="<?php echo $i;?>" data-column="<?php echo $n;?>" class="toggle-vis columns"> <?php echo $row['nm']?>
+										</label>
+									</li>
+									<?php 
+										$n++;
+									} ?>
+								</ul>
+								<!-- /.dropdown-messages -->
+							</li>
+						</ul>
 					</div>
-					<div class="panel-body">
+					<div class="panel-body table-responsive">
 					  <table class="table table-bordered table-hover dataTable" id="example">
 						<thead>
 							<tr>
@@ -243,11 +283,12 @@
 							  <th>Cabang</th>
 							  <th>Nama Pelanggan</th>
 							  <th>No. Transaksi</th>
-							  <th>Invoice</th>
+							  <th>Invoice&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
 							  <th>Pesan</th>
 							  <th>Total</th>
 							  <th>Sisa Tagihan</th>
 							  <th>Sisa Bayar</th>
+							  <th>Pengiriman Barang</th>
 							  <th>Status/Action</th>
 							</tr>
 						</thead>
@@ -361,6 +402,38 @@
 		  </div>
 		  <div class="modal-footer" id="field_add">
 			<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div id="modal-detail-produk" class="modal fade" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title modal-success">Ubah Status Order Penjualan</h4>
+		  </div>
+		  <div class="modal-body" style="max-height:400px">
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table table-bordered table-hover dataTable" id="detail_table_stock">
+						<thead>
+							<tr>
+							  <th>ID Produk</th>
+							  <th>Nama Barang</th>
+							  <th>Total Keluar</th>
+							  <th>Total Pembelian</th>
+							</tr>
+						</thead>
+						<tbody>
+							
+						</tbody>
+					</table>
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer" id="field_add">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 		  </div>
 		</div>
 	  </div>
@@ -542,9 +615,8 @@ function load(x='', status=''){
 	}
 	
 	
-	$("#example").dataTable({
+	var table = $("#example").DataTable({
 			"processing": true,
-			"scrollX":true,
 			"ajax": {
 				"url": "<?php echo base_url()?>index.php/transaksi/load_list",
 				"type": "POST",
@@ -557,7 +629,7 @@ function load(x='', status=''){
 			"aoColumns": [
 				{ "data": "tanggal_transaksi"},
 				{ "data": "no_ref"},
-				{ "data": "cabang"},
+				{ "data": "nm_cabang"},
 				{
 					render: function (data, type, row, meta) {
 						return '<div id="td_h_'+row.id+'"><a href="#" onclick="return detail_customer(&#39;'+row.id_pelanggan+'&#39;)">'+row.nama_pelanggan+'</a></div>';
@@ -620,8 +692,53 @@ function load(x='', status=''){
 				},
 				{ "data": "pesan"},
 				{ "data": "jumlah_bayar"},
+				
 				{ "data": "sisa_tagihan"},
 				{ "data": "tagihan"},
+				{
+					render: function (data, type, row, meta) {
+						var stock = "";
+						if(row.status_stock == 'Uncompleted'){
+							stock = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
+										'<li class="dropdown">'+
+											'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="margin: 5px 15px;font-size:12px">'+
+												' <i style="color:black;float:left" class="fa fa-caret-down"></i>&nbsp;&nbsp;&nbsp;<span style="color:blue;float:left;margin-top:-3px">&nbsp&nbsp'+row.status_stock+'</span>'+
+											'</a>'+
+											'<ul class="dropdown-menu dropdown-messages" style="right: auto !important;">'+
+												'<li>'+
+													'<a href="<?php echo base_url()?>index.php/produk/keluar?id='+row.id_inv+'">'+
+														'Create Pengeluaran'+
+													'</a>'+
+												'</li>'+
+												'<li class="divider"></li>'+
+												'<li>'+
+													'<a href="#" onclick="return detail_in(&#39;'+row.id_inv+'&#39;)">'+
+														'History Pengeluaran'+
+													'</a>'+
+												'</li>'+
+											'</ul>'+
+										'</li>'+
+									'</ul>';
+						}else{
+							stock = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
+										'<li class="dropdown">'+
+											'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="margin: 5px 15px;font-size:12px">'+
+												' <i style="color:black;float:left" class="fa fa-caret-down"></i>&nbsp;&nbsp;&nbsp;<span style="color:orange;float:left;margin-top:-3px">&nbsp&nbsp'+row.status_stock+'</span>'+
+											'</a>'+
+											'<ul class="dropdown-menu dropdown-messages" style="right: auto !important;">'+
+												'<li>'+
+													'<a href="#" onclick="return detail_in(&#39;'+row.id_inv+'&#39;)">'+
+														'History Pengeluaran'+
+													'</a>'+
+												'</li>'+
+											'</ul>'+
+										'</li>'+
+									'</ul>';
+											
+						}
+						return stock;
+					}
+				},
 				{
 					render: function (data, type, row, meta) {
 						var sts_transaksi = row.status;
@@ -751,6 +868,17 @@ function load(x='', status=''){
 			],
 			"order": [[ 0, "desc" ]],
 		});
+		
+		$('.toggle-vis').on( 'change', function (e) {
+			
+			e.preventDefault();
+			// Get the column API object
+			var column = table.column( $(this).attr('data-column') );
+	 
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			$('#example').css('width', '100%'); 
+		} );
 }
 
 function detail(x){
@@ -811,6 +939,30 @@ function detail(x){
 		"order": [[ 0, "desc" ]],
 	});
 	$('#modal-detail').modal();
+}
+
+function detail_in(x){	
+	$("#detail_table_stock").dataTable({
+		"processing": true,
+		"scrollX":true,
+		"ajax": {
+			"url": "<?php echo base_url()?>index.php/produk/stock_out",
+			"type": "POST",
+			data: {id : x},
+		},
+		"destroy": true,
+		"oLanguage": {
+			"sProcessing": '<i class="fa fa-spinner fa-pulse"></i> Loading...'
+		},
+		"aoColumns": [
+			{ "data": "id_produk"},
+			{ "data": "nama_produk"},
+			{ "data": "total"},
+			{ "data": "total_beli"},
+		],
+		"order": [[ 0, "desc" ]],
+	});
+	$('#modal-detail-produk').modal();
 }
 
 function change_status(id, cus, ref, stat, nomor_transaksi){

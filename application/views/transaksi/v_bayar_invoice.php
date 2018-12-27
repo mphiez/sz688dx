@@ -48,10 +48,16 @@
 								<input type="text" id="email_pelanggan" class="form-control" value="<?php echo $email?>">
 							</div>
 						</div>
+						<div class="col-sm-12 col-md-3">
+							<div class="form-group" >
+								<label>No Referensi</label>
+								<input type="text" id="no_referensi" class="form-control moneydec">
+							</div>
+						</div>
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Alamat Penagihan</label>
-								<textarea id="alamat_penagihan" class="form-control" ><?php echo $alamat_tagih?></textarea>
+								<textarea id="alamat_penagihan" class="form-control" style="height: 33px;"><?php echo $alamat_tagih?></textarea>
 							</div>
 						</div>
 					</div>
@@ -72,12 +78,6 @@
 									</div>
 									<input type="text" id="tanggal_transaksi" readonly class="form-control date" value="<?php echo $tanggal_transaksi?>">
 								</div>
-							</div>
-						</div>
-						<div class="col-sm-12 col-md-3">
-							<div class="form-group" >
-								<label>No Referensi</label>
-								<input type="text" id="no_referensi" class="form-control moneydec">
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3"  style="display:none;">

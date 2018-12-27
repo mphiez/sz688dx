@@ -1,15 +1,6 @@
 <?php $this->load->view('header');?>
-    <section class="content-header">
-      <h1>
-       <?=$judul?>
-      </h1>
-      <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li class="active"><?=$judul?></li>
-      </ol>
-    </section>
-	<section class="content">
-      <div class="row">
+    <div id="page-wrapper">
+		<div class="row">
         <div class="col-xs-12">
            <div class="box">
             <div class="box-header">
@@ -81,6 +72,7 @@
 					  <table class="table table-bordered table-hover dataTable" id="example">
 						<thead>
 							<tr>
+							  <th>Tanggal Dibuat</th>
 							  <th>Tanggal</th>
 							  <th>Keterangan</th>
 							  <th>Akun Debit</th>
@@ -100,7 +92,7 @@
 		</div>
 		</div>
     </div>
-	</section>
+	</div>
 <?php $this->load->view('footer');?>
 <script src="<?=base_url()?>plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="<?=base_url()?>plugins/datatables/dataTables.bootstrap.min.js"></script>
@@ -124,6 +116,7 @@ function load(){
 				"sProcessing": '<i class="fa fa-spinner fa-pulse"></i> Loading...'
 			},
 			"aoColumns": [
+				{ "data": "create_date"},
 				{ "data": "tanggal"},
 				{ "data": "keterangan"},
 				{ "data": "akun_debit"},

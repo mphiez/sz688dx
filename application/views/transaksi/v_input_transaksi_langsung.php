@@ -99,7 +99,7 @@
 							<div class="col-sm-6 col-md-3">
 								<div class="form-group">
 									<label>Alamat Penagihan</label>
-									<textarea id="alamat_penagihan" class="form-control" ></textarea>
+									<textarea id="alamat_penagihan" class="form-control" style="height: 33px;"></textarea>
 								</div>
 							</div>
 						</div>
@@ -215,18 +215,13 @@
 											<input type="hidden" id="id_produk_1" class="form-control">
 											<input type="hidden" id="counter" class="form-control" value="2">
 										</div>
+										<i id="label_sisa_1" style="color:red"></i>
+										<input type="hidden" id="sisa_stock_1">
+										<input type="hidden" id="type_stock_1" class="form-control">
 									</td>
 									<td><textarea style="height: 33px;" id="deskripsi_1" class="form-control"></textarea></td>
 									<td>
-										<div class="input-group">
-											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return min_item(1)">-</button>
-											</div>
-											<input type="text" id="kuantitas_1" onkeyup="return hitung_item(1)" class="form-control">
-											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return add_item(1)">+</button>
-											</div>
-										</div>
+											<input type="text" id="kuantitas_1" onkeyup="return hitung_item(1)" onchange="return check_item(1)" class="form-control money">
 									</td>
 									<td><input type="text" id="satuan_1" class="form-control" readonly></td>
 									<td>
@@ -253,18 +248,13 @@
 											<input type="text" id="nama_produk_2" onkeyup="return cari_produk(2)" class="form-control">
 											<input type="hidden" id="id_produk_2" class="form-control">
 										</div>
+										<i id="label_sisa_2" style="color:red"></i>
+										<input type="hidden" id="sisa_stock_2">
+										<input type="hidden" id="type_stock_2" class="form-control">
 									</td>
 									<td><textarea style="height: 33px;" id="deskripsi_2" class="form-control"></textarea></td>
 									<td>
-										<div class="input-group">
-											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return min_item(2)">-</button>
-											</div>
-											<input type="text" id="kuantitas_2" onkeyup="return hitung_item(2)" onchange="return check_produk(2)" class="form-control">
-											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return add_item(2)">+</button>
-											</div>
-										</div>
+											<input type="text" id="kuantitas_2" onkeyup="return hitung_item(2)" onchange="return check_item(2)" class="form-control money">
 									</td>
 									<td><input type="text" id="satuan_2" class="form-control" readonly></td>
 									<td>
@@ -553,7 +543,7 @@
 									<label class="col-md-12" style="padding-left:0px">Nama Akun</label>
 									<div>
 										<input type="text" class="form-control form-control-sm " value="" id="s_nama_account">
-										<input type="hidden" class="form-control form-control-sm " value="Income" id="s_tipe_account">
+										<input type="hidden" class="form-control form-control-sm " value="Current Assets" id="s_tipe_account">
 									</div>
 								</div>
 								<div class="form-group">
@@ -1598,19 +1588,15 @@
 										'</div>'+
 										'<input type="text" id="nama_produk_'+num+'" onkeyup="return cari_produk('+num+')" onchange="return check_produk('+num+')" class="form-control">'+
 										'<input type="hidden" id="id_produk_'+num+'" class="form-control">'+
+										
 									'</div>'+
+									'<i id="label_sisa_'+num+'" style="color:red"></i>'+
+									'<input type="hidden" id="sisa_stock_'+num+'">'+
+									'<input type="hidden" id="type_stock_'+num+'" class="form-control">'+
 								'</td>'+
 								'<td><textarea style="height: 33px;" id="deskripsi_'+num+'" class="form-control"></textarea></td>'+
 								'<td>'+
-									'<div class="input-group">'+
-										'<div class="input-group-addon" style="padding: 5px;">'+
-											'<button type="button" onclick="return min_item('+num+')">-</button>'+
-										'</div>'+
-										'<input type="text" id="kuantitas_'+num+'" onkeyup="return hitung_item('+num+')" class="form-control">'+
-										'<div class="input-group-addon" style="padding: 5px;">'+
-											'<button type="button" onclick="return add_item('+num+')">+</button>'+
-										'</div>'+
-									'</div>'+
+										'<input type="text" id="kuantitas_'+num+'" onkeyup="return hitung_item('+num+')" onchange="return check_item('+num+')" class="form-control money">'+
 								'</td>'+
 								'<td><input type="text" id="satuan_'+num+'" class="form-control" readonly></td>'+
 								'<td>'+
@@ -1660,6 +1646,9 @@
 			$('#nama_paket_'+x).val('');
 			$('#id_paket_'+x).val('');
 			$('#qty_paket_'+x).val('');
+			$('#label_sisa_'+x).text('');
+			$('#sisa_stock_'+x).val('');
+			$('#type_stock_'+x).val('');
 		}
 	}
 	
@@ -1774,11 +1763,9 @@
 	}
 	
 	function hitung_item(x){
-		var jum = $('#kuantitas_'+x).val();
-		var harga = $('#harga_satuan_dec_'+x).val();
-		var qty = jum;
-		$('#kuantitas_'+x).val(qty);
-		var total = qty * harga;
+		var jum = decimal($('#kuantitas_'+x).val());
+		var harga = decimal($('#harga_satuan_'+x).val());
+		var total = harga * jum;
 		$('#jumlah_'+x).val(curency(total));
 		$('#jumlah_dec_'+x).val(total);
 		ppn(x);
@@ -1861,6 +1848,19 @@
 		});
 	}
 	
+	function check_item(x){
+		var qty = decimal($('#kuantitas_'+x).val()) *1;
+		var stk = decimal($('#sisa_stock_'+x).val()) *1;
+		if(decimal($('#kuantitas_'+x).val()) < 1){
+			$('#kuantitas_'+x).val(1);
+			hitung_item(x);
+		}else if( qty > stk && $('#type_stock_'+x).val() == 'Item Stock'){
+			alert("Penjualan tidak boleh lebih banyak dari stock");
+			$('#kuantitas_'+x).val($('#sisa_stock_'+x).val());
+			hitung_item(x);
+		}
+	}
+	
 	function cari_produk(x){
 		$('#id_produk_'+x).val('');
 		$('#kuantitas_'+x).val('');
@@ -1869,6 +1869,9 @@
 		$('#satuan_'+x).val('');
 		$('#harga_satuan_'+x).val('');
 		$('#harga_satuan_dec_'+x).val('');
+		$('#label_sisa_'+x).text('');
+		$('#sisa_stock_'+x).val('');
+		$('#type_stock_'+x).val('');
 		ppn(x);
 		hitung_all();					 
 		$.ajax({
@@ -1898,6 +1901,9 @@
 								$('#satuan_'+x).val('');
 								$('#harga_satuan_'+x).val('');
 								$('#harga_satuan_dec_'+x).val('');
+								$('#label_sisa_'+x).text('');
+								$('#sisa_stock_'+x).val('');
+								$('#type_stock_'+x).val('');
 								ppn(x);
 								hitung_all();
 							}else{
@@ -1908,6 +1914,8 @@
 								var satuan = datax.user_list[index]['satuan'];
 								var harga = datax.user_list[index]['harga_jual'];
 								var harga_dec = datax.user_list[index]['harga_dec'];
+								var category = datax.user_list[index]['category'];
+								var stock_awal = datax.user_list[index]['stock_awal'];
 								$('#id_produk_'+x).val(id_produk);
 								$('#kuantitas_'+x).val(1);
 								var jumlah = harga_dec;
@@ -1917,6 +1925,13 @@
 								$('#satuan_'+x).val(satuan);
 								$('#harga_satuan_'+x).val(harga_dec);
 								$('#harga_satuan_dec_'+x).val(harga);
+								$('#label_sisa_'+x).text('');
+								if(category == 'Item Stock'){
+									$('#label_sisa_'+x).text('Sisa Stock : '+stock_awal);
+								}
+								
+								$('#sisa_stock_'+x).val(stock_awal);
+								$('#type_stock_'+x).val(category);
 								ppn(x);
 								hitung_all();
 							}
@@ -1938,6 +1953,8 @@
 						$('#jumlah_dec_'+x).val(0);
 						$('#satuan_'+x).val('');
 						$('#harga_satuan_'+x).val('');
+						$('#label_sisa_'+x).text('');
+						$('#sisa_stock_'+x).val('');
 						ppn(x);
 						hitung_all();
 					}

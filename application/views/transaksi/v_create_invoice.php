@@ -96,6 +96,11 @@
 			$nomor_invoice = $row->nomor_invoice;
 			$jumlah_termin = $row->jumlah_termin;
 			$tgl_transaksi_header = $row->tgl_transaksi_header;
+			$ship_to_name = $row->ship_to_name;
+			$ship_phone = $row->ship_phone;
+			$id_shiping = $row->id_shiping;
+			$ship_address = $row->ship_address;
+			$ship_email = $row->ship_email;
 		}
 	?>
 	
@@ -112,7 +117,7 @@
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Nama Pelanggan</label>
-								<input type="text" id="nama_pelanggan" readonly onkeyup="return cari_pelanggan()" value="<?php echo $id_pelanggan." - ".$nama_pelanggan;?>" class="form-control" placeholder="[Auto]">
+								<input type="text" id="nama_pelanggan" readonly onkeyup="return cari_pelanggan()" onchange="return check_pelanggan()" value="<?php echo $id_pelanggan." - ".$nama_pelanggan;?>" class="form-control" placeholder="[Auto]">
 								<input type="hidden" id="id_pelanggan" value="<?php echo $id_pelanggan;?>">
 								<input type="hidden" id="tipe_transaksi" value="1">
 								<input type="hidden" id="id_transaksi" value="<?php echo $id_transaksi?>">
@@ -133,12 +138,48 @@
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Alamat Penagihan</label>
-								<textarea id="alamat_penagihan" class="form-control" ><?php echo $alamat_tagih?></textarea>
+								<textarea id="alamat_penagihan" class="form-control" style="height: 33px;"><?php echo $alamat_tagih?></textarea>
 							</div>
 						</div>
 						<hr>
 					</div>
-					
+					<div class="col-md-12">
+						<div class="col-sm-6 col-md-6">
+							<div class="form-group">
+								<i style="color:red;"><input type="checkbox" id="alamat_kirim" onclick="return cek_alamat()">&nbsp;&nbsp;Alamat kirim sama dengan alamat pelanggan</i>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12" id="field_kirim">
+						<div class="col-sm-6 col-md-3">
+							<div class="form-group">
+								<label>Pelanggan / Perusahan / Cabang</label>
+								<input type="text" id="ship_to" onkeyup="return cari_kirim()" onchange="return cek_kirim()" class="form-control" placeholder="nama pelanggan / cabang" value="<?php echo $id_shiping." - ".$ship_to_name;?>">
+								<input type="hidden" id="id_ship_to" class="form-control" placeholder="[Auto]" value="<?php echo $id_shiping;?>">
+								<input type="hidden" id="ship_to_name" class="form-control" placeholder="[Auto]" value="<?php echo $ship_to_name?>">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-3">
+							<div class="form-group">
+								<label>Email</label>
+								<input type="text" id="ship_email" class="form-control" placeholder="email pengiriman" value="<?php echo $ship_email?>">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-3">
+							<div class="form-group">
+								<label>Nomor Telpon</label>
+								<input type="text" id="ship_phone" class="form-control" placeholder="telpon pengiriman" value="<?php echo $ship_phone?>">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-3">
+							<div class="form-group">
+								<label>Alamat Kirim</label>
+								<input type="text" id="ship_address" class="form-control" placeholder="alamat pengiriman" value="<?php echo $ship_address?>">
+							</div>
+						</div>
+						
+						
+					</div>
 					<div class="col-md-12">
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group" >
@@ -218,7 +259,7 @@
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Deskripsi Penagihan</label>
-								<textarea type="text" id="deskripsi_termin" class="form-control"></textarea>
+								<textarea type="text" id="deskripsi_termin" style="height: 33px;" class="form-control"></textarea>
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3">
@@ -274,23 +315,17 @@
 											</div>
 											<input type="text" <?php if($no_termin >= 1){echo "readonly";}?> value="<?php echo $rows->id_produk." - ".$rows->nama_produk?>" id="nama_produk_<?php echo $i?>" onkeyup="return cari_produk(<?php echo $i?>)" onchange="return check_produk(<?php echo $i?>)" class="form-control">
 											<input type="hidden" id="id_produk_<?php echo $i?>" value="<?php echo $rows->id_produk?>" class="form-control">
-											
 										</div>
+										<i id="label_sisa_<?php echo $i?>" style="color:red">Sisa stock : <?php echo $rows->stock_awal?></i>
+										<input type="hidden" id="sisa_stock_<?php echo $i?>" value="<?php echo $rows->stock_awal?>">
+										<input type="hidden" id="type_stock_<?php echo $i?>" class="form-control" value="<?php echo $rows->stock_awal?>">
 									</td>
 									<td><textarea style="height: 33px;" <?php if($no_termin >= 1){echo "readonly";}?> id="deskripsi_<?php echo $i?>" value="<?php echo $rows->deskripsi?>" class="form-control"></textarea></td>
 									<td>
 										<?php if($no_termin >= 1){?>
-											<input type="text" value="<?php echo $rows->kuantitas?>" readonly id="kuantitas_<?php echo $i?>" onkeyup="return hitung_item(<?php echo $i;?>)" class="form-control">
+											<input type="text" value="<?php echo $rows->kuantitas?>" readonly id="kuantitas_<?php echo $i?>" onkeyup="return hitung_item(<?php echo $i;?>)" class="form-control money">
 										<?php }else{?>
-										<div class="input-group">
-											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return min_item(<?php echo $i?>)">-</button>
-											</div>
-											<input type="text" value="<?php echo $rows->kuantitas?>" id="kuantitas_<?php echo $i?>" onkeyup="return hitung_item(<?php echo $i?>)" class="form-control">
-											<div class="input-group-addon" style="padding: 5px;">
-												<button type="button" onclick="return add_item(<?php echo $i?>)">+</button>
-											</div>
-										</div>
+											<input type="text" value="<?php echo $rows->kuantitas?>" id="kuantitas_<?php echo $i?>" onkeyup="return hitung_item(<?php echo $i?>)" class="form-control money">
 										<?php }?>
 									</td>
 									<td><input type="text"<?php if($no_termin >= 1){echo "readonly";}?> value="<?php echo $rows->satuan?>" id="satuan_<?php echo $i?>" class="form-control" readonly></td>
@@ -619,7 +654,7 @@
 									<label class="col-md-12" style="padding-left:0px">Nama Akun</label>
 									<div>
 										<input type="text" class="form-control form-control-sm " value="" id="s_nama_account">
-										<input type="hidden" class="form-control form-control-sm " value="Income" id="s_tipe_account">
+										<input type="hidden" class="form-control form-control-sm " value="Current Assets" id="s_tipe_account">
 									</div>
 								</div>
 								<div class="form-group">
@@ -1437,6 +1472,14 @@
 	
 <?php $this->load->view('footer');?>
 <script>
+	function cek_alamat(){
+		if ($('#alamat_kirim').is(':checked')) {
+			$("#field_kirim").css("display", 'none'); 
+		}else{
+			$("#field_kirim").css("display", ''); 
+		}
+	}
+	
 	function check_tagihan(){
 		var jum_bayar = decimal($('#jumlah_termin').val()) *1;
 		var jum_jual = decimal($('#total').val()) *1;
@@ -1664,6 +1707,20 @@
 			var sv = 0;
 		}
 		
+		if ($('#alamat_kirim').is(':checked')) {
+			var id_shiping = $('#id_pelanggan').val();
+			var ship_to_name = $('#nama_pelanggan').val();
+			var ship_phone = "";
+			var ship_address = $('#alamat_penagihan').val();
+			var ship_email = $('#email_pelanggan').val();
+		}else{
+			var id_shiping = $('#id_ship_to').val();
+			var ship_to_name = $('#ship_to_name').val();
+			var ship_phone = $('#ship_phone').val();
+			var ship_address = $('#ship_address').val();
+			var ship_email = $('#ship_email').val();
+		}
+		
 		if(transaksi.length > 0){
 			$.ajax({
 				url: '<?php echo base_url()?>index.php/transaksi/save_invoice',
@@ -1690,7 +1747,13 @@
 					termin_ke			: $('#termin_ke').val(),
 					jumlah_tagihan		: $('#jumlah_termin').val(),
 					type_invoice		: 1,
-					transaksi 			: transaksi
+					transaksi 			: transaksi,
+					ship_to				: $('#ship_to').val(),
+					id_shiping 			: $('#id_ship_to').val(),
+					ship_to_name    	: $('#ship_to_name').val(),
+					ship_phone 			: $('#ship_phone').val(),
+					ship_address  		: $('#ship_address').val(),
+					ship_email 			: $('#ship_email').val(),
 				},
 				success: function(datax) {
 					var datax = JSON.parse(datax);
@@ -1716,6 +1779,8 @@
 						
 					}else if(datax.code == 1){
 						alert('Simpan gagal !');
+					}else if(datax.code == 2){
+						alert('Stock Barang Tidak Cukup !');
 					}else{
 						alert('Transaksi berhasil !');
 						//window.open('<?php echo base_url()?>index.php/transaksi/invoice?inv='+datax.guid+"&sv="+sv+"&preview=no&no_termin="+$('#termin_ke').val());
@@ -2100,7 +2165,192 @@
 		hitung_all();
 	}
 	
+	/* function cek_kirim(){
+		if($('#id_ship_to').val() == ''){
+			$('#ship_to').val('');
+			$('#ship_to_name').val('');
+			$('#ship_address').val('');
+			$('#ship_phone').val('');
+			$('#id_ship_to').val('');
+		}
+	} */
+	
+	function cari_kirim(){
+		$('#id_ship_to').val('');
+		$('#ship_to').val('');
+		$('#ship_to_name').val('');
+		$('#ship_address').val('');
+		$('#ship_email').val('');
+		$('#ship_phone').val('');
+		$.ajax({
+			url: '<?php echo base_url()?>index.php/transaksi/search_ship',
+			type: "POST",
+			data: {pn_name:$('#nama_pelanggan').val()},
+			success: function(datax) {
+				if($("#ship_to").val() == ''){
+					$('#id_ship_to').val('');
+					$('#ship_to').val('');
+					$('#ship_to_name').val('');
+					$('#ship_address').val('');
+					$('#ship_email').val('');
+					$('#ship_phone').val('');
+				}
+				var datax = JSON.parse(datax);
+					var list_name = new Array();
+					$.each(datax.data, function(i, item){
+						var pn_id = item.id_customer;
+						var pn_name = item.nama_customer;
+						
+						var temp_name = pn_id+' - '+pn_name;
+						list_name.push(temp_name);
+					});
+					$("#ship_to").autocomplete({
+						source: list_name,
+						select: function( event , ui ) {
+							if(ui.item.label == 'Tidak ditemukan'){
+								$('#id_ship_to').val('');
+								$('#ship_to').val('');
+								$('#ship_to_name').val('');
+								$('#ship_address').val('');
+								$('#ship_email').val('');
+								$('#ship_phone').val('');
+								document.getElementById('modal-create').style="padding:right:0px !important";
+							}else{
+								var str = (ui.item.label).split(' -');
+								var index = str[0];
+								var user_id = datax.user_list[index]['id_customer'];
+								var user_name = datax.user_list[index]['nama_customer'];
+								var alamat = datax.user_list[index]['alamat'];
+								var no_hp = datax.user_list[index]['nomor_telfon'];
+								var email = datax.user_list[index]['email'];
+								$('#id_ship_to').val(user_id);
+								$('#ship_to_name').val(user_name);
+								$('#ship_address').val(alamat);
+								$('#ship_email').val(email);
+								$('#ship_phone').val(no_hp);
+							}
+						},
+						response: function(event, ui) {
+							if (!(ui.content.length)) {
+									$('#id_ship_to').val('');
+									$('#ship_to').val('');
+									$('#ship_to_name').val('');
+									$('#ship_address').val('');
+									$('#ship_email').val('');
+									$('#ship_phone').val('');
+									var noResult = { value:"",label:"Tidak ditemukan" };
+									ui.content.push(noResult);
+							}
+						}
+					});
+			}
+		});
+	}
+	
+	/* function cek_kirim(){
+		if($('#id_ship_to').val() == ''){
+			$('#ship_to').val('');
+			$('#ship_to_name').val('');
+			$('#ship_address').val('');
+			$('#ship_phone').val('');
+			$('#id_ship_to').val('');
+		}
+	} */
+	
+	function cari_kirim(){
+		$('#id_ship_to').val('');
+		$('#ship_to_name').val('');
+		$('#ship_address').val('');
+		$('#ship_email').val('');
+		$('#ship_phone').val('');
+		$.ajax({
+			url: '<?php echo base_url()?>index.php/transaksi/search_ship',
+			type: "POST",
+			data: {pn_name:$('#ship_to').val()},
+			success: function(datax) {
+				if($("#ship_to").val() == ''){
+					$('#id_ship_to').val('');
+					$('#ship_to').val('');
+					$('#ship_to_name').val('');
+					$('#ship_address').val('');
+					$('#ship_email').val('');
+					$('#ship_phone').val('');
+				}
+				var datax = JSON.parse(datax);
+					var list_name = new Array();
+					$.each(datax.data, function(i, item){
+						var pn_id = item.id_customer;
+						var pn_name = item.nama_customer;
+						
+						var temp_name = pn_id+' - '+pn_name;
+						list_name.push(temp_name);
+					});
+					$("#ship_to").autocomplete({
+						source: list_name,
+						select: function( event , ui ) {
+							if(ui.item.label == 'Tidak ditemukan'){
+								$('#id_ship_to').val('');
+								$('#ship_to').val('');
+								$('#ship_to_name').val('');
+								$('#ship_address').val('');
+								$('#ship_email').val('');
+								$('#ship_phone').val('');
+								document.getElementById('modal-create').style="padding:right:0px !important";
+							}else{
+								var str = (ui.item.label).split(' -');
+								var index = str[0];
+								var user_id = datax.user_list[index]['id_customer'];
+								var user_name = datax.user_list[index]['nama_customer'];
+								var alamat = datax.user_list[index]['alamat'];
+								var no_hp = datax.user_list[index]['nomor_telfon'];
+								var email = datax.user_list[index]['email'];
+								$('#id_ship_to').val(user_id);
+								$('#ship_to_name').val(user_name);
+								$('#ship_address').val(alamat);
+								$('#ship_email').val(email);
+								$('#ship_phone').val(no_hp);
+							}
+						},
+						response: function(event, ui) {
+							if (!(ui.content.length)) {
+									$('#id_ship_to').val('');
+									$('#ship_to_name').val('');
+									$('#ship_address').val('');
+									$('#ship_email').val('');
+									$('#ship_phone').val('');
+									var noResult = { value:"",label:"Tidak ditemukan" };
+									ui.content.push(noResult);
+							}
+						}
+					});
+			}
+		});
+	}
+	
+	function check_pelanggan(){
+		if($('#id_pelanggan').val() == ''){
+			$('#id_pelanggan').val('');
+			$('#alamat_penagihan').val('');
+			$('#email_pelanggan').val('');
+			$('#ship_to').val('');
+			$('#ship_to_name').val('');
+			$('#ship_address').val('');
+			$('#ship_phone').val('');
+			$('#id_ship_to').val('');
+			$('#ship_email').val('');
+		}
+	}
+	
 	function cari_pelanggan(x){
+		$('#id_pelanggan').val('');
+		$('#alamat_penagihan').val('');
+		$('#email_pelanggan').val('');
+		$('#ship_to').val('');
+		$('#ship_to_name').val('');
+		$('#ship_address').val('');
+		$('#ship_phone').val('');
+		$('#id_ship_to').val('');
+		$('#ship_email').val('');
 		$.ajax({
 			url: '<?php echo base_url()?>index.php/transaksi/search_user',
 			type: "POST",
@@ -2110,6 +2360,12 @@
 					$('#id_pelanggan').val('');
 					$('#alamat_penagihan').val('');
 					$('#email_pelanggan').val('');
+					$('#ship_to').val('');
+					$('#ship_to_name').val('');
+					$('#ship_address').val('');
+					$('#ship_phone').val('');
+					$('#id_ship_to').val('');
+					$('#ship_email').val('');
 				}
 				var datax = JSON.parse(datax);
 					var list_name = new Array();
@@ -2132,6 +2388,10 @@
 								$('#id_pelanggan').val('');
 								$('#alamat_penagihan').val('');
 								$('#email_pelanggan').val('');
+								$('#ship_to').val('');
+								$('#ship_address').val('');
+								$('#ship_phone').val('');
+								$('#id_ship_to').val('');
 								document.getElementById('modal-create').style="padding:right:0px !important";
 							}else{
 								var str = (ui.item.label).split(' -');
@@ -2141,9 +2401,15 @@
 								var alamat = datax.user_list[index]['alamat'];
 								var no_hp = datax.user_list[index]['nomor_telfon'];
 								var email = datax.user_list[index]['email'];
+								$('#id_ship_to').val(user_id);
 								$('#id_pelanggan').val(user_id);
 								$('#alamat_penagihan').val(alamat);
 								$('#email_pelanggan').val(email);
+								$('#ship_to').val(ui.item.label);
+								$('#ship_to_name').val(user_name);
+								$('#ship_address').val(alamat);
+								$('#ship_phone').val(no_hp);
+								$('#ship_email').val(email);
 							}
 						},
 						response: function(event, ui) {
@@ -2151,6 +2417,12 @@
 									$('#id_pelanggan').val('');
 									$('#alamat_penagihan').val('');
 									$('#email_pelanggan').val('');
+									$('#ship_to').val('');
+									$('#ship_to_name').val('');
+									$('#ship_address').val('');
+									$('#ship_phone').val('');
+									$('#id_ship_to').val('');
+									$('#ship_email').val('');
 									var noResult = { value:"",label:"Tidak ditemukan, klik untuk menambah user" };
 									ui.content.push(noResult);
 							}

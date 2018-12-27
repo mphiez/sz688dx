@@ -208,6 +208,32 @@ class Transaksi extends CI_Controller {
 		echo json_encode($return);
 	}
 	
+	public function search_ship(){
+		$name = $this->input->post('pn_name');
+		$datax = $this->transaksi_model->search_ship($name);
+		$list = array();
+		$temp = array();
+		if($datax > 0){
+			foreach($datax as $row){
+				$list[$row->id_customer] = $row;
+			}
+			
+			$return = array(
+				'data' => $datax,
+				'user_list' => $list,
+				'code' => 0
+			);
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'user_list' => $list,
+				'code' => 1
+			);
+		}
+		echo json_encode($return);
+	}
+	
 	public function search_produk(){
 		$name = $this->input->post('pn_name');
 		$type = $this->input->post('type');
@@ -433,11 +459,19 @@ class Transaksi extends CI_Controller {
 		$post = $this->input->post();
 		$datax = $this->transaksi_model->save_invoice($post);
 		if($datax){
-			$return = array(
-				'data' => $datax,
-				'code' => 0,
-				'guid' => md5($datax)
-			);
+			if($datax == '-2'){
+				$return = array(
+					'data' => $datax,
+					'code' => 2,
+					'guid' => md5($datax)
+				);
+			}else{
+				$return = array(
+					'data' => $datax,
+					'code' => 0,
+					'guid' => md5($datax)
+				);
+			}
 			
 		}else{
 			$return = array(

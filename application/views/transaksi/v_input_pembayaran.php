@@ -33,10 +33,16 @@
 								<input type="text" id="email_pelanggan" class="form-control">
 							</div>
 						</div>
+						<div class="col-sm-12 col-md-3">
+							<div class="form-group" >
+								<label>No Referensi</label>
+								<input type="text" id="no_referensi" class="form-control moneydec">
+							</div>
+						</div>
 						<div class="col-sm-6 col-md-3">
 							<div class="form-group">
 								<label>Alamat Penagihan</label>
-								<textarea id="alamat_penagihan" class="form-control" ></textarea>
+								<textarea id="alamat_penagihan" class="form-control" style="height: 33px;"></textarea>
 							</div>
 						</div>
 					</div>
@@ -51,12 +57,6 @@
 									</div>
 									<input type="text" id="tanggal_transaksi" readonly class="form-control date" value="<?php echo date('d/m/Y')?>">
 								</div>
-							</div>
-						</div>
-						<div class="col-sm-12 col-md-3">
-							<div class="form-group" >
-								<label>No Referensi</label>
-								<input type="text" id="no_referensi" class="form-control moneydec">
 							</div>
 						</div>
 						<div class="col-sm-6 col-md-3" style="display:none">

@@ -44,6 +44,11 @@ sv = 4 // halaman 1 hanya sales order
 			$bank1 = $row->bank1;
 			$bank2 = $row->bank2;
 			
+			$ship_name = $row->ship_to_name;
+			$ship_address = $row->ship_address;
+			$ship_phone = $row->ship_phone;
+			$ship_email = $row->ship_email;
+			
 			
 		}
 		
@@ -270,9 +275,34 @@ table.bordered th {
 				<p><span style="text-align:right">&nbsp;<?php echo $nomor_faktur?></span></p>
 			</td>
 		</tr>
+	</table>
+	<table width="100%" class="gridtable-head"  width='100%'>
 		<tr>
 			<td align="left" width="10%">
 				<b>Bill To</b>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+			</td>
+			<td align="left" width="2%">
+				<b>:</b>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+			</td>
+			<td align="left">
+				<h3><?php echo $nama_customer?></h3>
+				<p><span><?php echo $alamat?></span></p>
+				<p><span>Tel. <?php echo $nomor_telfon?></span></p>
+				<p><span>Fax. <?php echo $fax_cust?></span></p>
+				<p><span>Email <?php echo $email?></span></p>
+			</td>
+			<td align="left"></td>
+			<td align="left"></td>
+			<td align="left" width="10%">
+				<b>Ship To</b>
 				<p>&nbsp;</p>
 				<p>&nbsp;</p>
 				<p>&nbsp;</p>
@@ -283,14 +313,16 @@ table.bordered th {
 				<p>&nbsp;</p>
 				<p>&nbsp;</p>
 			</td>
-			<td align="left" colspan="6" width="50%">
-				<h3><?php echo $nama_customer?></h3>
-				<p><span><?php echo $alamat?></span></p>
-				<p><span>Tel. <?php echo $nomor_telfon?></span></p>
-				<p><span>Fax. <?php echo $fax_cust?></span></p>
-				<p><span>Email <?php echo $email?></span></p>
+			<td align="right">
+				<h3><?php echo $ship_name?></h3>
+				<p><span><?php echo $ship_address?></span></p>
+				<p><span>Tel. <?php echo $ship_phone?></span></p>
+				<p><span>Email <?php echo $ship_email?></span></p>
 			</td>
-			<td align="left"colspan="8">
+			
+		</tr>
+		<tr>
+			<td align="left" colspan="8">
 				<b>Info Tagihan :</b>
 			</td>
 		</tr>

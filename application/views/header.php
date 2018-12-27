@@ -40,7 +40,7 @@
 	<!-- bootstrap wysihtml5 - text editor -->
 	<link rel="stylesheet" href="<?=base_url()?>plugins/chosen/chosen.css">
 	<link rel="stylesheet" href="<?=base_url()?>plugins/chosen/chosen.min.css">
-	<link rel="stylesheet" href="<?=base_url()?>plugins/jQueryUI/jquery-ui.css">
+	<link rel="stylesheet" href="<?=base_url()?>plugins/jQueryUI/jquery-ui.min.css">
 	<link rel="stylesheet" href="<?=base_url()?>plugins/chart/exporting.js">
 
 	<script src="<?php echo base_url()?>plugins/libs/Chart.js/2.7.3/Chart.min.js"></script>
