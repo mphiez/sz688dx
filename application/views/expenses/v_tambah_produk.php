@@ -558,20 +558,7 @@
 		s_add_supplier(x);
 	}
 	
-	$( "#submit" ).validate({
-		rules: {
-			nama_pelanggan: {
-			  required: true
-			},
-			tujuan_transfer: {
-			  required: $('#metode_pembayaran').val() != "cash" && $('#tujuan_transfer').val() == ""
-			}
-		},
-		
-		submitHandler: function(form) {
-			form.submit();
-		}
-	});
+	
 	
 	$('#tanggal_transaksi').change(function(){
 		$('#tanggal_transaksi-error').css('display','none');

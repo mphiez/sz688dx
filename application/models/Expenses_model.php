@@ -219,6 +219,49 @@
 			}
 		}
 		
+		public function load_detail($id){
+			$where = "";
+			if(isset($id)){
+				$where = " and md5(id) ='$id'";
+			}
+			
+			$perusahaan = $this->session->userdata('perusahaan');
+			$cabang = $this->session->userdata('pn_wilayah');
+			$query 	= "SELECT
+									c.sudah_masuk,
+									b.id,
+									a.*
+								FROM
+									dk_pembelian_produk_detail a
+								LEFT JOIN dk_pembelian_produk b ON a.nomor_transaksi = b.nomor_transaksi
+								AND a.perusahaan = b.perusahaan
+								LEFT JOIN (
+									SELECT
+										transaksi,
+										id_barang as id_produk,
+										sum(qty) sudah_masuk
+									FROM
+										dk_stock_masuk
+									WHERE
+										perusahaan = '$perusahaan'
+									AND cabang = '$cabang'
+									GROUP BY
+										transaksi,
+										id_barang
+								) c ON c.transaksi = a.nomor_transaksi
+								AND c.id_produk = a.id_produk
+								WHERE
+									MD5(b.id) = '$id'
+								AND a.perusahaan = '$perusahaan'
+								AND a.cabang = '$cabang'";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return 0;
+			}
+		}
+		
 		public function save($id = null){
 			$post = $this->input->post();
 			if($post['nomor_transaksi'] == ''){
@@ -251,7 +294,7 @@
 			}else if($post['metode_pembayaran'] == 'hutang'){
 				$account = '2-1110';
 			}else{
-				$account = $post['tujuan_transfer'];
+				$account = $post['tujuan'];
 			}
 			
 			
@@ -303,8 +346,8 @@
 							'nomor_invoice'		=> $post['nomor_invoice'],
 							'no_akun_debit'		=> $post['account_sales'],
 							'nama_akun_debit'	=> account_name($post['account_sales']),
-							'no_akun_credit'	=> '1-1111',
-							'nama_akun_credit'	=> account_name('1-1111'),
+							'no_akun_credit'	=> $account,
+							'nama_akun_credit'	=> account_name($account),
 							'jumlah_debit'		=> str_replace(',','',$post['total']),
 							'jumlah_credit'		=> str_replace(',','',$post['total']),
 							'user'				=> $this->session->userdata('pn_id'),
@@ -380,11 +423,6 @@
 					$this->db->where('id_produk',$row['id_produk']);
 					$this->db->update('dk_produk',$data_item);
 					
-					/* 
-					- update stock_awal disini
-					 */
-					$this->db->query("update dk_produk set stock_awal = stock_awal+".str_replace(',','',$row['qty'])." where id_produk='".$row['id_produk']."' and cabang='".$this->session->userdata('pn_wilayah')."' and perusahaan='".$this->session->userdata('perusahaan')."'");
-					
 					$id_produk = $row['id_produk'];
 				}
 				
@@ -414,6 +452,122 @@
 				$this->db->trans_commit();
 				
 				return $id_ref;
+			}
+		}
+		
+		public function save_pembayaran ($post){
+			$this->db->trans_begin();
+			
+			if ($post['metode_pembayaran']=="cash"){
+				$credit="1-1111"; 
+			} else {
+				$credit=$post['debit'];
+			}
+			
+			$data = array(
+						'id_customer' 			=> $post['id_customer'],
+						'credit' 				=> $credit, 
+						'jumlah_bayar' 			=> $post['jumlah_bayar'], 
+						'metode_pembayaran'		=> $post['metode_pembayaran'],
+						'tanggal_bayar'     	=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_bayar']))),
+						'jumlah_bayar'      	=> str_replace(',','',$post['jumlah_bayar']),
+						'referensi_pembayaran' 	=> $post['referensi_bayar'],
+						'debit'                	=> $post['debit'],
+						'nm_debit'             	=> account_name($post['debit']),
+						'create_date'           => date('Y-m-d H:i:s'),
+						'user'             		=> $this->session->userdata('pn_id'),
+						'cabang'             	=> $this->session->userdata('pn_wilayah'),
+						'perusahaan'            => $this->session->userdata('perusahaan'),
+						'foto'             		=> '',
+						'pesan'             	=> $post['deskripsi'],
+						'tipe_bayar'            => $post['tipe_bayar'],
+						'no_invoice'            => $post['no_invoice'],
+						'nomor_transaksi'       => $post['nomor_transaksi'],
+						'ref_transaksi'         => $post['ref_transaksi'],
+						'nm_credit'             => account_name($credit),
+					);
+					
+			$this->db->insert('dk_pembayaran',$data);
+			$id = $this->db->insert_id('dk_pembayaran',$data);;
+			
+			
+			$data = array(
+						'tanggal'               => date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_bayar']))),
+						'nomor_invoice'			=> $post['no_invoice'],
+						'nomor_transaksi'		=> $post['nomor_transaksi'],
+						'no_bukti'				=> $post['referensi_bayar'],
+						'keterangan'			=> $post['deskripsi'],
+						'no_akun_debit'			=> $post['debit'],
+						'nama_akun_debit'		=> account_name($post['debit']),
+						'no_akun_credit'		=> $credit,
+						'nama_akun_credit'		=> account_name($credit),
+						'jumlah_debit'			=> str_replace(',','',$post['jumlah_bayar']),
+						'jumlah_credit'			=> str_replace(',','',$post['jumlah_bayar']),
+						'user'					=> $this->session->userdata('pn_id'),
+						'status'				=> 0,
+						'no_ref'				=> $post['referensi_bayar'],
+						'cabang'				=> $this->session->userdata('pn_wilayah'),
+						'ppn'					=> str_replace(',','',$post['ppn']),
+						'perusahaan'			=> $this->session->userdata('perusahaan'),
+						'create_date'			=> date('Y-m-d H:i:s'),
+			);
+			
+			$this->db->insert('dk_jurnal',$data);
+			
+			
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				
+				return $id;
+			}
+		}
+		
+		public function save_barang ($post){
+			$this->db->trans_begin();
+			
+			foreach($post['data'] as $row){
+				$data = array(
+				
+							'id_barang'             => $row['id_barang'],
+							'nama_barang'			=> $row['nama_barang'],
+							'qty'					=> str_replace(',','',$row['qty']),
+							'deskripsi'    			=> $row['deskripsi'],
+							'created'				=> date('Y-m-d H:i:s'),
+							'user'					=> $this->session->userdata('pn_id'),
+							'perusahaan'			=> $this->session->userdata('perusahaan'),
+							'cabang'				=> $this->session->userdata('pn_wilayah'),
+							'transaksi'				=> $post['transaksi'],
+							'invoice'				=> $post['invoice'],
+							'tanggal_masuk'			=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_masuk']))),
+							
+							
+				);
+				
+				$this->db->insert('dk_stock_masuk',$data);
+				$id = $this->db->insert_id();
+				
+				/* 
+				- update stock_awal disini
+				 */
+				$this->db->query("update dk_produk set stock_awal = stock_awal+".str_replace(',','',$row['qty'])." where id_produk='".$row['id_barang']."' and cabang='".$this->session->userdata('pn_wilayah')."' and perusahaan='".$this->session->userdata('perusahaan')."'");
+			}
+			
+			
+			
+			
+			
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				
+				return 1;
 			}
 		}
 	}

@@ -43,6 +43,16 @@ class Expenses extends CI_Controller {
 		$this->load->view('expenses/v_create_payment',$data);
 	}
 	
+	public function barang(){
+		$data['judul']				= "Buat Jurnal";
+		$id = $this->input->get('id');
+		$data['bank_list'] 			= $this->transaksi_model->bank_list();
+		$data['bank_list_sell'] 	= $this->transaksi_model->bank_list_sell();
+		$data['header'] 			= $this->expenses_model->load_payment($id);
+		$data['detail'] 			= $this->expenses_model->load_detail($id);
+		$this->load->view('expenses/v_barang_masuk',$data);
+	}
+	
 	public function load_list(){
 		$range = $this->input->post('range');
 		$status = $this->input->post('status');
@@ -128,6 +138,62 @@ class Expenses extends CI_Controller {
 	public function save(){
 		$post = $this->input->post();
 		$datax = $this->expenses_model->save($post);
+		if($datax){
+			if($datax == '-1'){
+				$return = array(
+					'data' => '',
+					'code' => 2,
+					'guid' => 0
+				);
+			}else{
+				$return = array(
+					'data' => $datax,
+					'code' => 0,
+					'guid' => md5($datax['id'])
+				);
+			}
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function save_pembayaran(){
+		$post = $this->input->post();
+		$datax = $this->expenses_model->save_pembayaran($post);
+		if($datax){
+			if($datax == '-1'){
+				$return = array(
+					'data' => '',
+					'code' => 2,
+					'guid' => 0
+				);
+			}else{
+				$return = array(
+					'data' => $datax,
+					'code' => 0,
+					'guid' => md5($datax['id'])
+				);
+			}
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function save_barang(){
+		$post = $this->input->post();
+		$datax = $this->expenses_model->save_barang($post);
 		if($datax){
 			if($datax == '-1'){
 				$return = array(

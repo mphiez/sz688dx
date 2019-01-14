@@ -119,7 +119,7 @@
 				<div class="col-md-12">
 					<div class="col-sm-6 col-md-3">
 						<div class="form-group" >
-							<label class="col-md-12">Tanggal Bayar</label>
+							<label class="col-md-12">Tanggal Masuk</label>
 							<div class="input-group">
 								<div class="input-group-addon">
 									<i class="fa fa-calendar"></i>
@@ -146,7 +146,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-12">
+				<div class="col-md-12" style="display:none">
 					<div class="col-sm-6 col-md-3">
 						<div class="form-group" >
 							<label>Metode Pembayaran</label>
@@ -192,33 +192,35 @@
 					<table class="table table-hover table-strips">
 						<thead>
 							<tr>
+								<th width="20%">Id Barang</th>
+								<th width="20%">Nama Barang</th>
 								<th width="20%">Deskripsi</th>
-								<th width="16%">Subtotal</th>
-								<th width="16%">PPN</th>
-								<th width="16%">Diskon</th>
-								<th width="16%">Total Bayar</th>
-								<th width="16%">Sisa Bayar</th>
+								<th width="20%">Total</th>
 							</tr>
 						</thead>
 						<tbody id="produk">
-							<?php if($header > 0){
-								foreach($header as $rows){
-								if(($rows->total_bayar - $rows->bayar) > 0){
+						
+							<?php if ($detail > 0){
+								$i=0;
+								foreach($detail as $rows){
+									$i++;
 								?>
-							<tr id="produk_1">
-								<td><textarea style="height: 33px;" id="deskripsi" class="form-control"><?php echo ($rows->deskripsi)?></textarea></td>
+							<tr id="produk_<?php echo $i; ?>">
+									
+								<td><input type="text" id="id_barang_<?php echo $i; ?>" class="form-control" readonly value="<?php echo $rows->id_produk?>"></td>
+								<td><input type="text" id="nama_barang_<?php echo $i; ?>" class="form-control" readonly value="<?php echo $rows->nama_produk?>"></td>
+								<td><textarea style="height: 33px;" id="deskripsi_<?php echo $i; ?>" class="form-control"><?php echo ($rows->deskripsi)?></textarea></td>
 								<td>
-									<input type="text" id="subtotal" class="form-control" readonly value="<?php echo number_format($rows->subtotal)?>">
-								</td>
-								<td><input type="text" id="ppn" readonly value="<?php echo number_format($rows->ppn)?>" class="form-control"></td>
-								<td><input type="text" id="diskon" readonly value="<?php echo number_format($rows->diskon)?>" class="form-control money"></td>
-								<td><input type="text" id="total_bayar" readonly value="<?php echo number_format($rows->total_bayar)?>" class="form-control money"></td>
-								<td>
-								<input type="text" id="sisa_bayar" onkeyup="return check_bayar()" value="<?php echo number_format($rows->total_bayar - $rows->bayar)?>" class="form-control money">
-								<input type="hidden" id="sisa_bayar_harusnya" value="<?php echo number_format($rows->total_bayar - $rows->bayar)?>">
+								<input type="text" id="total_<?php echo $i; ?>" class="form-control money" onkeyup="return check_qty(<?php echo $i?>)" value="<?php echo $rows->qty - $rows->sudah_masuk?>">
+								<input type="hidden" id="total_max_<?php echo $i; ?>" class="form-control money" value="<?php echo $rows->qty - $rows->sudah_masuk?>">
 								</td>
 							</tr>
-								<?php }}}?>
+								<?php }
+								
+								?>
+								<input type="hidden" value="<?php echo $i?>" id="counter">
+								<?php
+								}?>
 							
 						</tbody>
 					</table>
@@ -279,55 +281,31 @@
 	});
 	
 	$('#submit').submit(function(e){
-		$('#tanggal_transaksi-error').css('display','none');
-		$('#tanggal_transaksi').removeClass('error');
-		
-		$('#tanggal_invoice-error').css('display','none');
-		$('#tanggal_invoice').removeClass('error');
-		
-		
 		var counter = $('#counter').val();
-		var transaksi = new Array();
-		var transaksi_new = new Array();
-		if($('#id_pelanggan').val() == ''){
-			alert('Masukan supplier !');
-			return false;
-			
+		var datas = new Array();
+		for(i=1;i<=counter;i++){
+			var temp = {
+				id_barang			: $('#id_barang_'+i).val(),
+				nama_barang			: $('#nama_barang_'+i).val(),
+				deskripsi           : $('#deskripsi_'+i).val(),
+				qty					: $('#total_'+i).val(),
+			}
+			datas.push(temp);
 		}
 		
-		if($('#nomor_invoice').val() == ""){
-			$('#nomor_invoice').focus();
-			alert("Silahkan masukan nomor struk pembelian / invoice !");
-			return false;
-		}
 		
-		if($('#metode_pembayaran').val() != "cash" && $('#tujuan_transfer').val() == "" && $('#metode_pembayaran').val() != "hutang"){
-			$('#tujuan_transfer').focus();
-			alert("Silahkan pilih tujuan pembayaran !");
-			return false;
-		}
 		document.getElementById('btn_save').innerHTML = '<span class="btn btn-success pull-right"><i class="fa fa-spinner"></i> Simpan</span>';
 		$.ajax({
-			url: '<?php echo base_url()?>index.php/expenses/save_pembayaran',
+			url: '<?php echo base_url()?>index.php/expenses/save_barang',
 			type: "POST",
 			data: {
-				no_invoice			: $('#nomor_invoice').val(),
-				nomor_transaksi		: $('#nomor_transaksi').val(),
-				id_customer			: $('#id_pelanggan').val(),
-				ref_transaksi		: $('#no_referensi').val(),
-				metode_pembayaran	: $('#metode_pembayaran').val(),
-				tanggal_bayar		: $('#tanggal_transaksi').val(),
-				jumlah_bayar		: $('#sisa_bayar').val(),
-				referensi_bayar		: $('#nomor_invoice').val(),
-				debit				: $('#tujuan_transfer_jual').val(),
-				credit				: $('#tujuan_transfer').val(),
-				deskripsi           : $('#deskripsi').val(),
-				subtotal            : $('#subtotal').val(),
-				ppn                 : $('#ppn').val(),
-				diskon              : $('#diskon').val(),
-				total_bayar         : $('#total_bayar').val(),
-				sisa_bayar          : $('#sisa_bayar').val(),
-				tipe_bayar			: 2,
+				created				: $('#created').val(),
+				transaksi			: $('#nomor_transaksi').val(),	
+				invoice				: $('#nomor_invoice').val(),
+				tanggal_masuk		: $('#tanggal_transaksi').val(),
+				data 				: datas
+				
+						
 				
 			},
 			success: function(datax) {
@@ -365,5 +343,22 @@
 			alert('Pembayaran tidak boleh lebih besar dari sisa pembayaran !');
 			$('#sisa_bayar').val(curency(harusnya));
 		}
+	}
+	
+	function check_qty(x){
+		var qty = decimal($('#total_'+x).val()) *1;
+		var max = decimal($('#total_max_'+x).val()) *1;
+		var max_cur = $('#total_max_'+x).val();
+		if(qty > max){
+			alert('Kuantitas tidak boleh lebih besar dari jumlah yang seharusnya dikirim !');
+			$('#total_'+x).val((max_cur));
+		}
+	}
+	
+	function delete_paket(x){
+		$('#IDbarang_'+x).css('display','none');
+		$('#nama_barang_'+x).val('');
+		$('#deskripsi_'+x).val('');
+		$('#total_'+x).val('');
 	}
 </script>

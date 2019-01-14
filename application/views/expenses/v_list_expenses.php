@@ -284,6 +284,7 @@
 							  <th>Diskon</th>
 							  <th>Total Bayar</th>
 							  <th>Sisa Bayar</th>
+							  <th>Status Barang</th>
 							  <th>Action</th>
 							</tr>
 						</thead>
@@ -428,6 +429,34 @@ function load(x='', status=''){
 					{ "data": "diskon"},
 					{ "data": "total_bayar"},
 					{ "data": "sisa_bayar"},
+					{
+						render: function (data, type, row, meta) {						
+							
+								var sts = "UnComplete";
+								var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
+								'<li class="dropdown">'+
+									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
+										'<span class="pull-left">'+sts+'</span> <i style="color:green;" class="fa fa-caret-down pull-right"></i> '+
+									'</a>'+
+									'<ul class="dropdown-menu dropdown-messages">'+
+										'<li>'+
+											'<a href="#" onclick="return detail('+row.id+')">'+
+												'Histori Pengeluaran'+
+											'</a>'+
+										'</li>'+
+										'<li class="divider"></li>'+
+										'<li>'+
+											'<a href="<?php echo base_url()?>index.php/expenses/barang?id='+row.id_expenses+'" >'+
+												'Create Pengeluaran'+
+											'</a>'+
+										'</li>'+
+									'</ul>';
+								'</ul>';
+								
+								
+							return inv;
+						}
+					},
 					{
 						render: function (data, type, row, meta) {						
 							if(row.sisa_bayar == 0){

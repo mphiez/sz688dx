@@ -286,6 +286,8 @@
 		}
 	}
 	
+	
+	
 	function delete_paket(x){
 		$('#produk_'+x).css('display','none');
 		$('#deskripsi_'+x).val('');
