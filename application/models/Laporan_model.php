@@ -5,13 +5,18 @@
 			$this->load->database();
 		}
 		
-		public function bukubesar($acnum = null, $cabang = null, $periode=null){
+		public function bukubesar($acnum = null, $cabang = null, $periode=null, $perusahaan=null){
 			$qcabang = "and cabang = '$cabang'";
 			if($cabang == 'all'){
 				$qcabang = "";
 			}
+			if(!$perusahaan){
+				$perusahaan = $this->session->userdata('perusahaan');
+			}else{
+				
+			}
 			
-			$query 	= "select * from dk_jurnal where (no_akun_credit='$acnum' or no_akun_debit='$acnum') $qcabang and tanggal like '%$periode%' order by tanggal";
+			$query 	= "select * from dk_jurnal where (no_akun_credit='$acnum' or no_akun_debit='$acnum') $qcabang and tanggal like '%$periode%' and perusahaan='$perusahaan' order by tanggal,create_date";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				return $q->result();
@@ -62,10 +67,17 @@
 			}
 		}
 		
-		public function getPeriode(){
+		public function getPeriode($acnum=null, $periodes=null, $cabang=null){
 			$perusahaan = $this->session->userdata('perusahaan');
-			$admin = cek_admin();
-			$query 	= "select periode from dk_saldo_awal where perusahaan='$perusahaan' $admin group by periode order by periode";
+			$cabang = $this->session->userdata('cabang');
+			$where = "and cabang = '$cabang'";
+			if($cabang == 'all'){
+				$where = "";
+			}
+			if($periodes != ''){
+				$where .= "and periode = '$periodes'";
+			}
+			$query 	= "select periode from dk_saldo_awal where perusahaan='$perusahaan' and account_num='$acnum' $where group by periode order by periode";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				return $q->result();
@@ -281,6 +293,75 @@
 				return $temp;
 			}else{
 				return array();
+			}
+		}
+		
+		public function get_perusahaan(){ 
+			$query 	= "select id from dk_company where status_akun = '0'";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return array();
+			}
+		}
+		
+		public function get_cabang($id){
+			$query 	= "select cabang as id from dk_cabang where sts = '1' and perusahaan='$id'";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return array();
+			}
+		}
+		
+		public function get_account($per, $cab, $peri){
+			$query 	= "SELECT
+							account_num
+						FROM
+							dk_account
+						WHERE
+							STATUS = '0'
+						AND perusahaan = '$per'
+						AND account_num NOT IN (
+							SELECT
+								account_num
+							FROM
+								dk_saldo_awal
+							WHERE
+								STATUS = '0'
+							AND perusahaan = '$per'
+							AND cabang = '$cab'
+							AND periode = '$peri'
+						)
+						ORDER BY account_num";
+			$q 		= $this->db->query($query);
+			if($q->num_rows() > 0){
+				return $q->result();
+			}else{
+				return array();
+			}
+		}
+		
+		public function insert_saldo($data=array()){
+			$this->db->trans_begin();
+			
+			$query 	= "select account_num from dk_saldo_awal where status = '0' and perusahaan='".$data['perusahaan']."' and cabang='".$data['cabang']."' and periode='".$data['periode']."' and account_num='".$data['account_num']."'";
+			$q 		= $this->db->query($query);
+			
+			if($q->num_rows() == 0){
+				$this->db->insert('dk_saldo_awal',$data);
+			}
+			
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				
+				return true;
 			}
 		}
 	}

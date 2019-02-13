@@ -257,7 +257,12 @@
 					var datax = JSON.parse(datax);
 					if(datax.code == 0){
 						$('#field_print').empty();
-						$('#field_print').append('<a class="btn btn-info" target="blank" href="<?php echo base_url()?>index.php/produk/print_spj?id='+datax.data+'">Print</a><a  class="btn btn-default" href="<?php echo base_url()?>index.php/transaksi">Tutup</a>');
+						if("<?php echo $_GET['fm']?>"== 1){
+							$('#field_print').append('<a class="btn btn-info" target="blank" href="<?php echo base_url()?>index.php/produk/print_spj?id='+datax.data+'">Print</a><a  class="btn btn-default" href="<?php echo base_url()?>index.php/produk/out">Tutup</a>');
+						}else{
+							$('#field_print').append('<a class="btn btn-info" target="blank" href="<?php echo base_url()?>index.php/produk/print_spj?id='+datax.data+'">Print</a><a  class="btn btn-default" href="<?php echo base_url()?>index.php/transaksi">Tutup</a>');
+						}
+						
 						
 						$('#modal-print-sales').modal();
 					}else if(datax.code == 2){

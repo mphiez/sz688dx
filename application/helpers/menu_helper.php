@@ -419,4 +419,15 @@
 		}
 	}
 	
+	function add_karyawan(){
+		$CI =& get_instance();
+		$CI->load->model('menu_model');
+		$admin = $CI->menu_model->cek_admin();
+		if($admin->nm_jabatan == 'Admin'){
+			return "";
+		}else{
+			return "and cabang='".$admin->id."'";
+		}
+	}
+	
 ?>

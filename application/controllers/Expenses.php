@@ -72,8 +72,22 @@ class Expenses extends CI_Controller {
 				$row->total_bayar = number_format($row->total_bayar);
 				$row->diskon = number_format($row->diskon);
 				
+				if($status != ''){
+						
+					if($status == 'Completed'){
+						if($row->tot_masuk >= $row->tot_beli){ //complete
+							array_push($temp, $row);
+						}
+					}else{
+						if($row->tot_masuk < $row->tot_beli){ //uncomplete
+							array_push($temp, $row);
+						}
+					}
+					 
+				}else{
+					array_push($temp, $row);
+				}
 				
-				array_push($temp, $row);
 			}
 			$return = array(
 				'data' => $temp,
@@ -90,8 +104,7 @@ class Expenses extends CI_Controller {
 	}
 	
 	function load_list_sum(){
-		$id = $this->input->post('id');
-		$datax = $this->expenses_model->load_list_sum($id);
+		$datax = $this->expenses_model->load_list_sum();
 		if($datax){
 			$return = array(
 				'data' => $datax,
@@ -212,6 +225,127 @@ class Expenses extends CI_Controller {
 		}else{
 			$return = array(
 				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function change_status(){
+		$post = $this->input->post();
+		$datax = $this->expenses_model->change_status($post);
+		if($datax){
+			if($datax == '-1'){
+				$return = array(
+					'data' => '',
+					'code' => 2,
+					'guid' => 0
+				);
+			}else{
+				$return = array(
+					'data' => $datax,
+					'code' => 0,
+					'guid' => 0
+				);
+			}
+			
+		}else{
+			$return = array(
+				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function detail_transaksi(){
+		$post = $this->input->post();
+		$datax = $this->expenses_model->detail_transaksi($post);
+		if($datax){
+			$return = array(
+				'data' => $datax,
+				'code' => 0,
+				'guid' => 0
+			);
+		}else{
+			$return = array(
+				'data' => $datax,
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function detail_pembelian(){
+		$post = $this->input->post();
+		$datax = $this->expenses_model->detail_pembelian($post);
+		if($datax){
+			$temp = array();
+			foreach($datax as $row){
+				$row->harga_satuan = number_format($row->harga_satuan);
+				$row->total = number_format($row->total);
+				$row->qty = number_format($row->qty);
+				array_push($temp, $row);
+			}
+			$return = array(
+				'data' => $temp,
+				'code' => 0,
+				'guid' => 0
+			);
+		}else{
+			$return = array(
+				'data' => array(),
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function detail_pembayaran(){
+		$post = $this->input->post();
+		$datax = $this->expenses_model->detail_pembayaran($post);
+		if($datax){
+			$temp = array();
+			foreach($datax as $row){
+				$row->jumlah_bayar = number_format($row->jumlah_bayar);
+				array_push($temp, $row);
+			}
+			$return = array(
+				'data' => $temp,
+				'code' => 0,
+				'guid' => 0
+			);
+		}else{
+			$return = array(
+				'data' => array(),
+				'code' => 1,
+				'guid' => 0
+			);
+		}
+		echo json_encode($return);
+	}
+	
+	public function detail_barang(){
+		$post = $this->input->post();
+		$datax = $this->expenses_model->detail_barang($post);
+		if($datax){
+			$temp = array();
+			foreach($datax as $row){
+				$row->qty = number_format($row->qty);
+				array_push($temp, $row);
+			}
+			$return = array(
+				'data' => $temp,
+				'code' => 0,
+				'guid' => 0
+			);
+		}else{
+			$return = array(
+				'data' => array(),
 				'code' => 1,
 				'guid' => 0
 			);

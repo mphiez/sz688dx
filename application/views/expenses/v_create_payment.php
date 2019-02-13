@@ -305,6 +305,9 @@
 			$('#tujuan_transfer').focus();
 			alert("Silahkan pilih tujuan pembayaran !");
 			return false;
+		}if(!$('#sisa_bayar').val()){
+			alert("Pembayaran sudah dilakukan !");
+			return false;
 		}
 		document.getElementById('btn_save').innerHTML = '<span class="btn btn-success pull-right"><i class="fa fa-spinner"></i> Simpan</span>';
 		$.ajax({
@@ -326,7 +329,7 @@
 				ppn                 : $('#ppn').val(),
 				diskon              : $('#diskon').val(),
 				total_bayar         : $('#total_bayar').val(),
-				sisa_bayar          : $('#sisa_bayar').val(),
+				sisa_bayar          : $('#sisa_bayar_harusnya').val(),
 				tipe_bayar			: 2,
 				
 			},
@@ -334,6 +337,7 @@
 				var datax = JSON.parse(datax);
 				if(datax.code == 0){
 					alert('Transaksi berhasil !');
+					location.replace('<?php echo base_url()?>index.php/expenses/view');
 				}else{
 					alert('Simpan gagal !');
 				}

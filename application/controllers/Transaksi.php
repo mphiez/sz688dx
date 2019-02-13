@@ -575,7 +575,22 @@ class Transaksi extends CI_Controller {
 					$row->sisa_tagihan = 0;
 				}
 				
-				array_push($temp, $row);
+				if($status != ''){
+						
+					if($status == 'Completed'){
+						
+						if($row->status_stock == 'Complete'){ //complete
+							array_push($temp, $row);
+						}
+					}else {
+						if($row->status_stock == 'Uncompleted'){ //uncomplete
+							array_push($temp, $row);
+						}
+					}
+					 
+				}else{
+					array_push($temp, $row);
+				}
 			}
 			$return = array(
 				'data' => $temp,

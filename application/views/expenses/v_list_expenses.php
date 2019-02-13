@@ -34,7 +34,7 @@
 							<li class="divider"></li>
 							<li>
 								<a href="<?php echo base_url()?>index.php/expenses/produk_baru">
-									Tambah Produk
+									Pembelian Langsung
 								</a>
 							</li>
 							<li class="divider"></li>
@@ -72,7 +72,7 @@
 							</div>
 							<div class="col-xs-9 text-right">
 								<div class="huge"  id="all">0</div>
-								<div>Semua Pengeluaran</div>
+								<div>Semua Pembelian</div>
 							</div>
 						</div>
 					</div>
@@ -182,7 +182,7 @@
 							</div>
 							<div class="col-xs-9 text-right">
 								<div class="huge" id="reject">0</div>
-								<div>Pengeluaran Batal</div>
+								<div>PO Batal</div>
 							</div>
 						</div>
 					</div>
@@ -201,12 +201,39 @@
   
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						Penjualan <span id="range">Dalam Satu Tahun Terakhir</span>
+						Penjualan <span id="range">Dalam Satu Tahun Terakhir</span> <span id="status_in"></span>
 						<input type="hidden" id="range_type" value="Y">
+						<input type="hidden" id="status_type" value="">
+						<ul class="navbar-right" style="float:right;margin-right: 0px;list-style: none;display:none">
+							<li class="dropdown">
+								<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;margin-top:15px;">
+									<i class="fa fa-calendar"></i> Status <i class="fa fa-caret-down"></i> 
+								</a>
+								<ul class="dropdown-menu dropdown-messages">
+									<li>
+										<a href="#" onclick="return load('','')">
+											Semua
+										</a>
+									</li>
+									<li class="divider"></li>
+									<li>
+										<a href="#" onclick="return load('','Completed')">
+											Complete
+										</a>
+									</li>
+									<li class="divider"></li>
+									<li>
+										<a href="#" onclick="return load('','Uncompleted')">
+											UnComplete
+										</a>
+									</li>
+								</ul>
+							</li>
+						</ul>
 						<ul class="navbar-right" style="float:right;margin-right: 0px;list-style: none;">
 							<li class="dropdown">
 								<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;margin-top:15px;">
-									<i class="fa fa-calendar"></i> Semua <i class="fa fa-caret-down"></i> 
+									<i class="fa fa-calendar"></i> Periode <i class="fa fa-caret-down"></i> 
 								</a>
 								<ul class="dropdown-menu dropdown-messages">
 									<li>
@@ -248,7 +275,7 @@
 									<i class="fa fa-list"></i> Columns <i class="fa fa-caret-down"></i> 
 								</a>
 								<ul class="dropdown-menu dropdown-messages">
-									<?php $nm_table = array('Tanggal','No. Ref','No. Transaksi','Cabang','Pengeluaran','Metode','Lampiran','Pesan','Subtotal','PPN','Diskon','Total Bayar','Sisa Bayar','Action');
+									<?php $nm_table = array('Tanggal','No. Ref','No. Transaksi','Cabang','Pengeluaran','Metode','Lampiran','Pesan','Subtotal','PPN','Diskon','Total Bayar','Sisa Bayar','Status Barang','Action');
 										$i= 0;
 										$n= 0;
 										foreach($nm_table as $row){
@@ -297,6 +324,46 @@
 			</div>
 		</div>
     </div>
+	<div id="modal-ubah-status" class="modal fade" tabindex="-1" role="dialog">
+	  <div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title modal-success">Ubah Status Order Penjualan</h4>
+		  </div>
+		  <div class="modal-body" style="max-height:400px">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="form-group">
+						<label>Nomor Transaksi</label>
+						<input type="text" id="nomor_transaksi" value="" class="form-control" readonly>
+						<input type="hidden" id="id_order" value="" class="form-control" readonly>
+					</div>
+					<div class="form-group">
+						<label>Nama Pelanggan</label>
+						<input type="text" id="nama_pelanggan" value="" class="form-control" readonly>
+					</div>
+					<div class="form-group">
+						<label>Nomor Invoice</label>
+						<input type="text" id="no_ref" value="" class="form-control">
+					</div>
+					<div class="form-group">
+						<label>Status</label>
+						<select id="status" onchange="return show_termin()" class="form-control chosen-select">
+							<option value="2">Accept</option>
+							<option value="1">Waiting</option>
+							<option value="3">Reject</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer" id="field_add">
+			<button class="btn btn-success" onclick="return do_change()" id="btn_add">Simpan</button><button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
 	<div id="modal-detail-invoice" class="modal fade" tabindex="-1" role="dialog">
 	  <div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
@@ -308,6 +375,112 @@
 			<div class="row table-responsive" style="max-height:75vh">
 				<div class="col-md-12" id="body-invoice">
 					
+				</div>
+			</div>
+		  </div>
+		  <div class="modal-footer" id="field_add">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div id="modal-detail" class="modal fade" tabindex="-1" role="dialog">
+	  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title modal-success">Detail Pembelian</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="row table-responsive" style="max-height:75vh">
+				<div class="col-md-12">
+					<div class="form-group">
+						<label>Nama Supplier</label>
+						<div>
+							<input type="text" id="nama_supplier" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
+						<label>ID Supplier</label>
+						<div>
+							<input type="text" id="id_supplier" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
+						<label>Tanggal Transaksi</label>
+						<div>
+							<input type="text" id="tanggal_transaksi" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
+						<label>Nomor Transaksi</label>
+						<div>
+							<input type="text" id="nomor_transaksi2" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
+						<label>Nomor invoice / Struk pembelian</label>
+						<div>
+							<input type="text" id="nomor_invoice" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
+						<label>Total pembayaran</label>
+						<div>
+							<input type="text" id="total_bayar" class="form-control">
+						</div>
+					</div>
+				</div>
+				<div class="col-md-12">
+					<label>Daftar Pembelian</label>
+					<div class="col-md-12">
+						<table class="table table-striped tabel-hover" id="tableDetail">
+							<thead>
+								<tr>
+									<th>Nama Produk</th>
+									<th>ID Produk</th>
+									<th>Qty</th>
+									<th>Harga Beli</th>
+									<th>Jumlah</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-12">
+					<label>History pembayaran</label>
+					<div class="col-md-12">
+						<table class="table table-striped tabel-hover" id="tablePembayaran">
+							<thead>
+								<tr>
+									<th>Tanggal Bayar</th>
+									<th>Akun</th>
+									<th>Jumlah Bayar</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-12">
+					<label>History Barang Masuk</label>
+					<div class="col-md-12">
+						<table class="table table-striped tabel-hover" id="tableBarang">
+							<thead>
+								<tr>
+									<th>Nama Produk</th>
+									<th>ID Produk</th>
+									<th>Qty</th>
+									<th>Tanggal Masuk</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		  </div>
@@ -330,6 +503,13 @@ function decimal(x=''){
 	return x.toString().replace(/[^0-9.-]+/g,"");
 }
 
+function curency(x=''){
+	if(x == ''){
+		x = 0;
+	}
+	return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+}
+
 function show_termin(){
 	$('#j_termin').css('display','none');
 	if($('#status').val() == 2){
@@ -343,9 +523,7 @@ $(".chosen-select").chosen({no_results_text: "Tidak Ditemukan", width: "100%"});
 $.ajax({
 	url: '<?php echo base_url()?>index.php/expenses/load_list_sum',
 	type: "POST",
-	data: {
-		range:$('#range_type').val(),status:status
-	},
+	data: {},
 	success: function(datax) {
 		var datax = JSON.parse(datax);
 		$('#all').text('0');
@@ -374,12 +552,16 @@ $.ajax({
 	}
 });
 function load(x='', status=''){
+	if(x == ''){
+		x = $('#range_type').val();
+	}
+	
 	if(x == 'W'){
 		$('#range_type').val(x);
-		$('#range').text('Dalam Satu Minggu Terakhir');
+		$('#range').text('Dalam Minggu Ini');
 	}else if(x == 'M'){
 		$('#range_type').val(x);
-		$('#range').text('Dalam Satu Bulan Terakhir');
+		$('#range').text('Dalam Bulan Ini');
 	}else if(x == 'M2'){
 		$('#range_type').val(x);
 		$('#range').text('Dalam Dua Bulan Terakhir');
@@ -390,6 +572,17 @@ function load(x='', status=''){
 		$('#range_type').val(x);
 		$('#range').text('Hari Ini');
 	}
+
+	
+	$('#status_type').val(status);
+	
+	if(status == 'Completed'){
+		$('#status_in').text('Status Complete');
+	}else if(status == 'Uncompleted'){
+		$('#status_in').text('Status UnComplete');
+	}else{
+		$('#status_in').text('');
+	}
 	
 	$(document).ready(function() {
 		var table = $("#example").DataTable({
@@ -397,7 +590,7 @@ function load(x='', status=''){
 				"ajax": {
 					"url": "<?php echo base_url()?>index.php/expenses/load_list",
 					"type": "POST",
-					data: {},
+					data: {range : x, status : status},
 				},
 				"destroy": true,
 				"oLanguage": {
@@ -431,8 +624,8 @@ function load(x='', status=''){
 					{ "data": "sisa_bayar"},
 					{
 						render: function (data, type, row, meta) {						
-							
-								var sts = "UnComplete";
+							if(row.tot_masuk * 1 >= row.tot_beli * 1){
+								var sts = "Complete";
 								var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
 								'<li class="dropdown">'+
 									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
@@ -444,36 +637,76 @@ function load(x='', status=''){
 												'Histori Pengeluaran'+
 											'</a>'+
 										'</li>'+
+									'</ul>';
+								'</ul>';
+							}else{
+								var sts = "UnComplete";
+								var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
+								'<li class="dropdown">'+
+									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
+										'<span class="pull-left">'+sts+'</span> <i style="color:green;" class="fa fa-caret-down pull-right"></i> '+
+									'</a>'+
+									'<ul class="dropdown-menu dropdown-messages">'+
+										'<li>'+
+											'<a href="#" onclick="return detail('+row.id+')">'+
+												'Info Barang Masuk'+
+											'</a>'+
+										'</li>'+
 										'<li class="divider"></li>'+
 										'<li>'+
-											'<a href="<?php echo base_url()?>index.php/expenses/barang?id='+row.id_expenses+'" >'+
-												'Create Pengeluaran'+
+											'<a href="<?php echo base_url()?>index.php/expenses/barang?id='+row.id_expenses+'&fm=0" >'+
+												'Create Barang masuk'+
 											'</a>'+
 										'</li>'+
 									'</ul>';
 								'</ul>';
-								
+							}
 								
 							return inv;
 						}
 					},
 					{
-						render: function (data, type, row, meta) {						
-							if(row.sisa_bayar == 0){
-								var sts = "Paid";
-								var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
-								'<li class="dropdown">'+
-									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
-										'<span class="pull-left">'+sts+'</span> <i style="color:green;" class="fa fa-caret-down pull-right"></i> '+
-									'</a>'+
-									'<ul class="dropdown-menu dropdown-messages">'+
-										'<li>'+
-											'<a href="#" onclick="return detail('+row.id+')">'+
-												'Detail Order'+
-											'</a>'+
-										'</li>';
-							}else{
-								var sts = "Pay";
+						render: function (data, type, row, meta) {
+							if(row.tipe_pembelian == 0){//penjualan langsung / invoice
+								if(row.sisa_bayar == 0){
+									var sts = "Paid";
+									var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
+									'<li class="dropdown">'+
+										'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
+											'<span class="pull-left">'+sts+'</span> <i style="color:green;" class="fa fa-caret-down pull-right"></i> '+
+										'</a>'+
+										'<ul class="dropdown-menu dropdown-messages">'+
+											'<li>'+
+												'<a href="#" onclick="return detail('+row.id+')">'+
+													'Detail Order'+
+												'</a>'+
+											'</li>'+
+										'</ul>'+
+									'</ul>';
+								}else{
+									var sts = "Pay";
+									var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
+									'<li class="dropdown">'+
+										'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
+											'<span class="pull-left">'+sts+'</span> <i style="color:green;" class="fa fa-caret-down pull-right"></i> '+
+										'</a>'+
+										'<ul class="dropdown-menu dropdown-messages">'+
+											'<li>'+
+												'<a href="#" onclick="return detail('+row.id+')">'+
+													'Detail Order'+
+												'</a>'+
+											'</li>'+
+											'<li class="divider"></li>'+
+											'<li>'+
+												'<a href="<?php echo base_url()?>index.php/expenses/pay?id='+row.id_expenses+'">'+
+													'Create Payment'+
+												'</a>'+
+											'</li>'+
+										'</ul>'+
+									'</ul>';
+								}
+							}else if(row.tipe_pembelian == 1){//po
+								var sts = "PO";
 								var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
 								'<li class="dropdown">'+
 									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
@@ -487,11 +720,53 @@ function load(x='', status=''){
 										'</li>'+
 										'<li class="divider"></li>'+
 										'<li>'+
-											'<a href="<?php echo base_url()?>index.php/expenses/pay?id='+row.id_expenses+'" target="blank">'+
+											'<a href="#" onclick="return change_status('+row.id+',&#39;'+row.supplier+'&#39;,&#39;'+row.nomor_invoice+'&#39;,&#39;'+row.tipe_pembelian+'&#39;,&#39;'+row.nomor_transaksi+'&#39;)">'+//id, cus, ref, stat, nomor_transaksi
+												'Ubah Status'+
+											'</a>'+
+										'</li>'+
+									'</ul>'+
+								'</ul>';
+							}else if(row.tipe_pembelian == 2){ // accept po
+								var sts = "PO Accepted";
+								var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
+								'<li class="dropdown">'+
+									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
+										'<span class="pull-left">'+sts+'</span> <i style="color:green;" class="fa fa-caret-down pull-right"></i> '+
+									'</a>'+
+									'<ul class="dropdown-menu dropdown-messages">'+
+										'<li>'+
+											'<a href="#" onclick="return detail('+row.id+')">'+
+												'Detail Order'+
+											'</a>'+
+										'</li>'+
+										'<li class="divider"></li>'+
+										'<li>'+
+											'<a href="<?php echo base_url()?>index.php/expenses/pay?id='+row.id_expenses+'">'+
 												'Create Payment'+
 											'</a>'+
 										'</li>'+
-									'</ul>';
+									'</ul>'+
+								'</ul>';
+							}else if(row.tipe_pembelian == 3){ // reject po
+								var sts = "PO Rejected";
+								var inv = '<ul class="navbar-right" style="padding: 0px;margin: 0px;list-style: none;position: absolute;">'+
+								'<li class="dropdown">'+
+									'<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;">'+
+										'<span class="pull-left">'+sts+'</span> <i style="color:green;" class="fa fa-caret-down pull-right"></i> '+
+									'</a>'+
+									'<ul class="dropdown-menu dropdown-messages">'+
+										'<li>'+
+											'<a href="#" onclick="return detail('+row.id+')">'+
+												'Detail Order'+
+											'</a>'+
+										'</li>'+
+										'<li class="divider"></li>'+
+										'<li>'+
+											'<a href="#" onclick="return change_status('+row.id+',&#39;'+row.supplier+'&#39;,&#39;'+row.nomor_invoice+'&#39;,&#39;'+row.tipe_pembelian+'&#39;,&#39;'+row.nomor_transaksi+'&#39;)">'+//id, cus, ref, stat, nomor_transaksi
+												'Ubah Status'+
+											'</a>'+
+										'</li>'+
+									'</ul>'+
 								'</ul>';
 							}
 								
@@ -520,16 +795,14 @@ function load(x='', status=''){
 }
 
 function detail(x){
-	$('#cust_name').text('');
-	$('#cust_name').text('');
-	$('#tanggal_transaksi').text('');
-	$('#jumlah_transaksi').text('');
-	$('#status_transaksi').text('');
-	$('#nomor_invoice').text('');
-	$('#lampiran').text('');
-	$('#pesan').text('');
+	$('#nama_supplier').val('');
+	$('#id_supplier').val('');
+	$('#tanggal_transaksi').val('');
+	$('#nomor_transaksi').val('');
+	$('#nomor_invoice').val('');
+	$('#total_bayar').val('');
 	$.ajax({
-		url: '<?php echo base_url()?>index.php/transaksi/detail_transaksi_header',
+		url: '<?php echo base_url()?>index.php/expenses/detail_transaksi',
 		type: "POST",
 		data: {
 			id 				: x,
@@ -537,23 +810,23 @@ function detail(x){
 		success: function(datax) {
 			var datax = JSON.parse(datax);
 			if(datax.code == 0){
-				$('#cust_name').text(datax.data.nama_pelanggan);
-				$('#cust_name').text(datax.data.id_pelanggan);
-				$('#tanggal_transaksi').text(datax.data.tanggal_transaksi);
-				$('#jumlah_transaksi').text("Rp. "+datax.data.jumlah_bayar);
-				$('#status_transaksi').text(datax.data.status);
-				$('#nomor_invoice').text(datax.data.nomor_invoice);
-				$('#lampiran').text(datax.data.lampiran);
-				$('#pesan').text(datax.data.pesan);
+				$.each(datax.data, function(i, item){
+					$('#nama_supplier').val(item.supplier);
+					$('#id_supplier').val(item.id_supplier);
+					$('#tanggal_transaksi').val(item.tanggal_diterima);
+					$('#nomor_transaksi2').val(item.nomor_transaksi);
+					$('#nomor_invoice').val(item.nomor_invoice);
+					$('#total_bayar').val(curency(item.total_bayar));
+				});
 			}
 		}
 	});
 	
-	$("#detail_table").dataTable({
+	$("#tableDetail").dataTable({
 		"processing": true,
 		"scrollX":true,
 		"ajax": {
-			"url": "<?php echo base_url()?>index.php/transaksi/detail_transaksi",
+			"url": "<?php echo base_url()?>index.php/expenses/detail_pembelian",
 			"type": "POST",
 			data: {id : x},
 		},
@@ -561,18 +834,56 @@ function detail(x){
 		"oLanguage": {
 			"sProcessing": '<i class="fa fa-spinner fa-pulse"></i> Loading...'
 		},
+
 		"aoColumns": [
-			{ "data": "tanggal_transaksi"},
-			{ "data": "user"},
-			{ "data": "cabang"},
-			{ "data": "id_produk"},
 			{ "data": "nama_produk"},
-			{ "data": "deskripsi"},
-			{ "data": "kuantitas"},
-			{ "data": "satuan"},
+			{ "data": "id_produk"},
+			{ "data": "qty"},
 			{ "data": "harga_satuan"},
-			{ "data": "pajak"},
-			{ "data": "jumlah"},
+			{ "data": "total"}
+		],
+		"order": [[ 0, "desc" ]],
+	});
+	
+	$("#tablePembayaran").dataTable({
+		"processing": true,
+		"scrollX":true,
+		"ajax": {
+			"url": "<?php echo base_url()?>index.php/expenses/detail_pembayaran",
+			"type": "POST",
+			data: {id : x},
+		},
+		"destroy": true,
+		"oLanguage": {
+			"sProcessing": '<i class="fa fa-spinner fa-pulse"></i> Loading...'
+		},
+
+		"aoColumns": [
+			{ "data": "tanggal_bayar"},
+			{ "data": "nm_credit"},
+			{ "data": "jumlah_bayar"},
+		],
+		"order": [[ 0, "desc" ]],
+	});
+	
+	$("#tableBarang").dataTable({
+		"processing": true,
+		"scrollX":true,
+		"ajax": {
+			"url": "<?php echo base_url()?>index.php/expenses/detail_barang",
+			"type": "POST",
+			data: {id : x},
+		},
+		"destroy": true,
+		"oLanguage": {
+			"sProcessing": '<i class="fa fa-spinner fa-pulse"></i> Loading...'
+		},
+
+		"aoColumns": [
+			{ "data": "nama_barang"},
+			{ "data": "id_barang"},
+			{ "data": "qty"},
+			{ "data": "tanggal_masuk"}
 		],
 		"order": [[ 0, "desc" ]],
 	});
@@ -637,13 +948,18 @@ function do_reject(){
 }
 
 function do_change(){
+	if($('#status').val() == '2' && $('#no_ref').val() == ''){
+		alert('Silahkan masukan nomor invoice');
+		return false;
+	}
 	$.ajax({
-		url: '<?php echo base_url()?>index.php/transaksi/change_status',
+		url: '<?php echo base_url()?>index.php/expenses/change_status',
 		type: "POST",
 		data: {
 			jumlah_termin	: 1,
 			status 			: $('#status').val(),
 			id 				: $('#id_order').val(),
+			nomor_invoice	: $('#no_ref').val(),
 		},
 		success: function(datax) {
 			var datax = JSON.parse(datax);
@@ -651,6 +967,8 @@ function do_change(){
 				load();
 				$('#modal-ubah-status').modal('hide');
 				alert('Update status berhasil !');
+			}else if(datax.code == 2){
+				alert('Update nomor transaksi tidak ada');
 			}else{
 				alert('Update status gagal !');
 			}

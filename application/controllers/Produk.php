@@ -22,6 +22,18 @@ class Produk extends CI_Controller {
 		$this->load->view('produk/v_keluar',$data);
 	}
 	
+	public function in(){
+		$data['judul']				= "Buat Penjualan";
+		$id = $this->input->get('id');
+		$this->load->view('produk/v_in',$data);
+	}
+	
+	public function out(){
+		$data['judul']				= "Buat Penjualan";
+		$id = $this->input->get('id');
+		$this->load->view('produk/v_out',$data);
+	}
+	
 	public function print_spj(){
 		$id = $this->input->get('id');
 		

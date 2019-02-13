@@ -249,22 +249,10 @@
 			}else if($range == "M2"){
 				$time = date("Y")."-01-01";
 				$date = "and SUBSTR(a.tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_transaksi,1,10) >= '".$time."'";
+			}else{
+				$time = date("Y-m-d", strtotime("-1 year",strtotime(date("Y-m-d"))));
+				$date = "and SUBSTR(a.tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_transaksi,1,10) >= '".$time."'";
 			}
-			
-			$sts = "";
-			if($status != ''){
-				if($status == 0){
-					$sts = "and a.status='0'";
-				}else if($status == 1){
-					$sts = "and a.status='1'";
-				}else if($status == 2){
-					$sts = "and a.status='2'";
-				}else if($status == 3){
-					$sts = "and a.status='3'";
-				}else if($status == 4){
-					$sts = "and a.status='4'";
-				}
-			} 
 			
 			$perusahaan = $this->session->userdata('perusahaan');
 			$cabang = $this->session->userdata('pn_wilayah');
@@ -272,6 +260,7 @@
 			
 			//tagihan dari definisi ini adalah sisa bayar
 			//sisa tagihan
+			
 			$query 	= "SELECT
 							e.tagihan AS inv,
 							f.bayar AS byr,
@@ -358,6 +347,7 @@
 						WHERE
 							a.perusahaan = '".$this->session->userdata('perusahaan')."'
 						AND a.cabang = '".$this->session->userdata('pn_wilayah')."'
+						$date
 						ORDER BY
 							tanggal_transaksi desc, id desc
 			";
@@ -1628,9 +1618,9 @@
 							'tanggal'			=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_diterima']))),
 							'keterangan'		=> "Pembelian Produk",
 							'no_akun_debit'		=> $post['account_sales'],
-							'nama_akun_debit'	=>  account_name($post['account_sales']),
-							'no_akun_credit'	=>  account_name('1-1111'),
-							'nama_akun_credit'	=> '1-1111',
+							'nama_akun_debit'	=> account_name($post['account_sales']),
+							'no_akun_credit'	=> $post['account'],
+							'nama_akun_credit'	=> account_name($post['account']),
 							'jumlah_debit'		=> $post['harga_beli'] * $post['stock_awal'],
 							'jumlah_credit'		=> $post['harga_beli'] * $post['stock_awal'],
 							'user'				=> $this->session->userdata('pn_id'),

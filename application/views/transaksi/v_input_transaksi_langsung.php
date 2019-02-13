@@ -1832,6 +1832,8 @@
 								$('#id_pelanggan').val(user_id);
 								$('#alamat_penagihan').val(alamat);
 								$('#email_pelanggan').val(email);
+								change_name(user_name);
+								change_name(user_name);
 							}
 						},
 						response: function(event, ui) {
@@ -1846,6 +1848,13 @@
 					});
 			}
 		});
+	}
+	
+	function change_name(x){
+		alert('yes');
+		$('#nama_pelanggan').val(x);
+		alert('yes');
+		$('#nama_pelanggan').val(x);
 	}
 	
 	function check_item(x){

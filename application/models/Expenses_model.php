@@ -24,46 +24,34 @@
 		}
 		
 		public function load_list($range=null,$status=null){
-			$date ="";
+			$date = "and SUBSTR(a.tanggal_diterima,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_diterima,1,10) >= '".date("Y-m-d",strtotime('-1 year', strtotime(date("Y-m-d"))))."'";
 			if($range == "D"){
-				$date = "and SUBSTR(a.tanggal_transaksi,1,10) = '".date("Y-m-d")."'";
+				$date = "and SUBSTR(a.tanggal_diterima,1,10) = '".date("Y-m-d")."'";
 			}else if($range == "W"){
 				$time = date("Y-m-d",strtotime('monday this week'));
-				$date = "and SUBSTR(a.tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_transaksi,1,10) >= '".$time."'";
+				$date = "and SUBSTR(a.tanggal_diterima,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_diterima,1,10) >= '".$time."'";
 			}else if($range == "M"){
 				$time = date("Y-m")."-01";
-				$date = "and SUBSTR(a.tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_transaksi,1,10) >= '".$time."'";
+				$date = "and SUBSTR(a.tanggal_diterima,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_diterima,1,10) >= '".$time."'";
 			}else if($range == "M2"){
 				$time = date("Y-m-01",strtotime("-1 month",strtotime(date("Y-m-d"))));
-				$date = "and SUBSTR(a.tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_transaksi,1,10) >= '".$time."'";
+				$date = "and SUBSTR(a.tanggal_diterima,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_diterima,1,10) >= '".$time."'";
 			}else if($range == "M2"){
 				$time = date("Y")."-01-01";
-				$date = "and SUBSTR(a.tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_transaksi,1,10) >= '".$time."'";
+				$date = "and SUBSTR(a.tanggal_diterima,1,10) <= '".date("Y-m-d")."' and SUBSTR(a.tanggal_diterima,1,10) >= '".$time."'";
 			}
-			
-			$sts = "";
-			if($status != ''){
-				if($status == 0){
-					$sts = "and a.status='0'";
-				}else if($status == 1){
-					$sts = "and a.status='1'";
-				}else if($status == 2){
-					$sts = "and a.status='2'";
-				}else if($status == 3){
-					$sts = "and a.status='3'";
-				}else if($status == 4){
-					$sts = "and a.status='4'";
-				}
-			} 
 			
 			$perusahaan = $this->session->userdata('perusahaan');
 			$cabang = $this->session->userdata('pn_wilayah');
 			$admin = cek_admin();
 			
 			//tagihan dari definisi ini adalah sisa bayar
-			//sisa tagihan
+			//sisa tagihan 
 			$query 	= "SELECT
-							*
+							a.*,
+							f.bayar,
+							h.tot_masuk,
+							j.tot_beli
 						FROM
 							dk_pembelian_produk a
 						LEFT JOIN (
@@ -77,9 +65,31 @@
 							and d.tipe_bayar = 2
 							GROUP BY d.nomor_transaksi
 						) f on f.nomor_transaksi = a.nomor_transaksi
+						left join (
+							select 
+								sum(g.qty) as tot_masuk,
+								g.transaksi
+							from dk_stock_masuk g
+							WHERE
+								g.perusahaan = '".$this->session->userdata('perusahaan')."'
+							AND g.cabang = '".$this->session->userdata('pn_wilayah')."'
+							group by transaksi
+						) h on h.transaksi = a.nomor_transaksi
+						left join (
+							select 
+								sum(i.qty) as tot_beli,
+								i.nomor_transaksi
+							from dk_pembelian_produk_detail i
+							WHERE
+								i.perusahaan = '".$this->session->userdata('perusahaan')."'
+							AND i.cabang = '".$this->session->userdata('pn_wilayah')."'
+							group by nomor_transaksi
+						) j on j.nomor_transaksi = a.nomor_transaksi
 						WHERE
 							a.perusahaan = '".$this->session->userdata('perusahaan')."'
-						AND a.cabang = '".$this->session->userdata('pn_wilayah')."' order by a.tanggal_diterima desc, id desc
+						AND a.cabang = '".$this->session->userdata('pn_wilayah')."' 
+						$date
+						order by a.tanggal_diterima desc, id desc
 			";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
@@ -98,8 +108,8 @@
 			}
 		}
 		
-		public function load_list_sum($range=null,$status=null){
-			$date ="";
+		public function load_list_sum(){
+			/* $date ="";
 			if($range == "D"){
 				$date = "and SUBSTR(tanggal_transaksi,1,10) = '".date("Y-m-d")."'";
 			}else if($range == "W"){
@@ -129,12 +139,12 @@
 				}else if($status == 4){
 					$sts = "and status='4'";
 				}
-			}
+			} */
 			
 			$perusahaan = $this->session->userdata('perusahaan');
 			$cabang = $this->session->userdata('pn_wilayah');
 			$admin = cek_admin();
-			$query 	= "select status, count(*) as total from dk_transaksi where perusahaan='$perusahaan' $date $sts $admin group by status";
+			$query 	= "select status, count(*) as total from dk_pembelian_produk where perusahaan='$perusahaan' $date $sts $admin group by status";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				return $q->result();
@@ -273,6 +283,7 @@
 				$query 	= "select * from dk_pembelian_produk where perusahaan='$perusahaan' and cabang='$cabang' and nomor_transaksi='".$post['nomor_transaksi']."'";
 				$q 		= $this->db->query($query);
 				if($q->num_rows() > 0){
+					$this->db->trans_rollback();
 					return '-1';
 				}else{
 					$id_transaksi = $post['nomor_transaksi'];
@@ -289,9 +300,9 @@
 			
 			$account_sales = $post['tujuan_transfer_jual'];
 				
-			if($post['metode_pembayaran'] == 'cash'){
+			if($post['metode_pembayaran'] == 'cash' && $post['tipe_transaksi'] == 0){
 				$account = '1-1111';
-			}else if($post['metode_pembayaran'] == 'hutang'){
+			}else if($post['metode_pembayaran'] == 'hutang' || $post['tipe_transaksi'] == 1){
 				$account = '2-1110';
 			}else{
 				$account = $post['tujuan'];
@@ -332,31 +343,60 @@
 							'status'						=> 1,
 							'tanggal_bayar'					=> 1,
 							'nama_pengeluaran'				=> 'Pembelian Produk',
-							'tipe_pembelian'				=> 1,
+							'tipe_pembelian'				=> $post['tipe_transaksi'],
 							'account_sales'					=> $account_sales,
 							);
 			
 			$this->db->insert('dk_pembelian_produk',$data_prod);
 			$id_ref = $this->db->insert_id();
 			
-			$data_jurnal = array(
-							'tanggal'			=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_transaksi']))),
-							'keterangan'		=> "Pembelian Produk",
-							'nomor_transaksi'	=> $id_transaksi,
-							'nomor_invoice'		=> $post['nomor_invoice'],
-							'no_akun_debit'		=> $post['account_sales'],
-							'nama_akun_debit'	=> account_name($post['account_sales']),
-							'no_akun_credit'	=> $account,
-							'nama_akun_credit'	=> account_name($account),
-							'jumlah_debit'		=> str_replace(',','',$post['total']),
-							'jumlah_credit'		=> str_replace(',','',$post['total']),
-							'user'				=> $this->session->userdata('pn_id'),
-							'status'			=> 0,
-							'cabang'			=> $this->session->userdata('pn_wilayah'),
-							'perusahaan'		=> $this->session->userdata('perusahaan'),
-							'create_date'		=> date("Y-m-d H:i:s")
-						);
-			$this->db->insert('dk_jurnal',$data_jurnal);
+			if($post['tipe_transaksi'] == '0'){//0 pembelian langsung
+				$data_jurnal = array(
+								'tanggal'			=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_transaksi']))),
+								'keterangan'		=> "Pembelian Produk",
+								'nomor_transaksi'	=> $id_transaksi,
+								'nomor_invoice'		=> $post['nomor_invoice'],
+								'no_akun_debit'		=> $post['account_sales'],
+								'nama_akun_debit'	=> account_name($post['account_sales']),
+								'no_akun_credit'	=> $account,
+								'nama_akun_credit'	=> account_name($account),
+								'jumlah_debit'		=> str_replace(',','',$post['total']),
+								'jumlah_credit'		=> str_replace(',','',$post['total']),
+								'user'				=> $this->session->userdata('pn_id'),
+								'status'			=> 0,
+								'cabang'			=> $this->session->userdata('pn_wilayah'),
+								'perusahaan'		=> $this->session->userdata('perusahaan'),
+								'create_date'		=> date("Y-m-d H:i:s")
+							);
+				$this->db->insert('dk_jurnal',$data_jurnal);
+				
+				//masukan pembayaran jika pembayaran dengan cash/debit/credit saat pembelian
+				if($post['metode_pembayaran'] != 'hutang'){
+					$data = array(
+								'id_customer' 			=> $nm_p,
+								'credit' 				=> $account, 
+								'jumlah_bayar' 			=> str_replace(',','',$post['total']),
+								'metode_pembayaran'		=> $post['metode_pembayaran'],
+								'tanggal_bayar'     	=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_transaksi']))),
+								'referensi_pembayaran' 	=> $post['no_referensi'],
+								'debit'                	=> $post['account_sales'],
+								'nm_debit'             	=> account_name($post['account_sales']),
+								'create_date'           => date('Y-m-d H:i:s'),
+								'user'             		=> $this->session->userdata('pn_id'),
+								'cabang'             	=> $this->session->userdata('pn_wilayah'),
+								'perusahaan'            => $this->session->userdata('perusahaan'),
+								'pesan'             	=> $post['pesan'],
+								'tipe_bayar'            => 2,
+								'no_invoice'            => $post['nomor_invoice'],
+								'nomor_transaksi'       => $id_transaksi,
+								'ref_transaksi'         => $post['no_referensi'],
+								'nm_credit'             => account_name($account),
+							);
+							
+					$this->db->insert('dk_pembayaran',$data);
+				}
+				
+			}
 			
 			foreach($post['transaksi'] as $row){
 				$nm = explode(' - ',$row['nama_produk']);
@@ -371,7 +411,9 @@
 					add_counter('c_paket');
 					/* 
 					create produk
+					stock_awal = 0 untuk barang baru, setelah masuk barang maka update jumlahnya
 					 */
+					 
 					$data_item = array(
 									'id_produk'			=> $id_produk,
 									'nama_produk'		=> $nm,
@@ -385,7 +427,7 @@
 									'status'			=> 1,
 									'category'			=> 'Item Stock',
 									'harga_beli'		=> str_replace(',','',$row['harga_satuan']),
-									'stock_awal'		=> str_replace(',','',$row['qty']),
+									'stock_awal'		=> 0,
 									'stock_minimum'		=> str_replace(',','',$row['minimum']),
 									'tanggal_diterima'	=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_transaksi']))),
 									'account'			=> $account,
@@ -393,6 +435,7 @@
 									'account_sales'		=> $account_sales,
 									);
 					$this->db->insert('dk_produk',$data_item);
+					$sts = 'New';
 				}else{
 					/* 
 					update produk
@@ -424,6 +467,7 @@
 					$this->db->update('dk_produk',$data_item);
 					
 					$id_produk = $row['id_produk'];
+					$sts = 'Add';
 				}
 				
 				$data_beli = array(
@@ -440,6 +484,7 @@
 									'create_date'		=> date("Y-m-d H:i:s"),
 									'deskripsi'			=> $row['deskripsi'],
 									'satuan'			=> $row['satuan'],
+									'sts_produk'		=> $sts,
 								);
 				$this->db->insert('dk_pembelian_produk_detail',$data_beli);
 			}
@@ -459,21 +504,22 @@
 			$this->db->trans_begin();
 			
 			if ($post['metode_pembayaran']=="cash"){
-				$credit="1-1111"; 
+				$credit="1-1111";
+				$debit=$post["debit"];
 			} else {
-				$credit=$post['debit'];
+				$credit=$post['tujuan_transfer'];
+				$debit=$post["debit"];
 			}
 			
 			$data = array(
 						'id_customer' 			=> $post['id_customer'],
 						'credit' 				=> $credit, 
-						'jumlah_bayar' 			=> $post['jumlah_bayar'], 
 						'metode_pembayaran'		=> $post['metode_pembayaran'],
 						'tanggal_bayar'     	=> date('Y-m-d',strtotime(str_replace('/','-',$post['tanggal_bayar']))),
 						'jumlah_bayar'      	=> str_replace(',','',$post['jumlah_bayar']),
 						'referensi_pembayaran' 	=> $post['referensi_bayar'],
-						'debit'                	=> $post['debit'],
-						'nm_debit'             	=> account_name($post['debit']),
+						'debit'                	=> $debit,
+						'nm_debit'             	=> account_name($debit),
 						'create_date'           => date('Y-m-d H:i:s'),
 						'user'             		=> $this->session->userdata('pn_id'),
 						'cabang'             	=> $this->session->userdata('pn_wilayah'),
@@ -497,8 +543,8 @@
 						'nomor_transaksi'		=> $post['nomor_transaksi'],
 						'no_bukti'				=> $post['referensi_bayar'],
 						'keterangan'			=> $post['deskripsi'],
-						'no_akun_debit'			=> $post['debit'],
-						'nama_akun_debit'		=> account_name($post['debit']),
+						'no_akun_debit'			=> $debit,
+						'nama_akun_debit'		=> account_name($debit),
 						'no_akun_credit'		=> $credit,
 						'nama_akun_credit'		=> account_name($credit),
 						'jumlah_debit'			=> str_replace(',','',$post['jumlah_bayar']),
@@ -513,6 +559,12 @@
 			);
 			
 			$this->db->insert('dk_jurnal',$data);
+			
+			if(str_replace(',','',$post['jumlah_bayar']) >= str_replace(',','',$post['sisa_bayar'])){
+				$this->db->where('nomor_transaksi', $post['nomor_transaksi']);
+				$this->db->where('perusahaan', $this->session->userdata('perusahaan'));
+				$this->db->update('dk_pembelian_produk', array('tipe_pembelian'=>0));
+			}
 			
 			
 			if ($this->db->trans_status() === FALSE)
@@ -569,5 +621,84 @@
 				
 				return 1;
 			}
+		}
+		
+		public function change_status($post2){
+			//masukan ke jurnal sebagai account payment jika PO accepted
+			if($post2['status'] == 2){
+				$q 		= $this->db->query("select * from dk_pembelian_produk where id='".$post2['id']."'");
+				if($q->num_rows() > 0){
+					foreach($q->result() as $post){
+						$data_jurnal = array(
+										'tanggal'			=> date('Y-m-d',strtotime(str_replace('/','-',$post->tanggal_diterima))),
+										'keterangan'		=> "Pembelian Produk",
+										'nomor_transaksi'	=> $post->nomor_transaksi,
+										'nomor_invoice'		=> $post->nomor_invoice,
+										'no_akun_debit'		=> '5-1110',
+										'nama_akun_debit'	=> account_name('5-1110'),
+										'no_akun_credit'	=> '2-1110',
+										'nama_akun_credit'	=> account_name('2-1110'),
+										'jumlah_debit'		=> str_replace(',','',$post->total_bayar),
+										'jumlah_credit'		=> str_replace(',','',$post->total_bayar),
+										'user'				=> $this->session->userdata('pn_id'),
+										'status'			=> 0,
+										'cabang'			=> $this->session->userdata('pn_wilayah'),
+										'perusahaan'		=> $this->session->userdata('perusahaan'),
+										'create_date'		=> date("Y-m-d H:i:s")
+									);
+						$this->db->insert('dk_jurnal',$data_jurnal);
+					}
+					
+				}else{
+					$this->db->trans_rollback();
+					return '-1';
+				}
+			}
+			
+			//ubah status di tabel pembelian
+			$this->db->where('id', $post2['id']);
+			$this->db->update('dk_pembelian_produk', array('tipe_pembelian'=>$post2['status'], 'nomor_invoice'=> $post2['nomor_invoice']));
+			
+			if ($this->db->trans_status() === FALSE)
+			{
+				$this->db->trans_rollback();
+				return false;
+			}else{
+				$this->db->trans_commit();
+				
+				return $post2['id'];
+			}
+		}
+		
+		public function detail_transaksi($post=array()){
+			$q 		= $this->db->query("select * from dk_pembelian_produk where id='".$post['id']."'");
+			if($q->num_rows() > 0){
+				return $q->result();
+			}
+						
+		}
+		
+		public function detail_pembelian($post=array()){
+			$q 		= $this->db->query("select a.* from dk_pembelian_produk_detail a left join dk_pembelian_produk b on a.nomor_transaksi=b.nomor_transaksi where b.id='".$post['id']."' and a.perusahaan='".$this->session->userdata('perusahaan')."'");
+			if($q->num_rows() > 0){
+				return $q->result();
+			}
+						
+		}
+		
+		public function detail_pembayaran($post=array()){
+			$q 		= $this->db->query("select a.tanggal_bayar, a.jumlah_bayar, a.nm_credit from dk_pembayaran a left join dk_pembelian_produk b on a.nomor_transaksi=b.nomor_transaksi where b.id='".$post['id']."' and a.perusahaan='".$this->session->userdata('perusahaan')."'");
+			if($q->num_rows() > 0){
+				return $q->result();
+			}
+						
+		}
+		
+		public function detail_barang($post=array()){
+			$q 		= $this->db->query("select a.* from dk_stock_masuk a left join dk_pembelian_produk b on a.transaksi=b.nomor_transaksi where b.id='".$post['id']."' and a.perusahaan='".$this->session->userdata('perusahaan')."'");
+			if($q->num_rows() > 0){
+				return $q->result();
+			}
+						
 		}
 	}

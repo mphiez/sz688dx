@@ -706,7 +706,7 @@ function load(x='', status=''){
 											'</a>'+
 											'<ul class="dropdown-menu dropdown-messages" style="right: auto !important;">'+
 												'<li>'+
-													'<a href="<?php echo base_url()?>index.php/produk/keluar?id='+row.id_inv+'">'+
+													'<a href="<?php echo base_url()?>index.php/produk/keluar?id='+row.id_inv+'&fm=0">'+
 														'Create Pengeluaran'+
 													'</a>'+
 												'</li>'+

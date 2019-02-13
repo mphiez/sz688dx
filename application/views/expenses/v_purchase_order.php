@@ -78,7 +78,7 @@
 	<div id="page-wrapper">
 		<div class="row">
 			<div class="col-lg-12">
-				<h1 class="page-header">Pembelian Produk Baru</h1>
+				<h1 class="page-header">Purchase Order</h1>
 			</div>
 		</div>
         <div class="row">
@@ -89,7 +89,7 @@
 							<label>Nama Supplier</label>
 							<input type="text" id="nama_pelanggan" onchange="return check_supplier()"  name="nama_pelanggan" onkeyup="return cari_pelanggan()" class="form-control" placeholder="Masukan nama supplier">
 							<input type="hidden" id="id_pelanggan">
-							<input type="hidden" id="tipe_transaksi" value="0">
+							<input type="hidden" id="tipe_transaksi" value="1">
 						</div>
 					</div>
 					<div class="col-sm-6 col-md-3">
@@ -135,7 +135,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-sm-6 col-md-3">
+					<div class="col-sm-6 col-md-3" style="display:none">
 						<div class="form-group" >
 							<label>Nomor invoice/Struk Pembelian</label>
 							<div class="input-group">
@@ -148,7 +148,7 @@
 					</div>
 				</div>
 				<div class="col-md-12">
-					<div class="col-sm-6 col-md-3">
+					<div class="col-sm-6 col-md-3" style="display:none">
 						<div class="form-group" >
 							<label>Metode Pembayaran</label>
 							<select id="metode_pembayaran" onchange="return tujuan()" class="form-control">
@@ -160,7 +160,7 @@
 							</select>
 						</div>
 					</div>
-					<div class="col-sm-6 col-md-3">
+					<div class="col-sm-6 col-md-3" style="display:none">
 						<div class="form-group" id="tujuan">
 							<label>Tujuan</label>
 							<select id="tujuan_transfer" class="form-control" disabled>
@@ -185,7 +185,7 @@
 							</select>
 						</div>
 					</div>
-					<div class="col-sm-6 col-md-3">
+					<div class="col-sm-6 col-md-3" style="display:none">
 						<div class="form-group" id="tujuan">
 							<label>Akun Pengeluaran</label>
 							<select id="tujuan_transfer_jual" class="form-control">

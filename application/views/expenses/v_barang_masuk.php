@@ -201,23 +201,25 @@
 						<tbody id="produk">
 						
 							<?php if ($detail > 0){
-								$i=0;
-								foreach($detail as $rows){
-									$i++;
-								?>
-							<tr id="produk_<?php echo $i; ?>">
-									
-								<td><input type="text" id="id_barang_<?php echo $i; ?>" class="form-control" readonly value="<?php echo $rows->id_produk?>"></td>
-								<td><input type="text" id="nama_barang_<?php echo $i; ?>" class="form-control" readonly value="<?php echo $rows->nama_produk?>"></td>
-								<td><textarea style="height: 33px;" id="deskripsi_<?php echo $i; ?>" class="form-control"><?php echo ($rows->deskripsi)?></textarea></td>
-								<td>
-								<input type="text" id="total_<?php echo $i; ?>" class="form-control money" onkeyup="return check_qty(<?php echo $i?>)" value="<?php echo $rows->qty - $rows->sudah_masuk?>">
-								<input type="hidden" id="total_max_<?php echo $i; ?>" class="form-control money" value="<?php echo $rows->qty - $rows->sudah_masuk?>">
-								</td>
-							</tr>
-								<?php }
-								
-								?>
+									$i=0;
+										foreach($detail as $rows){
+											if(($rows->qty - $rows->sudah_masuk) > 0){
+											$i++;
+										?>
+											<tr id="produk_<?php echo $i; ?>">
+													
+												<td><input type="text" id="id_barang_<?php echo $i; ?>" class="form-control" readonly value="<?php echo $rows->id_produk?>"></td>
+												<td><input type="text" id="nama_barang_<?php echo $i; ?>" class="form-control" readonly value="<?php echo $rows->nama_produk?>"></td>
+												<td><textarea style="height: 33px;" id="deskripsi_<?php echo $i; ?>" class="form-control"><?php echo ($rows->deskripsi)?></textarea></td>
+												<td>
+												<input type="text" id="total_<?php echo $i; ?>" class="form-control money" onkeyup="return check_qty(<?php echo $i?>)" value="<?php echo $rows->qty - $rows->sudah_masuk?>">
+												<input type="hidden" id="total_max_<?php echo $i; ?>" class="form-control money" value="<?php echo $rows->qty - $rows->sudah_masuk?>">
+												</td>
+											</tr>
+										<?php 
+											} }
+										
+										?>
 								<input type="hidden" value="<?php echo $i?>" id="counter">
 								<?php
 								}?>
@@ -290,34 +292,45 @@
 				deskripsi           : $('#deskripsi_'+i).val(),
 				qty					: $('#total_'+i).val(),
 			}
-			datas.push(temp);
+			if(decimal($('#total_'+i).val()) *1 > 0){
+				datas.push(temp);
+			}
 		}
 		
 		
 		document.getElementById('btn_save').innerHTML = '<span class="btn btn-success pull-right"><i class="fa fa-spinner"></i> Simpan</span>';
-		$.ajax({
-			url: '<?php echo base_url()?>index.php/expenses/save_barang',
-			type: "POST",
-			data: {
-				created				: $('#created').val(),
-				transaksi			: $('#nomor_transaksi').val(),	
-				invoice				: $('#nomor_invoice').val(),
-				tanggal_masuk		: $('#tanggal_transaksi').val(),
-				data 				: datas
-				
-						
-				
-			},
-			success: function(datax) {
-				var datax = JSON.parse(datax);
-				if(datax.code == 0){
-					alert('Transaksi berhasil !');
-				}else{
-					alert('Simpan gagal !');
+		if(datas.length > 0){
+			$.ajax({
+				url: '<?php echo base_url()?>index.php/expenses/save_barang',
+				type: "POST",
+				data: {
+					created				: $('#created').val(),
+					transaksi			: $('#nomor_transaksi').val(),	
+					invoice				: $('#nomor_invoice').val(),
+					tanggal_masuk		: $('#tanggal_transaksi').val(),
+					data 				: datas
+					
+							
+					
+				},
+				success: function(datax) {
+					var datax = JSON.parse(datax);
+					if(datax.code == 0){
+						alert('Transaksi berhasil !');
+						if('<?php echo $_GET['fm']?>' == 0){
+							location.replace('<?php echo base_url()?>index.php/expenses/view');
+						}else{
+							location.replace('<?php echo base_url()?>index.php/produk/in');
+						}
+					}else{
+						alert('Simpan gagal !');
+					}
+					document.getElementById('btn_save').innerHTML = '<button class="btn btn-success pull-right"><i class="fa fa-save"></i> Simpan</button>';
 				}
-				document.getElementById('btn_save').innerHTML = '<button class="btn btn-success pull-right"><i class="fa fa-save"></i> Simpan</button>';
-			}
-		});
+			});
+		}else{
+			alert('Tidak ada barang masuk');
+		}
 		return false;
 	});
 	

@@ -2120,6 +2120,7 @@
 			$('#ship_phone').val('');
 			$('#id_ship_to').val('');
 			$('#ship_email').val('');
+			$('#nama_pelanggan').val('');
 		}
 	}
 	

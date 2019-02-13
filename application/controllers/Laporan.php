@@ -46,10 +46,20 @@ class Laporan extends CI_Controller {
 			$acnum = '1-1111';
 		}
 		$datax			= $this->laporan_model->bukubesar($acnum, $cabang, $periode);
+		$temp = array();
+		$data_awal = array(
+							'tanggal'		=> $periode."-01",
+							'no_bukti'		=> '',
+							'keterangan'	=> 'saldo awal',
+							'debit'			=> 0,
+							'credit'		=> 0,
+							'saldo'			=> saldo_awal($acnum, $periodes, $cabang)
+						);
+		array_push($temp,$data_awal);
 		if($datax > 0){
 			$saldo = saldo_awal($acnum, $periodes, $cabang);
+			
 			$saldo_akhir = 0;
-			$temp = array();
 			$type_akun = substr($acnum,0,1);
 			foreach($datax as $row){
 				
@@ -68,6 +78,7 @@ class Laporan extends CI_Controller {
 				$row->credit	= number_format($row->credit);
 				$row->debit		= number_format($row->debit);
 				$saldo = $row->saldo;
+				$row->tanggal = date("Y-m-d",strtotime($row->tanggal));
 				$row->saldo = number_format($row->saldo);
 				array_push($temp,$row);
 			}
@@ -79,22 +90,13 @@ class Laporan extends CI_Controller {
 			exit();
 			
 		}else{
-			$result['data'] = array();
+			$result = $this->result();
+			$result['data'] = $temp;
 			
 			echo json_encode($result);
 			exit();
 		}
 		echo json_encode($return);
-	}
-	
-	public function result(){
-		$result = array(
-			'code' => 0,
-			'guide' => '',
-			'info' => 'ok',
-			'data' => array()
-		);
-		return $result;
 	}
 	
 	public function search_akun(){
@@ -162,7 +164,7 @@ class Laporan extends CI_Controller {
 	
 	public function saldo_awal(){
 		$data['judul']				= "Saldo Awal";
-		$data['periode']				= $this->laporan_model->getPeriode();;
+		$data['periode']				= $this->laporan_model->getPeriode($acnum, $periodes, $cabang);
 		$this->load->view('laporan/v_list_saldo',$data);
 	}
 	
