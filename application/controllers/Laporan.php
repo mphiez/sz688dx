@@ -11,6 +11,16 @@ class Laporan extends CI_Controller {
 		$this->load->model('master_model');
 	}
 	
+	public function result(){
+		$result = array(
+			'code' => 0,
+			'guide' => '',
+			'info' => 'ok',
+			'data' => array()
+		);
+		return $result;
+	}
+	
 	public function index(){
 		$this->ledger();
 	}
