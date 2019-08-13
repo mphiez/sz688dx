@@ -384,6 +384,9 @@
 			}else if($range == "M2"){
 				$time = date("Y")."-01-01";
 				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
+			}else{
+				$time = date("Y-m-d", strtotime("-1 year",strtotime(date("Y-m-d"))));
+				$date = "and SUBSTR(tanggal_transaksi,1,10) <= '".date("Y-m-d")."' and SUBSTR(tanggal_transaksi,1,10) >= '".$time."'";
 			}
 			
 			$sts = "";
@@ -1503,7 +1506,7 @@
 		
 		public function account_name($post){
 			$where = "";
-			$query 	= "select id, account_type, account_num, account_name from dk_account where perusahaan='".$this->session->userdata('perusahaan')."' and account_type='Current Assets' order by account_name";
+			$query 	= "select id, account_type, account_num, account_name from dk_account where perusahaan='".$this->session->userdata('perusahaan')."' and account_type='5' order by account_name";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				return $q->result();
@@ -1542,7 +1545,7 @@
 		
 		public function account_name_sales($post){
 			$where = "";
-			$query 	= "select id, account_type, account_num, account_name from dk_account where perusahaan='".$this->session->userdata('perusahaan')."' and account_type='Cost of Sales' order by account_name";
+			$query 	= "select id, account_type, account_num, account_name from dk_account where perusahaan='".$this->session->userdata('perusahaan')."' and account_type='4' order by account_name";
 			$q 		= $this->db->query($query);
 			if($q->num_rows() > 0){
 				return $q->result();

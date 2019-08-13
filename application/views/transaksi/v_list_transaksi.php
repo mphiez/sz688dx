@@ -197,7 +197,7 @@
 						<ul class="navbar-right" style="float:right;margin-right: 0px;list-style: none;">
 							<li class="dropdown">
 								<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding: 5px 15px;margin-top:15px;">
-									<i class="fa fa-calendar"></i> Semua <i class="fa fa-caret-down"></i> 
+									<i class="fa fa-calendar"></i> Periode <i class="fa fa-caret-down"></i> 
 								</a>
 								<ul class="dropdown-menu dropdown-messages">
 									<li>
@@ -219,7 +219,7 @@
 									</li>
 									<li class="divider"></li>
 									<li>
-										<a href="#"  onclick="return load('M2')"">
+										<a href="#"  onclick="return load('M2')">
 											Dua Bulan Terakhir
 										</a>
 									</li>
@@ -560,43 +560,48 @@ function show_termin(){
 	}
 }
 
-load('Y');
+load('M');
 $(".chosen-select").chosen({no_results_text: "Tidak Ditemukan", width: "100%"}); 
 
-$.ajax({
-	url: '<?php echo base_url()?>index.php/transaksi/load_list_sum',
-	type: "POST",
-	data: {
-		range:$('#range_type').val(),status:status
-	},
-	success: function(datax) {
-		var datax = JSON.parse(datax);
-		$('#all').text('0');
-		$('#paid').text('0');
-		$('#invoice').text('0');
-		$('#terminate').text('0');
-		$('#sales_order').text('0');
-		$('#reject').text('0');
-		if(datax.code == 0){
-			$.each(datax.data,function(i, item){
-				if(item.status=='all'){
-					$('#all').text(item.total);
-				}else if(item.status=='0'){
-					$('#paid').text(item.total);
-				}else if(item.status=='1'){
-					$('#invoice').text(item.total);
-				}else if(item.status=='2'){
-					$('#terminate').text(item.total);
-				}else if(item.status=='3'){
-					$('#sales_order').text(item.total);
-				}else if(item.status=='4'){
-					$('#reject').text(item.total);
-				}
-			});
+
+function load_sum(x = ''){
+	$.ajax({
+		url: '<?php echo base_url()?>index.php/transaksi/load_list_sum',
+		type: "POST",
+		data: {
+			range:x
+		},
+		success: function(datax) {
+			var datax = JSON.parse(datax);
+			$('#all').text('0');
+			$('#paid').text('0');
+			$('#invoice').text('0');
+			$('#terminate').text('0');
+			$('#sales_order').text('0');
+			$('#reject').text('0');
+			if(datax.code == 0){
+				$.each(datax.data,function(i, item){
+					if(item.status=='all'){
+						$('#all').text(item.total);
+					}else if(item.status=='0'){
+						$('#paid').text(item.total);
+					}else if(item.status=='1'){
+						$('#invoice').text(item.total);
+					}else if(item.status=='2'){
+						$('#terminate').text(item.total);
+					}else if(item.status=='3'){
+						$('#sales_order').text(item.total);
+					}else if(item.status=='4'){
+						$('#reject').text(item.total);
+					}
+				});
+			}
 		}
-	}
-});
+	});
+}
+	
 function load(x='', status=''){
+	load_sum(x);
 	if(x == 'W'){
 		$('#range_type').val(x);
 		$('#range').text('Dalam Satu Minggu Terakhir');

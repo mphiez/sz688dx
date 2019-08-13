@@ -33,7 +33,7 @@ class Register extends CI_Controller {
 							);
 				}else{
 				
-					$fromEmail = "budianatekom@gmail.com"; //ganti dg alamat email kamu di sini
+					$fromEmail = "marketing.forestcode@gmail.com"; //ganti dg alamat email kamu di sini
 					//$isiEmail = "Isi email tulis disini"; //ini isi emailnya
 					$nm_cust="";
 					$no_inv="";
@@ -47,7 +47,7 @@ class Register extends CI_Controller {
 
 								<p>Verification</p>
 								<br/>
-								<p>Terima Kasih telah bergabung dengan SMS Merdeka. Klik link berikut untuk memverifikasi email anda. <a href='".base_url()."index.php/register/verify?reg_code=$gen'>Verification Here</a></p>
+								<p>Terima Kasih telah bergabung dengan MY Accounting Helper. <a href='".base_url()."index.php/register/verify?reg_code=$gen'>Verification Here</a></p>
 								</body>
 								<p>&nbsp;</p>
 								<p>Komp. Buah Batu Regency A2 No.9-10 Kel. Kujangsari / Cijawaru Kec. Bandung Kidul, Jawa Barat | Indonesia</p>
@@ -69,8 +69,8 @@ class Register extends CI_Controller {
 					$mail->Host       = "smtp.gmail.com"; //setting GMail sebagai SMTP server
 					$mail->Port       = 465; // SMTP port to connect to GMail
 					$mail->Username   = $fromEmail;
-					$mail->Password   = "sauydumvmmc@123"; //ganti dg password GMail kamu
-					$mail->SetFrom('budianatekom@gmail.com', 'Neuron SMS');  //Siapa yg mengirim email
+					$mail->Password   = "bandung12"; //ganti dg password GMail kamu
+					$mail->SetFrom('marketing.forestcode@gmail.com', 'Registrasi');  //Siapa yg mengirim email
 					$mail->Subject    = "Verification "; //ini subjek emailnya
 					$mail->Body       = $isiEmail;
 					$toEmail = $data->email; // siapa yg menerima email ini

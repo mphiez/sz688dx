@@ -229,7 +229,7 @@
 										<input type="hidden" id="harga_satuan_dec_1" class="form-control" readonly>
 									</td>
 									<td>
-										<select id="pajak_1" class="form-control" onchange="return ppn(1)">
+										<select id="pajak_1" class="form-control chosen-select" onchange="return ppn(1)">
 											<option value="0">Non PPN </option>
 											<option value="10">PPN </option>
 											<option value="15">PPN & Service</option>
@@ -245,7 +245,7 @@
 											<div class="input-group-addon" onclick="return delete_produk(2)">
 												<i class="fa fa-trash"></i>
 											</div>
-											<input type="text" id="nama_produk_2" onkeyup="return cari_produk(2)" class="form-control">
+											<input type="text" id="nama_produk_2" onkeyup="return cari_produk(2)" onchange="return check_produk(2)" class="form-control">
 											<input type="hidden" id="id_produk_2" class="form-control">
 										</div>
 										<i id="label_sisa_2" style="color:red"></i>
@@ -262,7 +262,7 @@
 										<input type="hidden" id="harga_satuan_dec_2" class="form-control" readonly>
 									</td>
 									<td>
-										<select id="pajak_2" class="form-control" onchange="return ppn(2)">
+										<select id="pajak_2" class="form-control chosen-select" onchange="return ppn(2)">
 											<option value="0">Non PPN </option>
 											<option value="10">PPN </option>
 											<option value="15">PPN & Service</option>
@@ -497,7 +497,7 @@
 										<input type="text" class="form-control form-control-sm " value="" id="s_name_tipe_item">
 									</div>
 									<div class="col-md-2">
-										<button  type="button"class="btn btn-success" id="s_save_type_item" onclick="return save_type_item(1)"><i class="fa fa-save"></i> Save</button>
+										<span class="btn btn-success" id="s_save_type_item" onclick="return save_type_item(1)"><i class="fa fa-save"></i> Save</span>
 									</div>
 								</div>
 							</div>
@@ -548,7 +548,7 @@
 								</div>
 								<div class="form-group">
 									<div class="col-md-12">
-										<button  type="button"class="btn btn-success" id="s_save_type_item" onclick="return save_account(1)"><i class="fa fa-save"></i> Save</button>
+										<span class="btn btn-success" id="s_save_type_item" onclick="return save_account(1)"><i class="fa fa-save"></i> Save</span>
 									</div>
 								</div>
 							</div>
@@ -587,7 +587,7 @@
 								</div>
 								<div class="form-group">
 									<div class="col-md-12">
-										<button  type="button"class="btn btn-success" id="s_save_type_item" onclick="return save_account_sales(1)"><i class="fa fa-save"></i> Save</button>
+										<span class="btn btn-success" id="s_save_type_item" onclick="return save_account_sales(1)"><i class="fa fa-save"></i> Save</span>
 									</div>
 								</div>
 							</div>
@@ -1320,7 +1320,7 @@
 									</div>
 								</div>
 								<div class="form-group" id="btn_save_supplier">
-									<button  type="button"class="btn btn-success" id="s_save_type_item" onclick="return save_supplier(1)"><i class="fa fa-save"></i> Save</button>
+									<span class="btn btn-success" id="s_save_type_item" onclick="return save_supplier(1)"><i class="fa fa-save"></i> Save</span>
 								</div>
 							</div>
 					</div>
@@ -2350,7 +2350,7 @@
 		$('#hide_supplier').empty();
 		$('#hide_supplier').append('<a href="#" onclick="return hide_s_supplier('+x+')" class="pull-right"><i class="fa fa-angle-left"></i> Hide</a>');
 		$('#btn_save_supplier').empty();
-		$('#btn_save_supplier').append('<button class="btn btn-success" id="s_save_type_item" onclick="return save_supplier('+x+')"><i class="fa fa-save"></i> Save</button>');
+		$('#btn_save_supplier').append('<span class="btn btn-success" id="s_save_type_item" onclick="return save_supplier('+x+')"><i class="fa fa-save"></i> Save</span>');
 		$("#panel5").slideToggle();
 		$("#panel"+x).slideToggle();
 		setTimeout(function() {

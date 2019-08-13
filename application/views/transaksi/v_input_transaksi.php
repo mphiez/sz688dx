@@ -1371,7 +1371,7 @@
 									</div>
 								</div>
 								<div class="form-group" id="btn_save_supplier">
-									<button  type="button" class="btn btn-success" id="s_save_type_item" onclick="return save_supplier(1)"><i class="fa fa-save"></i> Save</button>
+									<span class="btn btn-success" id="s_save_type_item" onclick="return save_supplier(1)"><i class="fa fa-save"></i> Save</span>
 								</div>
 							</div>
 					</div>
@@ -2708,7 +2708,7 @@
 		$('#hide_supplier').empty();
 		$('#hide_supplier').append('<a href="#" onclick="return hide_s_supplier('+x+')" class="pull-right"><i class="fa fa-angle-left"></i> Hide</a>');
 		$('#btn_save_supplier').empty();
-		$('#btn_save_supplier').append('<button class="btn btn-success" type="button" id="s_save_type_item" onclick="return save_supplier('+x+')"><i class="fa fa-save"></i> Save</button>');
+		$('#btn_save_supplier').append('<span class="btn btn-success" type="button" id="s_save_type_item" onclick="return save_supplier('+x+')"><i class="fa fa-save"></i> Save</span>');
 		$("#panel5").slideToggle();
 		$("#panel"+x).slideToggle();
 		setTimeout(function() {
